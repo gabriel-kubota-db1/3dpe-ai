@@ -4,10 +4,11 @@ import { Spin } from 'antd';
 
 import authRoutes from '@/features/auth/routes';
 import commonRoutes from '@/features/common/routes';
+import adminRoutes from '@/features/admin/routes';
 import PrivateRoute from './PrivateRoute';
 
 const AppRoutes = () => {
-  const { isLoading } = useAuth();
+  const { isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
@@ -20,9 +21,19 @@ const AppRoutes = () => {
   return (
     <Routes>
       {authRoutes}
+      
+      {/* Common Routes for all authenticated users */}
       <Route element={<PrivateRoute />}>
         {commonRoutes}
       </Route>
+
+      {/* Admin Routes */}
+      {user?.role === 'admin' && (
+        <Route element={<PrivateRoute allowedRoles={['admin']} />}>
+          {adminRoutes}
+        </Route>
+      )}
+
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );

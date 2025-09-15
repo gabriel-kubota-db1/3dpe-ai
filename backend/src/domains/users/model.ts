@@ -1,5 +1,7 @@
-import { Model, Pojo } from 'objection';
+import { Model, Pojo, RelationMappings, RelationMappingsThunk } from 'objection';
 import bcrypt from 'bcryptjs';
+import { Physiotherapist } from '../physiotherapists/model';
+import { Industry } from '../industries/model';
 
 export class User extends Model {
   id!: number;
@@ -20,9 +22,32 @@ export class User extends Model {
   created_at!: string;
   updated_at!: string;
 
+  // Optional relations
+  physiotherapist?: Physiotherapist;
+  industry?: Industry;
+
   static get tableName() {
     return 'users';
   }
+
+  static relationMappings: RelationMappings | RelationMappingsThunk = {
+    physiotherapist: {
+      relation: Model.HasOneRelation,
+      modelClass: Physiotherapist,
+      join: {
+        from: 'users.id',
+        to: 'physiotherapists.user_id',
+      },
+    },
+    industry: {
+      relation: Model.HasOneRelation,
+      modelClass: Industry,
+      join: {
+        from: 'users.id',
+        to: 'industries.user_id',
+      },
+    },
+  };
 
   async $beforeInsert() {
     if (this.password_hash) {

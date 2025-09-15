@@ -1,31 +1,39 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { setupDatabase } from './config/database.js';
-import { env } from './config/env.js';
+import { Model } from 'objection';
+import knexConfig from '../knexfile';
+import Knex from 'knex';
 
-import authRoutes from './domains/auth/routes.js';
-import userRoutes from './domains/users/routes.js';
+// Import domain routers
+import userRoutes from './domains/users/routes';
+import coatingRoutes from './domains/coatings/routes';
+import insoleModelRoutes from './domains/insole-models/routes';
+import discountCouponRoutes from './domains/discount-coupons/routes';
 
 const app = express();
-const port = env.PORT;
+const port = process.env.PORT || 3000;
 
-// Setup Database
-setupDatabase();
+// Initialize Knex and Objection
+const knex = Knex(knexConfig.development);
+Model.knex(knex);
 
 // Middlewares
 app.use(cors());
 app.use(helmet());
 app.use(express.json());
 
-// Routes
-app.use('/api/auth', authRoutes);
+// API Routes
 app.use('/api/users', userRoutes);
+app.use('/api/coatings', coatingRoutes);
+app.use('/api/insole-models', insoleModelRoutes);
+app.use('/api/discount-coupons', discountCouponRoutes);
 
-app.get('/', (req, res) => {
-  res.send('3DPé Backend is running!');
+// Health check
+app.get('/health', (req, res) => {
+  res.send('OK');
 });
 
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Backend server is running at http://localhost:${port}`);
 });
