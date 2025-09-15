@@ -1,18 +1,24 @@
 export interface User {
   id: number;
   name: string;
-  cpf: string;
-  active: boolean;
-  date_of_birth?: string;
-  role: 'admin' | 'physiotherapist' | 'patient' | 'industry';
   email: string;
+  role: 'admin' | 'physiotherapist' | 'industry' | 'patient';
+  active: boolean;
+  cpf?: string;
+  crefito?: string;
+  cnpj?: string;
   phone?: string;
-  cep?: string;
-  state?: string;
-  city?: string;
-  street?: string;
-  number?: string;
-  complement?: string;
-  created_at: string;
-  updated_at: string;
+  address?: {
+    cep: string;
+    street: string;
+    number: string;
+    complement?: string;
+    neighborhood: string;
+    city: string;
+    state: string;
+  };
 }
+
+export type UserProfile = Omit<User, 'active'>;
+
+export type UserListItem = Pick<User, 'id' | 'name' | 'email' | 'role' | 'active'>;
