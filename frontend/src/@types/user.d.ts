@@ -4,19 +4,19 @@ export interface User {
   email: string;
   role: 'admin' | 'physiotherapist' | 'industry' | 'patient';
   active: boolean;
-  document?: string;
+  document: string;
+  date_of_birth?: string;
   phone?: string;
-  address?: {
-    cep: string;
-    street: string;
-    number: string;
-    complement?: string;
-    neighborhood: string;
-    city: string;
-    state: string;
-  };
+  cep?: string;
+  state?: string;
+  city?: string;
+  street?: string;
+  number?: string;
+  complement?: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export type UserProfile = Omit<User, 'active'>;
+export type UserProfile = Omit<User, 'active' | 'created_at' | 'updated_at'>;
 
 export type UserListItem = Pick<User, 'id' | 'name' | 'email' | 'role' | 'active'>;
