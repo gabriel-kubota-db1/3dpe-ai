@@ -9,7 +9,7 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const user = await User.query().findOne({ email });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
+    if (user && (await bcrypt.compare(password, user.password_hash))) {
       const token = generateToken({ id: user.id, role: user.role });
       res.json({
         token,
@@ -53,11 +53,11 @@ const registerUser = async (userData: Partial<User>, res: Response) => {
 
     const user = await User.query().insert({
       ...userData,
-      password: hashedPassword,
+      password_hash: hashedPassword,
     });
 
     // Omit password from the response
-    const { password, ...newUser } = user;
+    const { password_hash, ...newUser } = user;
 
     console.log(`
       ===============================================
