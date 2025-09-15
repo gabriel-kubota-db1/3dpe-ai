@@ -1,54 +1,52 @@
 import Joi from 'joi';
 
-export const userCreateSchema = Joi.object({
+const baseUserFields = {
   name: Joi.string().min(3).required(),
   document: Joi.string().min(11).max(18).required(),
   email: Joi.string().email().required(),
-  password_hash: Joi.string().min(6).required(),
-  role: Joi.string().valid('admin', 'physiotherapist', 'patient', 'industry').required(),
-  active: Joi.boolean(),
-  date_of_birth: Joi.date().iso(),
-  phone: Joi.string().min(10),
-  cep: Joi.string().length(9),
-  state: Joi.string().length(2),
-  city: Joi.string(),
-  street: Joi.string(),
-  number: Joi.string(),
+  active: Joi.boolean().optional(),
+  date_of_birth: Joi.date().iso().optional(),
+  phone: Joi.string().min(10).optional(),
+  cep: Joi.string().length(9).optional(),
+  state: Joi.string().length(2).optional(),
+  city: Joi.string().optional(),
+  street: Joi.string().optional(),
+  number: Joi.string().optional(),
   complement: Joi.string().allow('').optional(),
+};
+
+export const physiotherapistRegisterSchema = Joi.object({
+  ...baseUserFields,
+  password: Joi.string().min(6).required(),
+  role: Joi.string().valid('physiotherapist').required(),
+});
+
+export const industryRegisterSchema = Joi.object({
+  ...baseUserFields,
+  password: Joi.string().min(6).required(),
+  role: Joi.string().valid('industry').required(),
 });
 
 export const userUpdateSchema = Joi.object({
   name: Joi.string().min(3),
   email: Joi.string().email(),
+  password: Joi.string().min(6).allow('').optional(),
   active: Joi.boolean(),
-  date_of_birth: Joi.date().iso(),
-  phone: Joi.string().min(10),
-  cep: Joi.string().length(9),
-  state: Joi.string().length(2),
-  city: Joi.string(),
-  street: Joi.string(),
-  number: Joi.string(),
+  date_of_birth: Joi.date().iso().optional(),
+  phone: Joi.string().min(10).optional(),
+  cep: Joi.string().length(9).optional(),
+  state: Joi.string().length(2).optional(),
+  city: Joi.string().optional(),
+  street: Joi.string().optional(),
+  number: Joi.string().optional(),
   complement: Joi.string().allow('').optional(),
-  // Physiotherapist specific
-  council_acronym: Joi.string().when('role', { is: 'physiotherapist', then: Joi.required() }),
-  council_number: Joi.string().when('role', { is: 'physiotherapist', then: Joi.required() }),
-  council_uf: Joi.string().length(2).when('role', { is: 'physiotherapist', then: Joi.required() }),
-  loyalty_discount: Joi.number().min(0).when('role', { is: 'physiotherapist', then: Joi.optional() }),
+  // Physiotherapist specific fields (optional on update)
+  council_acronym: Joi.string().optional(),
+  council_number: Joi.string().optional(),
+  council_uf: Joi.string().length(2).optional(),
+  loyalty_discount: Joi.number().min(0).optional(),
 }).min(1);
 
-const baseUserSchema = {
-  name: Joi.string().min(3).required(),
-  document: Joi.string().min(11).max(18).required(),
-  email: Joi.string().email().required(),
-  date_of_birth: Joi.date().iso(),
-  phone: Joi.string().min(10),
-  cep: Joi.string().length(9),
-  state: Joi.string().length(2),
-  city: Joi.string(),
-  street: Joi.string(),
-  number: Joi.string(),
-  complement: Joi.string().allow('').optional(),
-};
 
 export const loginSchema = Joi.object({
   email: Joi.string().email().required(),

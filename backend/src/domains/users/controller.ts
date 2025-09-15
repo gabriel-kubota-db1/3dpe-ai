@@ -9,7 +9,7 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const user = await User.query().findOne({ email });
 
-    if (user && (await bcrypt.compare(password, user.password_hash))) {
+    if (user && (await user.verifyPassword(password))) {
       const token = generateToken({ id: user.id, role: user.role });
       res.json({
         token,
@@ -31,7 +31,7 @@ export const login = async (req: Request, res: Response) => {
 export const getProfile = async (req: Request, res: Response) => {
   try {
     // The user object is attached to the request by the isAuthenticated middleware
-    const user = await User.query().findById((req as any).user.id).select('id', 'name', 'email', 'role', 'document', 'crefito', 'cnpj', 'phone', 'cep', 'street', 'number', 'complement', 'city', 'state', 'date_of_birth', 'active');
+    const user = await User.query().findById((req as any).user.id).select('id', 'name', 'email', 'role', 'cpf', 'crefito', 'cnpj', 'phone', 'address');
     if (user) {
       res.json(user);
     } else {
@@ -44,16 +44,18 @@ export const getProfile = async (req: Request, res: Response) => {
 
 
 // For Admin User Registration
-const registerUser = async (userData: Partial<User>, res: Response) => {
+const registerUser = async (req: Request, res: Response, role: 'physiotherapist' | 'industry') => {
   try {
-    // In a real app, you'd send an email with a password setup link
-    // For this implementation, we'll set a temporary password
-    const temporaryPassword = 'Password123!'; // Should be randomly generated
-    const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+    const { password, ...userData } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ message: 'Password is required for new users.' });
+    }
 
     const user = await User.query().insert({
       ...userData,
-      password_hash: hashedPassword,
+      role,
+      password_hash: password, // Pass plain password to be hashed by the model's hook
     });
 
     // Omit password from the response
@@ -63,8 +65,7 @@ const registerUser = async (userData: Partial<User>, res: Response) => {
       ===============================================
       USER CREATED
       Email: ${user.email}
-      Temporary Password: ${temporaryPassword}
-      Please change this password upon first login.
+      Password was set during creation.
       ===============================================
     `);
 
@@ -78,11 +79,11 @@ const registerUser = async (userData: Partial<User>, res: Response) => {
 };
 
 export const registerPhysiotherapist = (req: Request, res: Response) => {
-  registerUser({ ...req.body, role: 'physiotherapist' }, res);
+  registerUser(req, res, 'physiotherapist');
 };
 
 export const registerIndustry = (req: Request, res: Response) => {
-  registerUser({ ...req.body, role: 'industry' }, res);
+  registerUser(req, res, 'industry');
 };
 
 
@@ -98,7 +99,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const user = await User.query().findById(req.params.id).select('id', 'name', 'email', 'role', 'active', 'document', 'crefito', 'cnpj', 'phone', 'cep', 'street', 'number', 'complement', 'city', 'state', 'date_of_birth', 'active');
+    const user = await User.query().findById(req.params.id).select('id', 'name', 'email', 'role', 'active', 'cpf', 'crefito', 'cnpj', 'phone', 'address');
     if (user) {
       res.json(user);
     } else {
@@ -111,8 +112,12 @@ export const getUserById = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    // Ensure password is not updated through this endpoint
     const { password, ...updateData } = req.body;
+
+    if (password && password.trim() !== '') {
+      // Pass the plain password to be hashed by the model's hook
+      (updateData as any).password_hash = password;
+    }
     
     const user = await User.query().patchAndFetchById(req.params.id, updateData);
     if (user) {
