@@ -40,6 +40,7 @@ const baseUserSchema = {
   name: Joi.string().min(3).required(),
   document: Joi.string().min(11).max(18).required(),
   email: Joi.string().email().required(),
+  date_of_birth: Joi.date().iso(),
   phone: Joi.string().min(10),
   cep: Joi.string().length(9),
   state: Joi.string().length(2),
