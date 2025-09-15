@@ -1,7 +1,7 @@
 import { Input } from 'antd';
 import { useIMask } from 'react-imask';
-import { useEffect } from 'react';
-import type { InputProps } from 'antd';
+import { useEffect, useCallback } from 'react';
+import type { InputProps, InputRef } from 'antd';
 import type { FactoryOpts } from 'imask';
 
 type MaskedAntdInputProps = Omit<InputProps, 'onChange' | 'value'> & {
@@ -22,7 +22,7 @@ export const MaskedAntdInput = ({
   unmask,
   ...props // The rest are Antd Input props
 }: MaskedAntdInputProps) => {
-  const { ref, maskRef } = useIMask({
+  const { ref: imaskRef, maskRef } = useIMask({
     mask,
     unmask,
   }, {
@@ -50,5 +50,13 @@ export const MaskedAntdInput = ({
     }
   }, [value, maskRef]);
 
-  return <Input {...props} name={name} ref={ref as React.Ref<any>} />;
+  // Create a callback ref to connect `useIMask`'s ref with Antd's Input ref
+  const handleRef = useCallback((el: InputRef | null) => {
+    if (el) {
+      // `imask` expects the native DOM input element, which is on `el.input` for Antd's Input
+      imaskRef(el.input);
+    }
+  }, [imaskRef]);
+
+  return <Input {...props} name={name} ref={handleRef} />;
 };
