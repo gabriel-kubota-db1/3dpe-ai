@@ -113,9 +113,6 @@ const UserFormPage = () => {
                     <Field name="cpf">
                       {({ input }) => <AntdForm.Item label="CPF" required><Input {...input} /></AntdForm.Item>}
                     </Field>
-                    <Field name="crefito">
-                      {({ input }) => <AntdForm.Item label="CREFITO" required><Input {...input} /></AntdForm.Item>}
-                    </Field>
                   </>
                 )}
 

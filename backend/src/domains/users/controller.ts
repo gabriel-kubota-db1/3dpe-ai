@@ -31,7 +31,7 @@ export const login = async (req: Request, res: Response) => {
 export const getProfile = async (req: Request, res: Response) => {
   try {
     // The user object is attached to the request by the isAuthenticated middleware
-    const user = await User.query().findById((req as any).user.id).select('id', 'name', 'email', 'role', 'cpf', 'crefito', 'cnpj', 'phone', 'address');
+    const user = await User.query().findById((req as any).user.id).select('id', 'name', 'email', 'role', 'cpf', 'cnpj', 'phone', 'address');
     if (user) {
       res.json(user);
     } else {
@@ -98,7 +98,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const user = await User.query().findById(req.params.id).select('id', 'name', 'email', 'role', 'active', 'cpf', 'crefito', 'cnpj', 'phone', 'address');
+    const user = await User.query().findById(req.params.id).select('id', 'name', 'email', 'role', 'active', 'cpf', 'cnpj', 'phone', 'address');
     if (user) {
       res.json(user);
     } else {

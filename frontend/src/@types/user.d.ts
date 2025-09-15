@@ -5,7 +5,6 @@ export interface User {
   role: 'admin' | 'physiotherapist' | 'industry' | 'patient';
   active: boolean;
   cpf?: string;
-  crefito?: string;
   cnpj?: string;
   phone?: string;
   address?: {
