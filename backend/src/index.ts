@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { Model } from 'objection';
-import knexConfig from '../knexfile';
+import knexConfig from './knexfile';
 import Knex from 'knex';
 
 // Import domain routers
