@@ -17,21 +17,12 @@ const UserFormPage = () => {
   const isEditMode = !!id;
   const queryClient = useQueryClient();
   const { message } = App.useApp();
-  const [selectedRole, setSelectedRole] = useState<'physiotherapist' | 'industry' | null>(null);
 
   const { data: user, isLoading: isLoadingUser } = useQuery<User, Error>({
     queryKey: ['user', id],
     queryFn: () => UserService.getUser(Number(id)),
     enabled: isEditMode,
   });
-
-  useEffect(() => {
-    if (isEditMode && user) {
-      if (user.role === 'physiotherapist' || user.role === 'industry') {
-        setSelectedRole(user.role);
-      }
-    }
-  }, [user, isEditMode]);
 
   const { mutate: updateUser, isPending: isUpdating } = useMutation({
     mutationFn: (values: Partial<User>) => UserService.updateUser(Number(id), values),
@@ -98,7 +89,7 @@ const UserFormPage = () => {
       <Form
         onSubmit={onSubmit}
         initialValues={initialValues}
-        render={({ handleSubmit, values, form }) => {
+        render={({ handleSubmit, form }) => {
           const { fetchAddressByCep, isLoading: isCepLoading } = useCep(form);
           return (
             <form onSubmit={handleSubmit}>
@@ -106,7 +97,7 @@ const UserFormPage = () => {
                 <AntdForm.Item label="User Role" required>
                   <Field name="role">
                     {({ input }) => (
-                      <Select {...input} onChange={(value) => { input.onChange(value); setSelectedRole(value); }}>
+                      <Select {...input} onChange={(value) => { input.onChange(value); }}>
                         <Option value="physiotherapist">Physiotherapist</Option>
                         <Option value="industry">Industry</Option>
                       </Select>

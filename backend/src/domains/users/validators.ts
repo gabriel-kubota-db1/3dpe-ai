@@ -7,7 +7,7 @@ const baseUserFields = {
   active: Joi.boolean().optional(),
   date_of_birth: Joi.date().iso().optional(),
   phone: Joi.string().min(10).optional(),
-  cep: Joi.string().length(9).optional(),
+  cep: Joi.string().length(8).optional(),
   state: Joi.string().length(2).optional(),
   city: Joi.string().optional(),
   street: Joi.string().optional(),
@@ -17,24 +17,24 @@ const baseUserFields = {
 
 export const physiotherapistRegisterSchema = Joi.object({
   ...baseUserFields,
-  password_hash: Joi.string().min(6).required(),
+  password: Joi.string().min(6).required(),
   role: Joi.string().valid('physiotherapist').required(),
 });
 
 export const industryRegisterSchema = Joi.object({
   ...baseUserFields,
-  password_hash: Joi.string().min(6).required(),
+  password: Joi.string().min(6).required(),
   role: Joi.string().valid('industry').required(),
 });
 
 export const userUpdateSchema = Joi.object({
   name: Joi.string().min(3),
   email: Joi.string().email(),
-  password_hash: Joi.string().min(6).allow('').optional(),
+  password: Joi.string().min(6).allow('').optional(),
   active: Joi.boolean(),
   date_of_birth: Joi.date().iso().optional(),
   phone: Joi.string().min(10).optional(),
-  cep: Joi.string().length(9).optional(),
+  cep: Joi.string().length(8).optional(),
   state: Joi.string().length(2).optional(),
   city: Joi.string().optional(),
   street: Joi.string().optional(),
