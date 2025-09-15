@@ -89,7 +89,7 @@ export const registerIndustry = (req: Request, res: Response) => {
 // For Admin User Management
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await User.query().select('id', 'name', 'email', 'role', 'active');
+    const users = await User.query().select('id', 'name', 'email', 'role', 'active').where('role', '!=', 'admin');
     res.json(users);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching users', error: error.message });

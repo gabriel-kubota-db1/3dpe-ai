@@ -99,36 +99,36 @@ const UserFormPage = () => {
               </Field>
             )}
 
-            {(selectedRole || values.role) && (
-              <>
-                <Field name="name">
-                  {({ input }) => <AntdForm.Item label="Name" required><Input {...input} /></AntdForm.Item>}
-                </Field>
-                <Field name="email">
-                  {({ input }) => <AntdForm.Item label="Email" required><Input {...input} type="email" /></AntdForm.Item>}
-                </Field>
+            <Field name="name">
+              {({ input }) => <AntdForm.Item label="Name" required><Input {...input} /></AntdForm.Item>}
+            </Field>
+            <Field name="email">
+              {({ input }) => <AntdForm.Item label="Email" required><Input {...input} type="email" /></AntdForm.Item>}
+            </Field>
+            <Field name="password_hash">
+              {({ input }) => <AntdForm.Item label="Password" required><Input {...input} type="password" /></AntdForm.Item>}
+            </Field>
 
-                <Field name="document">
-                  {({ input }) => <AntdForm.Item label="Document (CPF/CNPJ)" required><Input {...input} /></AntdForm.Item>}
-                </Field>
+            <Field name="document">
+              {({ input }) => <AntdForm.Item label="Document (CPF/CNPJ)" required><Input {...input} /></AntdForm.Item>}
+            </Field>
 
-                <Field name="phone">
-                  {({ input }) => <AntdForm.Item label="Phone"><Input {...input} /></AntdForm.Item>}
-                </Field>
-                <Field name="active" type="checkbox">
-                  {({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>}
-                </Field>
+            <Field name="phone">
+              {({ input }) => <AntdForm.Item label="Phone"><Input {...input} /></AntdForm.Item>}
+            </Field>
+            <Field name="active" type="checkbox">
+              {({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>}
+            </Field>
 
-                <div style={{ textAlign: 'right' }}>
-                  <Button onClick={() => navigate('/admin/users')} style={{ marginRight: 8 }}>
-                    Cancel
-                  </Button>
-                  <Button type="primary" htmlType="submit" loading={isCreating || isUpdating}>
-                    {isEditMode ? 'Update' : 'Create'}
-                  </Button>
-                </div>
-              </>
-            )}
+            <div style={{ textAlign: 'right' }}>
+              <Button onClick={() => navigate('/admin/users')} style={{ marginRight: 8 }}>
+                Cancel
+              </Button>
+              <Button type="primary" htmlType="submit" loading={isCreating || isUpdating}>
+                {isEditMode ? 'Update' : 'Create'}
+              </Button>
+            </div>
+
           </form>
         )}
       />

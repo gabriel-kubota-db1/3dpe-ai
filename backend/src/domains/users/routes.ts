@@ -4,8 +4,6 @@ import { validateRequest } from '../../middlewares/validateRequest';
 import {
   userCreateSchema,
   userUpdateSchema,
-  physiotherapistRegisterSchema,
-  industryRegisterSchema,
   loginSchema,
 } from './validators';
 import { isAuthenticated } from '../../middlewares/isAuthenticated';
@@ -24,14 +22,14 @@ router.post(
   '/register/physiotherapist',
   isAuthenticated,
   isAdmin,
-  validateRequest({ body: physiotherapistRegisterSchema }),
+  validateRequest({ body: userCreateSchema }),
   controller.registerPhysiotherapist
 );
 router.post(
   '/register/industry',
   isAuthenticated,
   isAdmin,
-  validateRequest({ body: industryRegisterSchema }),
+  validateRequest({ body: userCreateSchema }),
   controller.registerIndustry
 );
 
