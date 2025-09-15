@@ -2,9 +2,10 @@ import { Router } from 'express';
 import * as controller from './controller';
 import { validateRequest } from '../../middlewares/validateRequest';
 import {
-  userCreateSchema,
   userUpdateSchema,
   loginSchema,
+  physiotherapistRegisterSchema,
+  industryRegisterSchema,
 } from './validators';
 import { isAuthenticated } from '../../middlewares/isAuthenticated';
 import { isAdmin } from '../../middlewares/isAdmin';
@@ -22,14 +23,14 @@ router.post(
   '/register/physiotherapist',
   isAuthenticated,
   isAdmin,
-  validateRequest({ body: userCreateSchema }),
+  validateRequest({ body: physiotherapistRegisterSchema }),
   controller.registerPhysiotherapist
 );
 router.post(
   '/register/industry',
   isAuthenticated,
   isAdmin,
-  validateRequest({ body: userCreateSchema }),
+  validateRequest({ body: industryRegisterSchema }),
   controller.registerIndustry
 );
 

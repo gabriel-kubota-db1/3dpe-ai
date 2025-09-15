@@ -17,20 +17,20 @@ const baseUserFields = {
 
 export const physiotherapistRegisterSchema = Joi.object({
   ...baseUserFields,
-  password: Joi.string().min(6).required(),
+  password_hash: Joi.string().min(6).required(),
   role: Joi.string().valid('physiotherapist').required(),
 });
 
 export const industryRegisterSchema = Joi.object({
   ...baseUserFields,
-  password: Joi.string().min(6).required(),
+  password_hash: Joi.string().min(6).required(),
   role: Joi.string().valid('industry').required(),
 });
 
 export const userUpdateSchema = Joi.object({
   name: Joi.string().min(3),
   email: Joi.string().email(),
-  password: Joi.string().min(6).allow('').optional(),
+  password_hash: Joi.string().min(6).allow('').optional(),
   active: Joi.boolean(),
   date_of_birth: Joi.date().iso().optional(),
   phone: Joi.string().min(10).optional(),
