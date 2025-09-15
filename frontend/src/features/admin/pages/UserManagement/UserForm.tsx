@@ -88,8 +88,8 @@ const UserFormPage = () => {
     return <Spin tip="Loading user data..." />;
   }
 
-  const initialValues = isEditMode && user 
-    ? { ...user, date_of_birth: user.date_of_birth ? dayjs(user.date_of_birth) : undefined } 
+  const initialValues = isEditMode && user
+    ? { ...user, date_of_birth: user.date_of_birth ? dayjs(user.date_of_birth) : undefined }
     : { active: true, role: null };
 
   return (
@@ -114,162 +114,157 @@ const UserFormPage = () => {
                   </Field>
                 </AntdForm.Item>
               )}
-
-              {(selectedRole || values.role || isEditMode) && (
-                <>
-                  <Title level={4} style={{ marginTop: 24 }}>Personal Information</Title>
-                  <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                      <Field name="name" >
-                        {({ input, meta }) => (
-                          <AntdForm.Item label="Name" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
-                            <Input {...input} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                      <Field name="email">
-                        {({ input, meta }) => (
-                          <AntdForm.Item label="Email" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
-                            <Input {...input} type="email" />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                  </Row>
-
-                  <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                      <Field name="document">
-                        {({ input, meta }) => (
-                          <AntdForm.Item label="Document (CPF/CNPJ)" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
-                            <Input {...input} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                      <Field name="password">
-                        {({ input, meta }) => (
-                          <AntdForm.Item
-                            label="Password"
-                            required={!isEditMode}
-                            validateStatus={meta.touched && meta.error ? 'error' : ''}
-                            help={isEditMode ? "Leave blank to keep current password" : (meta.touched && meta.error)}
-                          >
-                            <Input.Password {...input} placeholder={isEditMode ? "Enter new password" : "Required"} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                  </Row>
-
-                  <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                      <Field name="date_of_birth">
-                        {({ input }) => (
-                          <AntdForm.Item label="Date of Birth">
-                            <DatePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                      <Field name="phone">
-                        {({ input }) => (
-                          <AntdForm.Item label="Phone">
-                            <Input {...input} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                  </Row>
-
-                  <Divider />
-
-                  <Title level={4}>Address</Title>
-                  <Row gutter={16}>
-                    <Col xs={24} sm={8}>
-                      <Field name="cep">
-                        {({ input }) => (
-                          <AntdForm.Item label="CEP">
-                            <Input 
-                              {...input} 
-                              onBlur={() => fetchAddressByCep(input.value)}
-                              suffix={isCepLoading ? <Spin size="small" /> : null}
-                            />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                    <Col xs={24} sm={16}>
-                      <Field name="street">
-                        {({ input }) => (
-                          <AntdForm.Item label="Street">
-                            <Input {...input} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                  </Row>
-                  <Row gutter={16}>
-                    <Col xs={24} sm={8}>
-                      <Field name="number">
-                        {({ input }) => (
-                          <AntdForm.Item label="Number">
-                            <Input {...input} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                    <Col xs={24} sm={16}>
-                      <Field name="complement">
-                        {({ input }) => (
-                          <AntdForm.Item label="Complement">
-                            <Input {...input} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                  </Row>
-                  <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                      <Field name="city">
-                        {({ input }) => (
-                          <AntdForm.Item label="City">
-                            <Input {...input} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                      <Field name="state">
-                        {({ input }) => (
-                          <AntdForm.Item label="State">
-                            <Input {...input} maxLength={2} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                  </Row>
-
-                  <Divider />
-
-                  <Field name="active" type="checkbox">
-                    {({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>}
+              <Title level={4} style={{ marginTop: 24 }}>Personal Information</Title>
+              <Row gutter={16}>
+                <Col xs={24} sm={12}>
+                  <Field name="name" >
+                    {({ input, meta }) => (
+                      <AntdForm.Item label="Name" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
+                        <Input {...input} />
+                      </AntdForm.Item>
+                    )}
                   </Field>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <Field name="email">
+                    {({ input, meta }) => (
+                      <AntdForm.Item label="Email" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
+                        <Input {...input} type="email" />
+                      </AntdForm.Item>
+                    )}
+                  </Field>
+                </Col>
+              </Row>
 
-                  <div style={{ textAlign: 'right', marginTop: 24 }}>
-                    <Button onClick={() => navigate('/admin/users')} style={{ marginRight: 8 }}>
-                      Cancel
-                    </Button>
-                    <Button type="primary" htmlType="submit" loading={isCreating || isUpdating}>
-                      {isEditMode ? 'Update' : 'Create'}
-                    </Button>
-                  </div>
-                </>
-              )}
+              <Row gutter={16}>
+                <Col xs={24} sm={12}>
+                  <Field name="document">
+                    {({ input, meta }) => (
+                      <AntdForm.Item label="Document (CPF/CNPJ)" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
+                        <Input {...input} />
+                      </AntdForm.Item>
+                    )}
+                  </Field>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <Field name="password">
+                    {({ input, meta }) => (
+                      <AntdForm.Item
+                        label="Password"
+                        required={!isEditMode}
+                        validateStatus={meta.touched && meta.error ? 'error' : ''}
+                        help={isEditMode ? "Leave blank to keep current password" : (meta.touched && meta.error)}
+                      >
+                        <Input.Password {...input} placeholder={isEditMode ? "Enter new password" : "Required"} />
+                      </AntdForm.Item>
+                    )}
+                  </Field>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col xs={24} sm={12}>
+                  <Field name="date_of_birth">
+                    {({ input }) => (
+                      <AntdForm.Item label="Date of Birth">
+                        <DatePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" />
+                      </AntdForm.Item>
+                    )}
+                  </Field>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <Field name="phone">
+                    {({ input }) => (
+                      <AntdForm.Item label="Phone">
+                        <Input {...input} />
+                      </AntdForm.Item>
+                    )}
+                  </Field>
+                </Col>
+              </Row>
+
+              <Divider />
+
+              <Title level={4}>Address</Title>
+              <Row gutter={16}>
+                <Col xs={24} sm={8}>
+                  <Field name="cep">
+                    {({ input }) => (
+                      <AntdForm.Item label="CEP">
+                        <Input
+                          {...input}
+                          onBlur={() => fetchAddressByCep(input.value)}
+                          suffix={isCepLoading ? <Spin size="small" /> : null}
+                        />
+                      </AntdForm.Item>
+                    )}
+                  </Field>
+                </Col>
+                <Col xs={24} sm={16}>
+                  <Field name="street">
+                    {({ input }) => (
+                      <AntdForm.Item label="Street">
+                        <Input {...input} />
+                      </AntdForm.Item>
+                    )}
+                  </Field>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col xs={24} sm={8}>
+                  <Field name="number">
+                    {({ input }) => (
+                      <AntdForm.Item label="Number">
+                        <Input {...input} />
+                      </AntdForm.Item>
+                    )}
+                  </Field>
+                </Col>
+                <Col xs={24} sm={16}>
+                  <Field name="complement">
+                    {({ input }) => (
+                      <AntdForm.Item label="Complement">
+                        <Input {...input} />
+                      </AntdForm.Item>
+                    )}
+                  </Field>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col xs={24} sm={12}>
+                  <Field name="city">
+                    {({ input }) => (
+                      <AntdForm.Item label="City">
+                        <Input {...input} />
+                      </AntdForm.Item>
+                    )}
+                  </Field>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <Field name="state">
+                    {({ input }) => (
+                      <AntdForm.Item label="State">
+                        <Input {...input} maxLength={2} />
+                      </AntdForm.Item>
+                    )}
+                  </Field>
+                </Col>
+              </Row>
+
+              <Divider />
+
+              <Field name="active" type="checkbox">
+                {({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>}
+              </Field>
+
+              <div style={{ textAlign: 'right', marginTop: 24 }}>
+                <Button onClick={() => navigate('/admin/users')} style={{ marginRight: 8 }}>
+                  Cancel
+                </Button>
+                <Button type="primary" htmlType="submit" loading={isCreating || isUpdating}>
+                  {isEditMode ? 'Update' : 'Create'}
+                </Button>
+              </div>
             </form>
           )
         }}
