@@ -6,10 +6,10 @@ import type { FactoryOpts } from 'imask';
 
 type MaskedAntdInputProps = Omit<InputProps, 'onChange' | 'value'> & {
   mask: FactoryOpts['mask'];
-  unmask?: boolean; // if true, onAccept returns unmasked value
+  unmask?: FactoryOpts['unmask'];
   onAccept?: (value: any, mask: any) => void;
   value?: string;
-  onChange?: (event: any) => void;
+  onChange?: (event: any) => void; // For react-final-form
   name?: string;
 };
 
@@ -18,25 +18,35 @@ export const MaskedAntdInput = ({
   onAccept,
   value,
   name,
-  ...props
+  mask,
+  unmask,
+  ...props // The rest are Antd Input props
 }: MaskedAntdInputProps) => {
-  const { ref, maskRef } = useIMask(props, {
-    onAccept: (acceptedValue, mask) => {
+  const { ref, maskRef } = useIMask({
+    mask,
+    unmask,
+  }, {
+    onAccept: (acceptedValue, maskInstance) => {
+      // For react-final-form, we call onChange with the raw value
       if (onChange) {
-        // react-final-form's Field expects an event-like object or the raw value.
-        // Passing the raw value is simpler.
         onChange(acceptedValue);
       }
+      // For any other side-effects
       if (onAccept) {
-        onAccept(acceptedValue, mask);
+        onAccept(acceptedValue, maskInstance);
       }
     },
   });
 
   // Sync the external value (from final-form) with the mask's internal value
   useEffect(() => {
-    if (maskRef.current && value !== undefined && value !== null) {
-      maskRef.current.value = String(value);
+    if (maskRef.current) {
+      if (value !== undefined && value !== null) {
+        maskRef.current.value = String(value);
+      } else {
+        // Handle clearing the input
+        maskRef.current.value = '';
+      }
     }
   }, [value, maskRef]);
 
