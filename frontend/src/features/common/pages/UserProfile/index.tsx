@@ -134,7 +134,7 @@ const UserProfilePage = () => {
                           </AntdForm.Item>
                         )}
                       </Field>
-                    </col>
+                    </Col>
                     <Col span={8}>
                       <Field name="state">
                         {({ input }) => (
