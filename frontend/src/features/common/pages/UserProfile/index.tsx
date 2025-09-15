@@ -91,9 +91,9 @@ const UserProfilePage = () => {
                       </Field>
                     </Col>
                     <Col span={12}>
-                      <Field name="cpf">
+                      <Field name="document">
                         {({ input }) => (
-                          <AntdForm.Item label="CPF">
+                          <AntdForm.Item label="Document">
                             <Input {...input} disabled />
                           </AntdForm.Item>
                         )}
@@ -134,7 +134,7 @@ const UserProfilePage = () => {
                           </AntdForm.Item>
                         )}
                       </Field>
-                    </Col>
+                    </col>
                     <Col span={8}>
                       <Field name="state">
                         {({ input }) => (

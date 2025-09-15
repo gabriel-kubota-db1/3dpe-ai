@@ -6,7 +6,7 @@ import { Industry } from '../industries/model';
 export class User extends Model {
   id!: number;
   name!: string;
-  cpf!: string;
+  document!: string;
   active!: boolean;
   date_of_birth?: string;
   role!: 'admin' | 'physiotherapist' | 'patient' | 'industry';

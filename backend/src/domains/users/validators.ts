@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 export const userCreateSchema = Joi.object({
   name: Joi.string().min(3).required(),
-  cpf: Joi.string().length(14).required(),
+  document: Joi.string().min(11).max(18).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
   role: Joi.string().valid('admin', 'physiotherapist', 'patient', 'industry').required(),
@@ -38,7 +38,7 @@ export const userUpdateSchema = Joi.object({
 
 const baseUserSchema = {
   name: Joi.string().min(3).required(),
-  cpf: Joi.string().length(14).required(),
+  document: Joi.string().min(11).max(18).required(),
   email: Joi.string().email().required(),
   phone: Joi.string().min(10),
   cep: Joi.string().length(9),

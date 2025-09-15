@@ -4,8 +4,7 @@ export interface User {
   email: string;
   role: 'admin' | 'physiotherapist' | 'industry' | 'patient';
   active: boolean;
-  cpf?: string;
-  cnpj?: string;
+  document?: string;
   phone?: string;
   address?: {
     cep: string;

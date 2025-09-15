@@ -4,7 +4,7 @@ export async function up(knex: Knex): Promise<void> {
   return knex.schema.createTable('users', (table) => {
     table.increments('id').primary();
     table.string('name', 255).notNullable();
-    table.string('cpf', 14).notNullable().unique();
+    table.string('document', 20).notNullable().unique();
     table.boolean('active').defaultTo(true);
     table.date('date_of_birth').nullable();
     table.enum('role', ['admin', 'physiotherapist', 'patient', 'industry']).notNullable();

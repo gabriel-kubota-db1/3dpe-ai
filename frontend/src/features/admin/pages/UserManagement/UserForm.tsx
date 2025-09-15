@@ -108,19 +108,9 @@ const UserFormPage = () => {
                   {({ input }) => <AntdForm.Item label="Email" required><Input {...input} type="email" /></AntdForm.Item>}
                 </Field>
 
-                {(selectedRole === 'physiotherapist' || values.role === 'physiotherapist') && (
-                  <>
-                    <Field name="cpf">
-                      {({ input }) => <AntdForm.Item label="CPF" required><Input {...input} /></AntdForm.Item>}
-                    </Field>
-                  </>
-                )}
-
-                {(selectedRole === 'industry' || values.role === 'industry') && (
-                  <Field name="cnpj">
-                    {({ input }) => <AntdForm.Item label="CNPJ" required><Input {...input} /></AntdForm.Item>}
-                  </Field>
-                )}
+                <Field name="document">
+                  {({ input }) => <AntdForm.Item label="Document (CPF/CNPJ)" required><Input {...input} /></AntdForm.Item>}
+                </Field>
 
                 <Field name="phone">
                   {({ input }) => <AntdForm.Item label="Phone"><Input {...input} /></AntdForm.Item>}
