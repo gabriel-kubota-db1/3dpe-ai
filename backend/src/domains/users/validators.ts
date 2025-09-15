@@ -28,10 +28,10 @@ export const industryRegisterSchema = Joi.object({
 });
 
 export const userUpdateSchema = Joi.object({
-  name: Joi.string().min(3),
-  email: Joi.string().email(),
+  name: Joi.string().min(3).optional(),
+  email: Joi.string().email().optional(),
   password: Joi.string().min(6).allow('').optional(),
-  active: Joi.boolean(),
+  active: Joi.boolean().optional(),
   date_of_birth: Joi.date().iso().optional(),
   phone: Joi.string().min(10).optional(),
   cep: Joi.string().length(8).optional(),
@@ -45,7 +45,7 @@ export const userUpdateSchema = Joi.object({
   council_number: Joi.string().optional(),
   council_uf: Joi.string().length(2).optional(),
   loyalty_discount: Joi.number().min(0).optional(),
-}).min(1);
+}).min(1).options({ stripUnknown: true });
 
 
 export const loginSchema = Joi.object({
