@@ -1,5 +1,5 @@
 import { Form, Field } from 'react-final-form';
-import { Input, Button, Typography, Card, Row, Col, App, Spin, DatePicker } from 'antd';
+import { Input, Button, Typography, Card, Row, Col, App, Spin, DatePicker, Form as AntdForm } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/http/axios';
 import { User } from '@/@types/user';
@@ -84,99 +84,99 @@ const UserProfilePage = () => {
                     <Col span={12}>
                       <Field name="name">
                         {({ input }) => (
-                          <Form.Item label="Name">
+                          <AntdForm.Item label="Name">
                             <Input {...input} />
-                          </Form.Item>
+                          </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                     <Col span={12}>
                       <Field name="cpf">
                         {({ input }) => (
-                          <Form.Item label="CPF">
+                          <AntdForm.Item label="CPF">
                             <Input {...input} disabled />
-                          </Form.Item>
+                          </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                     <Col span={12}>
                       <Field name="email">
                         {({ input }) => (
-                          <Form.Item label="Email">
+                          <AntdForm.Item label="Email">
                             <Input {...input} type="email" />
-                          </Form.Item>
+                          </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                     <Col span={12}>
                       <Field name="phone">
                         {({ input }) => (
-                          <Form.Item label="Phone">
+                          <AntdForm.Item label="Phone">
                             <Input {...input} />
-                          </Form.Item>
+                          </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                     <Col span={12}>
                       <Field name="date_of_birth">
                         {({ input }) => (
-                          <Form.Item label="Date of Birth">
+                          <AntdForm.Item label="Date of Birth">
                             <DatePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" />
-                          </Form.Item>
+                          </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                     <Col span={12}>
                       <Field name="cep">
                         {({ input }) => (
-                          <Form.Item label="CEP">
+                          <AntdForm.Item label="CEP">
                             <Input {...input} onBlur={() => handleCepBlur(input.value, form)} />
-                          </Form.Item>
+                          </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                     <Col span={8}>
                       <Field name="state">
                         {({ input }) => (
-                          <Form.Item label="State">
+                          <AntdForm.Item label="State">
                             <Input {...input} />
-                          </Form.Item>
+                          </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                     <Col span={16}>
                       <Field name="city">
                         {({ input }) => (
-                          <Form.Item label="City">
+                          <AntdForm.Item label="City">
                             <Input {...input} />
-                          </Form.Item>
+                          </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                     <Col span={16}>
                       <Field name="street">
                         {({ input }) => (
-                          <Form.Item label="Street">
+                          <AntdForm.Item label="Street">
                             <Input {...input} />
-                          </Form.Item>
+                          </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                     <Col span={8}>
                       <Field name="number">
                         {({ input }) => (
-                          <Form.Item label="Number">
+                          <AntdForm.Item label="Number">
                             <Input {...input} />
-                          </Form.Item>
+                          </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                     <Col span={24}>
                       <Field name="complement">
                         {({ input }) => (
-                          <Form.Item label="Complement">
+                          <AntdForm.Item label="Complement">
                             <Input {...input} />
-                          </Form.Item>
+                          </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
