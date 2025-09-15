@@ -42,27 +42,34 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
 
   if (user?.role === 'admin') {
     menuItems.push(
+      { type: 'divider' },
       {
-        key: '/admin/users',
-        icon: <UserOutlined />,
-        label: <Link to="/admin/users">Users</Link>,
-      },
-      {
-        key: '/admin/coatings',
-        icon: <AppstoreOutlined />,
-        label: <Link to="/admin/coatings">Coatings</Link>,
-      },
-      {
-        key: '/admin/insole-models',
-        icon: <TagOutlined />,
-        label: <Link to="/admin/insole-models">Insole Models</Link>,
-      },
-      {
-        key: '/admin/coupons',
-        icon: <GiftOutlined />,
-        label: <Link to="/admin/coupons">Coupons</Link>,
-      },
-
+        key: 'admin-management',
+        icon: <SettingOutlined />,
+        label: 'Management',
+        children: [
+          {
+            key: '/admin/users',
+            icon: <UserOutlined />,
+            label: <Link to="/admin/users">Users</Link>,
+          },
+          {
+            key: '/admin/coatings',
+            icon: <AppstoreOutlined />,
+            label: <Link to="/admin/coatings">Coatings</Link>,
+          },
+          {
+            key: '/admin/insole-models',
+            icon: <TagOutlined />,
+            label: <Link to="/admin/insole-models">Insole Models</Link>,
+          },
+          {
+            key: '/admin/coupons',
+            icon: <GiftOutlined />,
+            label: <Link to="/admin/coupons">Coupons</Link>,
+          },
+        ],
+      }
     );
   }
 

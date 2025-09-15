@@ -9,7 +9,7 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const user = await User.query().findOne({ email });
 
-    if (user && (await bcrypt.compare(password, user.password_hash))) {
+    if (user && (await bcrypt.compare(password, user.password))) {
       const token = generateToken({ id: user.id, role: user.role });
       res.json({
         token,
@@ -31,7 +31,7 @@ export const login = async (req: Request, res: Response) => {
 export const getProfile = async (req: Request, res: Response) => {
   try {
     // The user object is attached to the request by the isAuthenticated middleware
-    const user = await User.query().findById((req as any).user.id).select('id', 'name', 'email', 'role', 'document', 'phone', 'cep', 'state', 'city', 'street', 'number', 'complement', 'date_of_birth', 'active');
+    const user = await User.query().findById((req as any).user.id).select('id', 'name', 'email', 'role', 'cpf', 'crefito', 'cnpj', 'phone', 'address');
     if (user) {
       res.json(user);
     } else {
@@ -53,11 +53,11 @@ const registerUser = async (userData: Partial<User>, res: Response) => {
 
     const user = await User.query().insert({
       ...userData,
-      password_hash: hashedPassword,
+      password: hashedPassword,
     });
 
     // Omit password from the response
-    const { password_hash, ...newUser } = user;
+    const { password, ...newUser } = user;
 
     console.log(`
       ===============================================
@@ -98,7 +98,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const user = await User.query().findById(req.params.id).select('id', 'name', 'email', 'role', 'active', 'document', 'phone', 'cep', 'state', 'city', 'street', 'number', 'complement', 'date_of_birth', 'active');
+    const user = await User.query().findById(req.params.id).select('id', 'name', 'email', 'role', 'active', 'cpf', 'crefito', 'cnpj', 'phone', 'address');
     if (user) {
       res.json(user);
     } else {

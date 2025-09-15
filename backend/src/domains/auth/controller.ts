@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import { User } from '../users/model.js';
-import { generateToken } from '@/utils/jwt.js';
+import { env } from '../../config/env.js';
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -16,7 +17,9 @@ export const login = async (req: Request, res: Response) => {
       return res.status(403).json({ message: 'User account is inactive' });
     }
 
-    const token = generateToken({ id: user.id, role: user.role });
+    const token = jwt.sign({ id: user.id, role: user.role }, env.JWT_SECRET, {
+      expiresIn: env.JWT_EXPIRES_IN,
+    });
 
     res.json({ token, user });
   } catch (error) {
