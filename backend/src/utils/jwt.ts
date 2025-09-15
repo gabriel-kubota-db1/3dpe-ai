@@ -7,11 +7,11 @@ export interface TokenPayload {
 }
 
 export const generateToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, env.JWT_SECRET, {
+  return jwt.sign(payload, env.JWT_SECRET!, {
     expiresIn: Number(env.JWT_EXPIRES_IN),
   });
 };
 
 export const verifyToken = (token: string): TokenPayload => {
-  return jwt.verify(token, env.JWT_SECRET) as TokenPayload;
+  return jwt.verify(token, env.JWT_SECRET!) as TokenPayload;
 };

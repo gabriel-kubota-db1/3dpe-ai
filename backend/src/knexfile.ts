@@ -1,22 +1,24 @@
 import type { Knex } from 'knex';
-import 'dotenv/config';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: "../.env"});
 
 const config: { [key: string]: Knex.Config } = {
   development: {
     client: 'mysql2',
     connection: {
-      host: process.env.DB_HOST || '127.0.0.1',
-      port: Number(process.env.DB_PORT) || 3306,
-      user: process.env.DB_USER || 'user',
-      password: process.env.DB_PASSWORD || 'password',
-      database: process.env.DB_DATABASE || '3dpe_db',
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT),
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
     },
     migrations: {
-      directory: './database/migrations',
+      directory: '../database/migrations',
       extension: 'ts',
     },
     seeds: {
-      directory: './database/seeds',
+      directory: '../database/seeds',
       extension: 'ts',
     },
   },

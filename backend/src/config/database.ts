@@ -1,10 +1,12 @@
 import Knex from 'knex';
 import { Model } from 'objection';
 import knexConfig from '../knexfile.js';
-import 'dotenv/config';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: "../.env"});
 
 export function setupDatabase() {
-  const env = process.env.NODE_ENV || 'development';
+  const env = process.env.NODE_ENV!;
   const config = knexConfig[env];
   
   if (!config) {

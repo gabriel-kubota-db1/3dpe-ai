@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
 import { User } from '../users/model.js';
-import { env } from '../../config/env.js';
 import { generateToken } from '@/utils/jwt.js';
 
 export const login = async (req: Request, res: Response) => {
