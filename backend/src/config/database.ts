@@ -3,7 +3,7 @@ import { Model } from 'objection';
 import knexConfig from '../knexfile.js';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: "../.env"});
+dotenv.config({ path: ".env"});
 
 export function setupDatabase() {
   const env = process.env.NODE_ENV!;
