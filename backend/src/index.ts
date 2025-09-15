@@ -6,6 +6,7 @@ import knexConfig from '../knexfile';
 import Knex from 'knex';
 
 // Import domain routers
+import authRoutes from './domains/auth/routes';
 import userRoutes from './domains/users/routes';
 import coatingRoutes from './domains/coatings/routes';
 import insoleModelRoutes from './domains/insole-models/routes';
@@ -24,6 +25,7 @@ app.use(helmet());
 app.use(express.json());
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/coatings', coatingRoutes);
 app.use('/api/insole-models', insoleModelRoutes);
