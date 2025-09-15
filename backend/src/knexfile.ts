@@ -1,7 +1,13 @@
 import type { Knex } from 'knex';
-import dotenv from 'dotenv';
+import { config as configDotenv } from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-dotenv.config({ path: "../.env"});
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load .env file from the backend root directory
+configDotenv({ path: join(__dirname, '../.env') });
 
 const config: { [key: string]: Knex.Config } = {
   development: {
