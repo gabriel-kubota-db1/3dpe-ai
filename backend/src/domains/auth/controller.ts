@@ -17,8 +17,8 @@ export const login = async (req: Request, res: Response) => {
       return res.status(403).json({ message: 'User account is inactive' });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, env.JWT_SECRET, {
-      expiresIn: env.JWT_EXPIRES_IN,
+    const token = jwt.sign({ id: user.id, role: user.role }, env.JWT_SECRET!, {
+      expiresIn: Number(env.JWT_EXPIRES_IN),
     });
 
     res.json({ token, user });
