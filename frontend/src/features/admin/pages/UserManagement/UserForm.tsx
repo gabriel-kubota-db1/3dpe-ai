@@ -7,9 +7,29 @@ import * as UserService from '@/http/UserHttpService';
 import { User } from '@/@types/user';
 import dayjs from 'dayjs';
 import { useCep } from '../../hooks/useCep';
+import { MaskedAntdInput } from '@/components/Form/MaskedAntdInput';
 
 const { Title } = Typography;
 const { Option } = Select;
+
+const documentMask = [
+  {
+    mask: '000.000.000-00',
+    maxLength: 11,
+  },
+  {
+    mask: '00.000.000/0000-00',
+  },
+];
+
+const phoneMask = [
+  {
+    mask: '(00) 0000-0000',
+  },
+  {
+    mask: '(00) 00000-0000',
+  },
+];
 
 const UserFormPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -72,7 +92,6 @@ const UserFormPage = () => {
       submissionValues.date_of_birth = values.date_of_birth.format('YYYY-MM-DD');
     }
 
-    // Don't send an empty password string on update
     if (isEditMode && (!submissionValues.password || submissionValues.password.trim() === '')) {
       delete submissionValues.password;
     }
@@ -144,7 +163,13 @@ const UserFormPage = () => {
                       <Field name="document">
                         {({ input, meta }) => (
                           <AntdForm.Item label="Document (CPF/CNPJ)" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
-                            <Input {...input} disabled={isEditMode} />
+                            <MaskedAntdInput
+                              {...input}
+                              mask={documentMask}
+                              unmask={true}
+                              disabled={isEditMode}
+                              placeholder="Enter document"
+                            />
                           </AntdForm.Item>
                         )}
                       </Field>
@@ -166,20 +191,27 @@ const UserFormPage = () => {
                   </Row>
 
                   <Row gutter={16}>
-                    <Col xs={24} sm={12}>
-                      <Field name="date_of_birth">
-                        {({ input }) => (
-                          <AntdForm.Item label="Date of Birth">
-                            <DatePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                    <Col xs={24} sm={12}>
+                    {values.role === 'physiotherapist' && (
+                      <Col xs={24} sm={12}>
+                        <Field name="date_of_birth">
+                          {({ input }) => (
+                            <AntdForm.Item label="Date of Birth">
+                              <DatePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" />
+                            </AntdForm.Item>
+                          )}
+                        </Field>
+                      </Col>
+                    )}
+                    <Col xs={24} sm={values.role === 'physiotherapist' ? 12 : 24}>
                       <Field name="phone">
                         {({ input }) => (
                           <AntdForm.Item label="Phone">
-                            <Input {...input} />
+                            <MaskedAntdInput
+                              {...input}
+                              mask={phoneMask}
+                              unmask={true}
+                              placeholder="(XX) XXXXX-XXXX"
+                            />
                           </AntdForm.Item>
                         )}
                       </Field>
