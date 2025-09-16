@@ -10,15 +10,15 @@ const booleanSchema = Joi.alternatives().try(
 export const couponSchema = Joi.object({
   code: Joi.string().uppercase().alphanum().min(3).required(),
   value: Joi.number().min(0).max(100).required(),
-  start_date: Joi.date().iso().required(),
-  finish_date: Joi.date().iso().required().greater(Joi.ref('start_date')),
+  start_date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).required(),
+  finish_date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).required(),
   active: booleanSchema.required(),
 });
 
 export const couponUpdateSchema = Joi.object({
   code: Joi.string().uppercase().alphanum().min(3).optional(),
   value: Joi.number().min(0).max(100).optional(),
-  start_date: Joi.date().iso().optional(),
-  finish_date: Joi.date().iso().optional(),
+  start_date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  finish_date: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).optional(),
   active: booleanSchema.optional(),
 }).min(1).unknown(true);

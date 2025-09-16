@@ -1,10 +1,13 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, Field } from 'react-final-form';
-import { Input, Button, App, Form as AntdForm, Typography, Card, Spin, Row, Col, DatePicker } from 'antd';
+import { Input, Button, App, Form as AntdForm, Typography, Card, Spin, Row, Col } from 'antd';
 import * as PatientService from '@/http/PatientHttpService';
 import { Patient } from '@/@types/patient';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 const { Title } = Typography;
 
@@ -40,7 +43,7 @@ const PatientFormPage = () => {
   const onSubmit = (values: any) => {
     const submissionValues = { ...values };
     if (values.date_of_birth && dayjs.isDayjs(values.date_of_birth)) {
-      submissionValues.date_of_birth = values.date_of_birth.startOf('day').format('YYYY-MM-DD');
+      submissionValues.date_of_birth = values.date_of_birth.format('YYYY-MM-DD');
     }
     mutation.mutate(submissionValues);
   };

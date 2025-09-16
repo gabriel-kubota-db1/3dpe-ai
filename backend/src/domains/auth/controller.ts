@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 import { User } from '../users/model.js';
-import { env } from '../../config/env.js';
 import { sendPasswordResetEmail } from '../../services/EmailService.js';
 import { RefreshTokenService } from '../../services/RefreshTokenService.js';
-import { generateToken, verifyToken } from '../../utils/jwt.js';
+import { generateToken } from '../../utils/jwt.js';
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -214,15 +213,18 @@ export const resetPassword = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Invalid or expired reset token' });
     }
 
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // Update password and clear reset token
-    await User.query().patchAndFetchById(user.id, {
-      password_hash: password, // This will be hashed by the model's beforeUpdate hook
+    await User.query().patchAndFetchById(Number(user.id), {
+      password_hash: hashedPassword,
       reset_password_token: undefined,
       reset_password_expires: undefined,
     });
 
     // Revoke all existing refresh tokens for security
-    await RefreshTokenService.revokeAllUserTokens(user.id);
+    await RefreshTokenService.revokeAllUserTokens(Number(user.id));
 
     res.json({ message: 'Password has been reset successfully. Please log in with your new password.' });
   } catch (error: any) {

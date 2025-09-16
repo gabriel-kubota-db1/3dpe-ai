@@ -6,7 +6,7 @@ export const patientSchema = Joi.object({
   phone: Joi.string().allow('').optional(),
   cpf: Joi.string().allow('').optional(),
   rg: Joi.string().allow('').optional(),
-  date_of_birth: Joi.date().iso().allow(null).optional(),
+  date_of_birth: Joi.string().pattern(/^\d{4}-\d{2}-\d{2}$/).allow(null).optional(),
   nationality: Joi.string().allow('').optional(),
   naturality: Joi.string().allow('').optional(),
   responsible_name: Joi.string().allow('').optional(),

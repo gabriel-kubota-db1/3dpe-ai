@@ -6,9 +6,12 @@ import { Input, Button, Switch, Select, App, Form as AntdForm, Typography, Card,
 import * as UserService from '@/http/UserHttpService';
 import { User } from '@/@types/user';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { useCep } from '../../hooks/useCep';
 import { MaskedAntdInput } from '@/components/Form/MaskedAntdInput';
 import { useAuth } from '@/context/AuthContext';
+
+dayjs.extend(utc);
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -124,7 +127,7 @@ const UserFormPage = () => {
   const onSubmit = (values: any) => {
     const submissionValues = { ...values };
     if (values.date_of_birth && dayjs.isDayjs(values.date_of_birth)) {
-      submissionValues.date_of_birth = values.date_of_birth.startOf('day').format('YYYY-MM-DD');
+      submissionValues.date_of_birth = values.date_of_birth.format('YYYY-MM-DD');
     }
 
     if (isEditMode && (!submissionValues.password || submissionValues.password.trim() === '')) {

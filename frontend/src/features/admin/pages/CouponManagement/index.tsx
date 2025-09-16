@@ -5,9 +5,6 @@ import { Form, Field } from 'react-final-form';
 import { Coupon } from '@/@types/coupon';
 import * as CouponService from '@/http/CouponHttpService';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-
-dayjs.extend(utc);
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -25,10 +22,6 @@ const CouponManagementPage = () => {
 
   const { mutate: createOrUpdateCoupon, isPending: isSaving } = useMutation({
     mutationFn: (values: Omit<Coupon, 'id'> | Coupon) => {
-      console.log('Mutation function received:', values);
-      console.log('start_date type:', typeof values.start_date, values.start_date);
-      console.log('finish_date type:', typeof values.finish_date, values.finish_date);
-      
       if ('id' in values) {
         return CouponService.updateCoupon(values.id, values);
       }
@@ -68,15 +61,15 @@ const CouponManagementPage = () => {
   const onSubmit = (values: any) => {
     const { date_range, ...rest } = values;
     
-    // For RangePicker, ensure we get the correct date regardless of time/timezone
-    // Send as ISO strings at start of day to match backend Joi validation
-    const startDate = dayjs(date_range[0]).startOf('day');
-    const endDate = dayjs(date_range[1]).startOf('day');
+    // For RangePicker, ensure we get the correct date in local timezone
+    // Format as YYYY-MM-DD to preserve the selected date regardless of timezone
+    const startDate = dayjs(date_range[0]).format('YYYY-MM-DD');
+    const endDate = dayjs(date_range[1]).format('YYYY-MM-DD');
     
     const payload = {
       ...rest,
-      start_date: startDate.toISOString(),
-      finish_date: endDate.toISOString(),
+      start_date: startDate,
+      finish_date: endDate,
     };
     
     createOrUpdateCoupon(editingCoupon ? { ...payload, id: editingCoupon.id } : payload);
@@ -110,7 +103,7 @@ const CouponManagementPage = () => {
 
   const initialFormValues = editingCoupon
     ? { ...editingCoupon, date_range: [dayjs(editingCoupon.start_date), dayjs(editingCoupon.finish_date)] }
-    : { code: '', value: null, date_range: null, active: true };
+    : { code: '', value: undefined, date_range: [], active: true };
 
   return (
     <div>

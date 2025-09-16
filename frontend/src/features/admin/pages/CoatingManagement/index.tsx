@@ -104,7 +104,7 @@ const CoatingManagementPage = () => {
       >
         <Form
           onSubmit={onSubmit}
-          initialValues={editingCoating || { description: '', active: true, coating_type: 'EVA' }}
+          initialValues={editingCoating || undefined}
           render={({ handleSubmit }) => (
             <form onSubmit={handleSubmit}>
               <Field name="description" render={({ input }) => <AntdForm.Item label="Description" required><Input {...input} /></AntdForm.Item>} />

@@ -127,7 +127,7 @@ const InsoleModelManagementPage = () => {
       >
         <Form
           onSubmit={onSubmit}
-          initialValues={editingModel || { active: true, type: 'INSOLE' }}
+          initialValues={editingModel || undefined}
           render={({ handleSubmit, form }) => (
             <form onSubmit={handleSubmit}>
               <Row gutter={16}>
@@ -135,7 +135,17 @@ const InsoleModelManagementPage = () => {
                   <Field name="description" render={({ input }) => <AntdForm.Item label="Description" required><Input {...input} /></AntdForm.Item>} />
                 </Col>
                 <Col span={12}>
-                  <Field name="type" render={({ input }) => <AntdForm.Item label="Product Type" required><Select {...input}><Option value="INSOLE">INSOLE</Option><Option value="SLIPPER">SLIPPER</Option><Option value="ELEMENT">ELEMENT</Option></Select></AntdForm.Item>} />
+                  <Field name="type">
+                    {() => (
+                      <AntdForm.Item label="Product Type" required>
+                        <Select placeholder="Select product type">
+                          <Option value="INSOLE">INSOLE</Option>
+                          <Option value="SLIPPER">SLIPPER</Option>
+                          <Option value="ELEMENT">ELEMENT</Option>
+                        </Select>
+                      </AntdForm.Item>
+                    )}
+                  </Field>
                 </Col>
                 <Col span={12}>
                   <AntdForm.Item label="Coating Type" required>

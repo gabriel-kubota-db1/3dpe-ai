@@ -57,15 +57,6 @@ export class User extends Model {
     }
   }
 
-  async $beforeUpdate() {
-    if (this.password_hash) {
-      const userInDb = await User.query().findById(this.id);
-      if (userInDb && userInDb.password_hash !== this.password_hash) {
-        this.password_hash = await bcrypt.hash(this.password_hash, 10);
-      }
-    }
-  }
-
   verifyPassword(password: string): Promise<boolean> {
     return bcrypt.compare(password, this.password_hash);
   }

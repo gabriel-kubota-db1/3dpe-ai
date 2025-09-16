@@ -6,8 +6,11 @@ import api from '@/http/axios';
 import { User } from '@/@types/user';
 import { useAuth } from '@/context/AuthContext';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import axios from 'axios';
 import { MaskedAntdInput } from '@/components/Form/MaskedAntdInput';
+
+dayjs.extend(utc);
 
 const { Title, Paragraph } = Typography;
 
@@ -73,7 +76,7 @@ const UserProfilePage = () => {
   const onSubmit = (values: any) => {
     const formattedValues = {
       ...values,
-      date_of_birth: values.date_of_birth ? dayjs(values.date_of_birth).startOf('day').format('YYYY-MM-DD') : null,
+      date_of_birth: values.date_of_birth ? dayjs(values.date_of_birth).format('YYYY-MM-DD') : null,
     };
     mutation.mutate(formattedValues);
   };

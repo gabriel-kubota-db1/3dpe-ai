@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
 import { Spin } from 'antd';
-import { setToken, getToken, clearAllTokens, setRefreshToken } from '@/storage/token';
+import { setToken, getToken, clearAllTokens, setRefreshToken, getRefreshToken } from '@/storage/token';
 import { User } from '@/@types/user';
 import api from '@/http/axios';
 
@@ -24,12 +24,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const initializationRef = useRef<boolean>(false);
 
-  const logout = useCallback(() => {
-    clearAllTokens();
-    setUser(null);
-    setIsAuthenticated(false);
-    // Use window.location.replace to prevent back button issues
-    window.location.replace('/login');
+  const logout = useCallback(async () => {
+    try {
+      // Get refresh token to send to backend
+      const refreshToken = getRefreshToken();
+      
+      // Call backend logout endpoint to revoke refresh token
+      if (refreshToken) {
+        try {
+          await api.post('/auth/logout', { refreshToken });
+        } catch (error) {
+          // If logout fails, still proceed with local cleanup
+          console.error('Failed to logout on backend:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      // Always clear local tokens and state
+      clearAllTokens();
+      setUser(null);
+      setIsAuthenticated(false);
+      // Use window.location.replace to prevent back button issues
+      window.location.replace('/login');
+    }
   }, []);
 
   const refreshUser = useCallback(async () => {
