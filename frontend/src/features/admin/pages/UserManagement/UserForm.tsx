@@ -19,7 +19,7 @@ const documentMask = [
     maxLength: 11,
   },
   {
-    mask: '00.000.000/0000-00',
+    mask: '00.000.000/0000-00',  
   },
 ];
 
@@ -34,6 +34,36 @@ const phoneMask = [
 
 const cepMask = '00000-000';
 
+// Form validation
+const validate = (values: any) => {
+  const errors: any = {};
+
+  if (!values.name?.trim()) {
+    errors.name = 'Name is required';
+  }
+
+  if (!values.email?.trim()) {
+    errors.email = 'Email is required';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+    errors.email = 'Invalid email format';
+  }
+
+  if (!values.document?.trim()) {
+    errors.document = 'Document is required';
+  }
+
+  if (!values.role) {
+    errors.role = 'Role is required';
+  }
+
+  // Password validation for new users
+  if (!values.id && !values.password?.trim()) {
+    errors.password = 'Password is required for new users';
+  }
+
+  return errors;
+};
+
 const UserFormPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -47,13 +77,13 @@ const UserFormPage = () => {
     queryKey: ['user', id],
     queryFn: () => UserService.getUser(Number(id)),
     enabled: isEditMode,
+    staleTime: 0,
   });
 
+  // Set role when user data is loaded
   useEffect(() => {
-    if (isEditMode && user) {
-      if (user.role === 'physiotherapist' || user.role === 'industry') {
-        setSelectedRole(user.role);
-      }
+    if (isEditMode && user && (user.role === 'physiotherapist' || user.role === 'industry')) {
+      setSelectedRole(user.role);
     }
   }, [user, isEditMode]);
 
@@ -107,13 +137,51 @@ const UserFormPage = () => {
     }
   };
 
-  if (isLoadingUser) {
-    return <Spin tip="Loading user data..." />;
+  // Loading state
+  if (isEditMode && isLoadingUser) {
+    return (
+      <Card>
+        <div style={{ textAlign: 'center', padding: '50px 0' }}>
+          <Spin size="large" tip="Loading user data..." />
+        </div>
+      </Card>
+    );
   }
 
-  const initialValues = isEditMode && user
-    ? { ...user, active: !!user.active, date_of_birth: user.date_of_birth ? dayjs(user.date_of_birth) : undefined }
-    : { active: true, role: null };
+  // Prepare initial values
+  const getInitialValues = () => {
+    if (isEditMode && user) {
+      return {
+        ...user,
+        active: !!user.active,
+        date_of_birth: user.date_of_birth ? dayjs(user.date_of_birth) : undefined,
+        // Ensure string values for masked inputs
+        document: user.document || '',
+        phone: user.phone || '',
+        cep: user.cep || '',
+        state: user.state || '',
+        city: user.city || '',
+        street: user.street || '',
+        number: user.number || '',
+        complement: user.complement || '',
+      };
+    }
+    
+    return {
+      active: true,
+      role: null,
+      document: '',
+      phone: '',
+      cep: '',
+      state: '',
+      city: '',
+      street: '',
+      number: '',
+      complement: '',
+    };
+  };
+
+  const initialValues = getInitialValues();
 
   return (
     <Card>
@@ -121,15 +189,24 @@ const UserFormPage = () => {
       <Form
         onSubmit={onSubmit}
         initialValues={initialValues}
+        validate={validate}
         render={({ handleSubmit, values, form }) => {
           const { fetchAddressByCep, isLoading: isCepLoading } = useCep(form);
+          
           return (
             <form onSubmit={handleSubmit}>
               {!isEditMode && (
                 <AntdForm.Item label="User Role" required>
                   <Field name="role">
                     {({ input }) => (
-                      <Select {...input} onChange={(value) => { input.onChange(value); setSelectedRole(value); }}>
+                      <Select 
+                        {...input} 
+                        onChange={(value) => { 
+                          input.onChange(value); 
+                          setSelectedRole(value); 
+                        }}
+                        placeholder="Select user role"
+                      >
                         <Option value="physiotherapist">Physiotherapist</Option>
                         <Option value="industry">Industry</Option>
                       </Select>
@@ -143,10 +220,15 @@ const UserFormPage = () => {
                   <Title level={4} style={{ marginTop: 24 }}>Personal Information</Title>
                   <Row gutter={16}>
                     <Col xs={24} sm={12}>
-                      <Field name="name" >
+                      <Field name="name">
                         {({ input, meta }) => (
-                          <AntdForm.Item label="Name" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
-                            <Input {...input} />
+                          <AntdForm.Item 
+                            label="Name" 
+                            required 
+                            validateStatus={meta.touched && meta.error ? 'error' : ''} 
+                            help={meta.touched && meta.error}
+                          >
+                            <Input {...input} placeholder="Enter full name" />
                           </AntdForm.Item>
                         )}
                       </Field>
@@ -154,8 +236,13 @@ const UserFormPage = () => {
                     <Col xs={24} sm={12}>
                       <Field name="email">
                         {({ input, meta }) => (
-                          <AntdForm.Item label="Email" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
-                            <Input {...input} type="email" />
+                          <AntdForm.Item 
+                            label="Email" 
+                            required 
+                            validateStatus={meta.touched && meta.error ? 'error' : ''} 
+                            help={meta.touched && meta.error}
+                          >
+                            <Input {...input} type="email" placeholder="Enter email address" />
                           </AntdForm.Item>
                         )}
                       </Field>
@@ -166,13 +253,18 @@ const UserFormPage = () => {
                     <Col xs={24} sm={12}>
                       <Field name="document">
                         {({ input, meta }) => (
-                          <AntdForm.Item label="Document (CPF/CNPJ)" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
+                          <AntdForm.Item 
+                            label="Document (CPF/CNPJ)" 
+                            required 
+                            validateStatus={meta.touched && meta.error ? 'error' : ''} 
+                            help={meta.touched && meta.error}
+                          >
                             <MaskedAntdInput
                               {...input}
                               mask={documentMask}
                               unmask={true}
                               disabled={isEditMode && currentUser?.role !== 'admin'}
-                              placeholder="Enter document"
+                              placeholder="Enter CPF or CNPJ"
                             />
                           </AntdForm.Item>
                         )}
@@ -187,7 +279,10 @@ const UserFormPage = () => {
                             validateStatus={meta.touched && meta.error ? 'error' : ''}
                             help={isEditMode ? "Leave blank to keep current password" : (meta.touched && meta.error)}
                           >
-                            <Input.Password {...input} placeholder={isEditMode ? "Enter new password" : "Required"} />
+                            <Input.Password 
+                              {...input} 
+                              placeholder={isEditMode ? "Enter new password" : "Required"} 
+                            />
                           </AntdForm.Item>
                         )}
                       </Field>
@@ -200,7 +295,12 @@ const UserFormPage = () => {
                         <Field name="date_of_birth">
                           {({ input }) => (
                             <AntdForm.Item label="Date of Birth">
-                              <DatePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" />
+                              <DatePicker 
+                                {...input} 
+                                style={{ width: '100%' }} 
+                                format="DD/MM/YYYY" 
+                                placeholder="Select date of birth"
+                              />
                             </AntdForm.Item>
                           )}
                         </Field>
@@ -234,7 +334,11 @@ const UserFormPage = () => {
                               {...input}
                               mask={cepMask}
                               unmask={true}
-                              onBlur={() => fetchAddressByCep(input.value)}
+                              onBlur={() => {
+                                if (input.value) {
+                                  fetchAddressByCep(input.value);
+                                }
+                              }}
                               suffix={isCepLoading ? <Spin size="small" /> : null}
                               placeholder="00000-000"
                             />
@@ -246,18 +350,19 @@ const UserFormPage = () => {
                       <Field name="street">
                         {({ input }) => (
                           <AntdForm.Item label="Street">
-                            <Input {...input} />
+                            <Input {...input} placeholder="Street address" />
                           </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                   </Row>
+                  
                   <Row gutter={16}>
                     <Col xs={24} sm={8}>
                       <Field name="number">
                         {({ input }) => (
                           <AntdForm.Item label="Number">
-                            <Input {...input} />
+                            <Input {...input} placeholder="Number" />
                           </AntdForm.Item>
                         )}
                       </Field>
@@ -266,18 +371,19 @@ const UserFormPage = () => {
                       <Field name="complement">
                         {({ input }) => (
                           <AntdForm.Item label="Complement">
-                            <Input {...input} />
+                            <Input {...input} placeholder="Apartment, suite, etc." />
                           </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                   </Row>
+                  
                   <Row gutter={16}>
                     <Col xs={24} sm={12}>
                       <Field name="city">
                         {({ input }) => (
                           <AntdForm.Item label="City">
-                            <Input {...input} />
+                            <Input {...input} placeholder="City" />
                           </AntdForm.Item>
                         )}
                       </Field>
@@ -286,7 +392,7 @@ const UserFormPage = () => {
                       <Field name="state">
                         {({ input }) => (
                           <AntdForm.Item label="State">
-                            <Input {...input} maxLength={2} />
+                            <Input {...input} maxLength={2} placeholder="State (UF)" />
                           </AntdForm.Item>
                         )}
                       </Field>
@@ -296,21 +402,32 @@ const UserFormPage = () => {
                   <Divider />
 
                   <Field name="active" type="checkbox">
-                    {({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>}
+                    {({ input }) => (
+                      <AntdForm.Item label="Active Status">
+                        <Switch {...input} checked={input.checked} />
+                      </AntdForm.Item>
+                    )}
                   </Field>
 
                   <div style={{ textAlign: 'right', marginTop: 24 }}>
-                    <Button onClick={() => navigate('/admin/users')} style={{ marginRight: 8 }}>
+                    <Button 
+                      onClick={() => navigate('/admin/users')} 
+                      style={{ marginRight: 8 }}
+                    >
                       Cancel
                     </Button>
-                    <Button type="primary" htmlType="submit" loading={isCreating || isUpdating}>
-                      {isEditMode ? 'Update' : 'Create'}
+                    <Button 
+                      type="primary" 
+                      htmlType="submit" 
+                      loading={isCreating || isUpdating}
+                    >
+                      {isEditMode ? 'Update User' : 'Create User'}
                     </Button>
                   </div>
                 </>
               )}
             </form>
-          )
+          );
         }}
       />
     </Card>
