@@ -1,21 +1,45 @@
 import { Form, Field } from 'react-final-form';
-import { Input, Button, Typography, Card, Row, Col, App, Spin, DatePicker, Form as AntdForm } from 'antd';
+import { Input, Button, Typography, Card, Row, Col, App, Spin, DatePicker, Form as AntdForm, Divider } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/http/axios';
 import { User } from '@/@types/user';
 import { useAuth } from '@/context/AuthContext';
 import dayjs from 'dayjs';
 import axios from 'axios';
+import { MaskedAntdInput } from '@/components/Form/MaskedAntdInput';
 
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 
 const fetchProfile = async (): Promise<User> => {
   const { data } = await api.get('/users/profile');
   return data;
 };
 
+const documentMask = [
+  {
+    mask: '000.000.000-00',
+    maxLength: 11,
+  },
+  {
+    mask: '00.000.000/0000-00',
+  },
+];
+
+const phoneMask = [
+  {
+    mask: '(00) 0000-0000',
+  },
+  {
+    mask: '(00) 00000-0000',
+  },
+];
+
+const cepMask = {
+  mask: '00000-000',
+};
+
 const UserProfilePage = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { message } = App.useApp();
   const queryClient = useQueryClient();
 
@@ -63,15 +87,16 @@ const UserProfilePage = () => {
     }
   };
 
-  if (isLoading) return <Spin size="large" style={{ display: 'block', margin: '50px auto' }} />;
-  if (isError) return <div>Error loading profile.</div>;
+  if (isLoading) return <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />;
+  if (isError) return <div style={{ textAlign: 'center', marginTop: 50 }}>Error loading profile.</div>;
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: '24px', background: '#f0f2f5', minHeight: '100vh' }}>
       <Row justify="center">
-        <Col xs={24} sm={20} md={16} lg={12}>
-          <Card>
-            <Title level={3}>My Profile</Title>
+        <Col xs={24} sm={24} md={22} lg={20} xl={16}>
+          <Card style={{ borderRadius: '8px' }}>
+            <Title level={2}>My Profile</Title>
+            <Paragraph>Update your personal information and address details below.</Paragraph>
             <Form
               onSubmit={onSubmit}
               initialValues={{
@@ -80,113 +105,122 @@ const UserProfilePage = () => {
               }}
               render={({ handleSubmit, form, submitting, pristine }) => (
                 <form onSubmit={handleSubmit}>
-                  <Row gutter={16}>
-                    <Col span={12}>
+                  <Divider orientation="left">Personal Information</Divider>
+                  <Row gutter={24}>
+                    <Col xs={24} md={12}>
                       <Field name="name">
                         {({ input }) => (
-                          <AntdForm.Item label="Name">
-                            <Input {...input} />
+                          <AntdForm.Item label="Full Name">
+                            <Input {...input} size="large" />
                           </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
-                    <Col span={12}>
+                    <Col xs={24} md={12}>
                       <Field name="document">
                         {({ input }) => (
-                          <AntdForm.Item label="Document">
-                            <Input {...input} disabled />
+                          <AntdForm.Item label="Document (CPF/CNPJ)">
+                            <MaskedAntdInput {...input} mask={documentMask} unmask={true} size="large" disabled />
                           </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
-                    <Col span={12}>
+                    <Col xs={24} md={12}>
                       <Field name="email">
                         {({ input }) => (
-                          <AntdForm.Item label="Email">
-                            <Input {...input} type="email" />
+                          <AntdForm.Item label="Email Address">
+                            <Input {...input} type="email" size="large" />
                           </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
-                    <Col span={12}>
+                    <Col xs={24} md={12}>
                       <Field name="phone">
                         {({ input }) => (
-                          <AntdForm.Item label="Phone">
-                            <Input {...input} />
+                          <AntdForm.Item label="Phone Number">
+                            <MaskedAntdInput {...input} mask={phoneMask} unmask={true} size="large" placeholder="(XX) XXXXX-XXXX" />
                           </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
-                    <Col span={12}>
+                    <Col xs={24} md={12}>
                       <Field name="date_of_birth">
                         {({ input }) => (
                           <AntdForm.Item label="Date of Birth">
-                            <DatePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                    <Col span={12}>
-                      <Field name="cep">
-                        {({ input }) => (
-                          <AntdForm.Item label="CEP">
-                            <Input {...input} onBlur={() => handleCepBlur(input.value, form)} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                    <Col span={8}>
-                      <Field name="state">
-                        {({ input }) => (
-                          <AntdForm.Item label="State">
-                            <Input {...input} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                    <Col span={16}>
-                      <Field name="city">
-                        {({ input }) => (
-                          <AntdForm.Item label="City">
-                            <Input {...input} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                    <Col span={16}>
-                      <Field name="street">
-                        {({ input }) => (
-                          <AntdForm.Item label="Street">
-                            <Input {...input} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                    <Col span={8}>
-                      <Field name="number">
-                        {({ input }) => (
-                          <AntdForm.Item label="Number">
-                            <Input {...input} />
-                          </AntdForm.Item>
-                        )}
-                      </Field>
-                    </Col>
-                    <Col span={24}>
-                      <Field name="complement">
-                        {({ input }) => (
-                          <AntdForm.Item label="Complement">
-                            <Input {...input} />
+                            <DatePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" size="large" />
                           </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                   </Row>
-                  <Row justify="end" gutter={8}>
-                    <Col>
-                      <Button onClick={logout}>Logout</Button>
+
+                  <Divider orientation="left">Address</Divider>
+                  <Row gutter={24}>
+                    <Col xs={24} md={8}>
+                      <Field name="cep">
+                        {({ input }) => (
+                          <AntdForm.Item label="CEP">
+                            <MaskedAntdInput
+                              {...input}
+                              mask={cepMask.mask}
+                              unmask
+                              size="large"
+                              onBlur={() => handleCepBlur(input.value, form)}
+                            />
+                          </AntdForm.Item>
+                        )}
+                      </Field>
                     </Col>
+                    <Col xs={24} md={16}>
+                      <Field name="street">
+                        {({ input }) => (
+                          <AntdForm.Item label="Street">
+                            <Input {...input} size="large" />
+                          </AntdForm.Item>
+                        )}
+                      </Field>
+                    </Col>
+                    <Col xs={24} md={8}>
+                      <Field name="number">
+                        {({ input }) => (
+                          <AntdForm.Item label="Number">
+                            <Input {...input} size="large" />
+                          </AntdForm.Item>
+                        )}
+                      </Field>
+                    </Col>
+                     <Col xs={24} md={16}>
+                      <Field name="complement">
+                        {({ input }) => (
+                          <AntdForm.Item label="Complement">
+                            <Input {...input} size="large" />
+                          </AntdForm.Item>
+                        )}
+                      </Field>
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <Field name="city">
+                        {({ input }) => (
+                          <AntdForm.Item label="City">
+                            <Input {...input} size="large" />
+                          </AntdForm.Item>
+                        )}
+                      </Field>
+                    </Col>
+                    <Col xs={24} md={12}>
+                      <Field name="state">
+                        {({ input }) => (
+                          <AntdForm.Item label="State">
+                            <Input {...input} size="large" maxLength={2} />
+                          </AntdForm.Item>
+                        )}
+                      </Field>
+                    </Col>
+                  </Row>
+
+                  <Row justify="end" style={{ marginTop: '24px' }}>
                     <Col>
-                      <Button type="primary" htmlType="submit" disabled={submitting || pristine} loading={mutation.isPending}>
+                      <Button type="primary" htmlType="submit" disabled={submitting || pristine} loading={mutation.isPending} size="large">
                         Save Changes
                       </Button>
                     </Col>

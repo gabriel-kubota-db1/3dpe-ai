@@ -8,6 +8,7 @@ import { User } from '@/@types/user';
 import dayjs from 'dayjs';
 import { useCep } from '../../hooks/useCep';
 import { MaskedAntdInput } from '@/components/Form/MaskedAntdInput';
+import { useAuth } from '@/context/AuthContext';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -37,6 +38,7 @@ const UserFormPage = () => {
   const isEditMode = !!id;
   const queryClient = useQueryClient();
   const { message } = App.useApp();
+  const { user: currentUser } = useAuth();
   const [selectedRole, setSelectedRole] = useState<'physiotherapist' | 'industry' | null>(null);
 
   const { data: user, isLoading: isLoadingUser } = useQuery<User, Error>({
@@ -167,7 +169,7 @@ const UserFormPage = () => {
                               {...input}
                               mask={documentMask}
                               unmask={true}
-                              disabled={isEditMode}
+                              disabled={isEditMode && currentUser?.role !== 'admin'}
                               placeholder="Enter document"
                             />
                           </AntdForm.Item>
