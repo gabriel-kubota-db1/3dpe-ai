@@ -1,4 +1,4 @@
-import { api } from './api';
+import api from './axios';
 import { Coating, CoatingType } from '@/@types/coating';
 
 export const getCoatings = async (coatingType?: CoatingType): Promise<Coating[]> => {
