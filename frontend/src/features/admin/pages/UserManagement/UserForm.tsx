@@ -32,6 +32,8 @@ const phoneMask = [
   },
 ];
 
+const cepMask = '00000-000';
+
 const UserFormPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -228,10 +230,13 @@ const UserFormPage = () => {
                       <Field name="cep">
                         {({ input }) => (
                           <AntdForm.Item label="CEP">
-                            <Input
+                            <MaskedAntdInput
                               {...input}
+                              mask={cepMask}
+                              unmask={true}
                               onBlur={() => fetchAddressByCep(input.value)}
                               suffix={isCepLoading ? <Spin size="small" /> : null}
+                              placeholder="00000-000"
                             />
                           </AntdForm.Item>
                         )}

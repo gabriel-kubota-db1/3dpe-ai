@@ -178,8 +178,6 @@ const UserProfilePage = () => {
                         size="large" 
                         disabled 
                         style={{ width: '100%' }}
-                        value={input.value}
-                        onChange={input.onChange}
                       />
                     </AntdForm.Item>
                   )}
@@ -205,8 +203,6 @@ const UserProfilePage = () => {
                         size="large" 
                         placeholder="(XX) XXXXX-XXXX" 
                         style={{ width: '100%' }}
-                        value={input.value}
-                        onChange={input.onChange}
                       />
                     </AntdForm.Item>
                   )}
@@ -235,8 +231,6 @@ const UserProfilePage = () => {
                         unmask
                         size="large"
                         onBlur={() => handleCepBlur(input.value, form)}
-                        value={input.value}
-                        onChange={input.onChange}
                       />
                     </AntdForm.Item>
                   )}

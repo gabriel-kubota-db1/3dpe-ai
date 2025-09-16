@@ -47,9 +47,10 @@ export const MaskedAntdInput = ({
   useEffect(() => {
     if (maskRef.current) {
       const currentValue = value || '';
-      // Only update if the value is actually different to avoid infinite loops
-      if (maskRef.current.value !== currentValue) {
-        maskRef.current.value = currentValue;
+      // Use unmaskedValue to set the value programmatically.
+      // This is safer as iMask will handle the formatting.
+      if (maskRef.current.unmaskedValue !== currentValue) {
+        maskRef.current.unmaskedValue = currentValue;
       }
     }
   }, [value, maskRef]);
