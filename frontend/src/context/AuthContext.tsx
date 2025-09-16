@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { Spin } from 'antd';
 import { setToken, getToken, removeToken } from '@/storage/token';
 import { User } from '@/@types/user';
 import api from '@/http/axios';
@@ -22,7 +23,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const token = getToken();
     if (token) {
       try {
-        // Assuming a /profile endpoint that returns the user for the current token
         const response = await api.get('/users/profile');
         setUser(response.data);
         setIsAuthenticated(true);
@@ -51,6 +51,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     setIsAuthenticated(false);
   };
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, login, logout, isLoading }}>
