@@ -2,10 +2,11 @@ import { Router } from 'express';
 import * as controller from './controller';
 import { validateRequest } from '../../middlewares/validateRequest';
 import {
+  userCreateSchema,
   userUpdateSchema,
-  loginSchema,
   physiotherapistRegisterSchema,
   industryRegisterSchema,
+  loginSchema,
 } from './validators';
 import { isAuthenticated } from '../../middlewares/isAuthenticated';
 import { isAdmin } from '../../middlewares/isAdmin';
@@ -36,7 +37,6 @@ router.post(
 
 // User profile
 router.get('/profile', isAuthenticated, controller.getProfile);
-router.put('/profile', isAuthenticated, validateRequest({ body: userUpdateSchema }), controller.updateProfile);
 
 // Admin User Management
 router.get('/', isAuthenticated, isAdmin, controller.getAllUsers);

@@ -47,7 +47,7 @@ const UserListPage = () => {
       title: 'Active',
       dataIndex: 'active',
       key: 'active',
-      render: (active: boolean) => active ? 'Yes' : 'No',
+      render: (active: boolean) => <Switch checked={active} disabled />,
     },
     {
       title: 'Actions',

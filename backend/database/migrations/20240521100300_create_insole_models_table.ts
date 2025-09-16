@@ -11,7 +11,6 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('fabric_coating_id').unsigned().nullable().references('id').inTable('coatings');
     table.decimal('cost_value', 10, 2).notNullable();
     table.decimal('sale_value', 10, 2).notNullable();
-    table.boolean('active').defaultTo(true);
     table.timestamps(true, true);
   });
 }
