@@ -9,10 +9,12 @@ const booleanSchema = Joi.alternatives().try(
 
 export const insoleModelSchema = Joi.object({
   description: Joi.string().min(3).required(),
+  coating_id: Joi.number().integer().positive().allow(null).optional(),
   active: booleanSchema.required(),
 });
 
 export const insoleModelUpdateSchema = Joi.object({
   description: Joi.string().min(3).optional(),
+  coating_id: Joi.number().integer().positive().allow(null).optional(),
   active: booleanSchema.optional(),
 }).min(1); // At least one field must be provided for update

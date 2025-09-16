@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography } from 'antd';
+import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, InputNumber } from 'antd';
 import { Form, Field } from 'react-final-form';
 import { InsoleModel } from '@/@types/insoleModel';
 import * as InsoleModelService from '@/http/InsoleModelHttpService';
@@ -19,11 +19,11 @@ const InsoleModelManagementPage = () => {
   });
 
   const { mutate: createOrUpdateModel, isPending: isSaving } = useMutation({
-    mutationFn: (values: Omit<InsoleModel, 'id'> | InsoleModel) => {
-      if ('id' in values) {
+    mutationFn: (values: Partial<InsoleModel>) => {
+      if (values.id) {
         return InsoleModelService.updateInsoleModel(values.id, values);
       }
-      return InsoleModelService.createInsoleModel(values);
+      return InsoleModelService.createInsoleModel(values as any);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['insoleModels'] });
@@ -56,12 +56,19 @@ const InsoleModelManagementPage = () => {
     setIsModalOpen(false);
   };
 
-  const onSubmit = (values: Omit<InsoleModel, 'id'>) => {
-    createOrUpdateModel(editingModel ? { ...values, id: editingModel.id } : values);
+  const onSubmit = (values: Omit<InsoleModel, 'id' | 'created_at' | 'updated_at'>) => {
+    const payload = { ...values };
+    if (payload.coating_id === '') {
+      payload.coating_id = null;
+    }
+    
+    createOrUpdateModel(editingModel ? { ...payload, id: editingModel.id } : payload);
   };
 
   const columns = [
-    { title: 'Description', dataIndex: 'description', key: 'description' },
+    { title: 'ID', dataIndex: 'id', key: 'id', sorter: (a: InsoleModel, b: InsoleModel) => a.id - b.id },
+    { title: 'Description', dataIndex: 'description', key: 'description', sorter: (a: InsoleModel, b: InsoleModel) => a.description.localeCompare(b.description) },
+    { title: 'Coating ID', dataIndex: 'coating_id', key: 'coating_id' },
     {
       title: 'Active',
       dataIndex: 'active',
@@ -107,17 +114,25 @@ const InsoleModelManagementPage = () => {
       >
         <Form
           onSubmit={onSubmit}
-          initialValues={editingModel || { description: '', active: true }}
+          initialValues={editingModel || { description: '', coating_id: null, active: true }}
           render={({ handleSubmit }) => (
             <form onSubmit={handleSubmit}>
-              <Field name="description">
+              <Field name="description" validate={value => (value ? undefined : 'Description is required')}>
                 {({ input, meta }) => (
                   <AntdForm.Item
                     label="Description"
                     validateStatus={meta.touched && meta.error ? 'error' : ''}
                     help={meta.touched && meta.error}
+                    required
                   >
                     <Input {...input} placeholder="Enter model description" />
+                  </AntdForm.Item>
+                )}
+              </Field>
+              <Field name="coating_id">
+                {({ input }) => (
+                  <AntdForm.Item label="Coating ID (Optional)">
+                    <InputNumber {...input} style={{ width: '100%' }} placeholder="Enter coating ID" />
                   </AntdForm.Item>
                 )}
               </Field>
@@ -128,7 +143,7 @@ const InsoleModelManagementPage = () => {
                   </AntdForm.Item>
                 )}
               </Field>
-              <div style={{ textAlign: 'right' }}>
+              <div style={{ textAlign: 'right', marginTop: '24px' }}>
                 <Button onClick={closeModal} style={{ marginRight: 8 }}>
                   Cancel
                 </Button>
