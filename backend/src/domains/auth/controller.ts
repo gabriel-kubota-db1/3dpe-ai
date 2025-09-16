@@ -64,7 +64,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     }
 
     // The $beforeUpdate hook in the User model will automatically hash the password
-    await user.$query().patch({ password });
+    await user.$query().patch({ password_hash: password });
 
     res.json({ message: 'Password has been reset successfully.' });
   } catch (error) {
