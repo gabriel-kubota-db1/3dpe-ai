@@ -10,8 +10,11 @@ import { User } from '@/@types/user';
 const { Title } = Typography;
 
 interface LoginResponse {
-  token: string;
-  user: User;
+  data: {
+    token: string;
+    user: User;
+    refreshToken?: string;
+  }
 }
 
 const LoginPage = () => {
@@ -22,7 +25,7 @@ const LoginPage = () => {
   const mutation = useMutation<LoginResponse, Error, any>({
     mutationFn: (values) => api.post('/auth/login', values),
     onSuccess: (data) => {
-      login(data.token, data.user);
+      login(data.data.token, data.data.user, data.data.refreshToken);
       message.success('Login successful!');
       navigate('/profile');
     },

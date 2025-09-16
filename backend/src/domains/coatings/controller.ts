@@ -21,7 +21,10 @@ export const createCoating = async (req: Request, res: Response) => {
 
 export const updateCoating = async (req: Request, res: Response) => {
   try {
-    const coating = await Coating.query().patchAndFetchById(req.params.id, req.body);
+    // Remove read-only fields that shouldn't be updated
+    const { id, created_at, updated_at, ...updateData } = req.body;
+    
+    const coating = await Coating.query().patchAndFetchById(req.params.id, updateData);
     if (coating) {
       res.json(coating);
     } else {

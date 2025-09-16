@@ -21,7 +21,10 @@ export const createInsoleModel = async (req: Request, res: Response) => {
 
 export const updateInsoleModel = async (req: Request, res: Response) => {
   try {
-    const insoleModel = await InsoleModel.query().patchAndFetchById(req.params.id, req.body);
+    // Remove read-only fields that shouldn't be updated
+    const { id, created_at, updated_at, ...updateData } = req.body;
+    
+    const insoleModel = await InsoleModel.query().patchAndFetchById(req.params.id, updateData);
     if (insoleModel) {
       res.json(insoleModel);
     } else {

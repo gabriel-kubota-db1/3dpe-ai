@@ -17,11 +17,19 @@ export const validateRequest = (schemas: ValidationSchemas) => {
 
     for (const v of validations) {
       if (v.schema) {
-        const { error } = v.schema.validate(v.data, { abortEarly: false });
+        const { error, value } = v.schema.validate(v.data, { 
+          abortEarly: false, 
+          convert: true // Enable type conversion
+        });
         if (error) {
           const errors = error.details.map((detail) => detail.message);
           return res.status(400).json({ message: 'Validation error', errors });
         }
+        
+        // Update the request with the converted values
+        if (v.key === 'body') req.body = value;
+        else if (v.key === 'query') req.query = value;
+        else if (v.key === 'params') req.params = value;
       }
     }
 
