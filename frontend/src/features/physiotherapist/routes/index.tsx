@@ -11,7 +11,7 @@ import ListPrescriptionsPage from '../pages/PrescriptionManagement/ListPrescript
 import CreatePrescriptionPage from '../pages/PrescriptionManagement/CreatePrescription';
 
 const physiotherapistRoutes = (
-  <Route path="physiotherapist" element={<PageLayout><Outlet /></PageLayout>}>
+  <Route path="physiotherapist">
     {/* Patient Routes */}
     <Route path="patients" element={<ListPatientsPage />} />
     <Route path="patients/new" element={<PatientFormPage />} />

@@ -8,6 +8,8 @@ import {
   AppstoreOutlined,
   GiftOutlined,
   LogoutOutlined,
+  TeamOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '@/context/AuthContext';
 
@@ -32,13 +34,55 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const { user } = useAuth();
 
-  const menuItems = [
+  const menuItems: any[] = [
     {
       key: '/profile',
       icon: <UserOutlined />,
       label: <Link to="/profile">My Profile</Link>,
     },
   ];
+
+  if (user?.role === 'physiotherapist') {
+    menuItems.push(
+      { type: 'divider' },
+      {
+        key: 'physiotherapist-management',
+        icon: <SettingOutlined />,
+        label: 'Management',
+        children: [
+          {
+            key: '/physiotherapist/patients',
+            icon: <TeamOutlined />,
+            label: <Link to="/physiotherapist/patients">Patients</Link>,
+          },
+          {
+            key: '/physiotherapist/prescriptions',
+            icon: <FileTextOutlined />,
+            label: <Link to="/physiotherapist/prescriptions">Prescriptions</Link>,
+          },
+        ],
+      }
+    );
+  }
+
+  if (user?.role === 'industry') {
+    menuItems.push(
+      { type: 'divider' },
+      {
+        key: 'industry-info',
+        icon: <AppstoreOutlined />,
+        label: 'Industry Portal',
+        children: [
+          {
+            key: '/coming-soon',
+            icon: <TagOutlined />,
+            label: 'Coming Soon',
+            disabled: true,
+          },
+        ],
+      }
+    );
+  }
 
   if (user?.role === 'admin') {
     menuItems.push(
@@ -82,7 +126,7 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
-          defaultOpenKeys={['admin-management']}
+          defaultOpenKeys={['admin-management', 'physiotherapist-management', 'industry-info']}
           style={{ height: '100%', borderRight: 0 }}
           items={menuItems}
         />

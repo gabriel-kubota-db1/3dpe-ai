@@ -9,6 +9,8 @@ import userRoutes from './domains/users/routes';
 import coatingRoutes from './domains/coatings/routes';
 import couponRoutes from './domains/coupons/routes';
 import insoleModelsRoutes from './domains/insole-models/routes';
+import patientRoutes from './domains/patients/routes';
+import prescriptionRoutes from './domains/prescriptions/routes';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -27,6 +29,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/coatings', coatingRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/insole-models', insoleModelsRoutes);
+app.use('/api/patients', patientRoutes);
+app.use('/api/prescriptions', prescriptionRoutes);
 
 
 app.get('/', (req, res) => {

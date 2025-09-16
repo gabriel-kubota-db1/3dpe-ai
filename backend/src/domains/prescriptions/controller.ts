@@ -7,7 +7,7 @@ import { transaction } from 'objection';
 export const getAllPrescriptions = async (req: Request, res: Response) => {
   try {
     // @ts-ignore
-    const physiotherapistId = req.user.physiotherapist.id;
+    const physiotherapistId = req.user.id; // Use user.id directly since physiotherapist_id references users.id
     const prescriptions = await InsolePrescription.query()
       .withGraphFetched('[patient, insoleModel]')
       .whereExists(
@@ -24,10 +24,10 @@ export const getAllPrescriptions = async (req: Request, res: Response) => {
 export const getPrescriptionById = async (req: Request, res: Response) => {
   try {
     // @ts-ignore
-    const physiotherapistId = req.user.physiotherapist.id;
+    const physiotherapistId = req.user.id; // Use user.id directly since physiotherapist_id references users.id
     const prescription = await InsolePrescription.query()
       .findById(req.params.id)
-      .withGraphFetched('[patient, insoleModel, palmilhogram]')
+      .withGraphFetched('[patient, insoleModel, palmilogram]')
       .whereExists(
         InsolePrescription.relatedQuery('patient').where('physiotherapist_id', physiotherapistId)
       );
@@ -60,7 +60,7 @@ export const createPrescription = async (req: Request, res: Response) => {
 
     const newPrescription = await InsolePrescription.query(trx)
       .insert(prescriptionData)
-      .withGraphFetched('[patient, insoleModel, palmilhogram]');
+      .withGraphFetched('[patient, insoleModel, palmilogram]');
 
     await trx.commit();
     res.status(201).json(newPrescription);
