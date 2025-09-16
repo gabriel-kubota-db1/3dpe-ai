@@ -1,4 +1,4 @@
-import { api } from './api';
+import api from './axios';
 import { InsoleModel } from '@/@types/insoleModel';
 
 export const getInsoleModels = async (): Promise<InsoleModel[]> => {
