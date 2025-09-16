@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { User } from '../users/model.js';
-import { env } from '../../config/env.js';
 import { generateToken, generatePasswordResetToken, verifyToken } from '../../utils/jwt.js';
 import { sendPasswordResetEmail } from '../../services/EmailService.js';
 
@@ -48,7 +48,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
 };
 
 export const resetPassword = async (req: Request, res: Response) => {
-  const { token, password } = req.body;
+  const { token, password, confirmPassword } = req.body;
 
   try {
     const decoded = verifyToken(token);
@@ -63,8 +63,13 @@ export const resetPassword = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Invalid token.' });
     }
 
-    // The $beforeUpdate hook in the User model will automatically hash the password
-    await user.$query().patch({ password_hash: password });
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match.' });
+    }
+
+    // Hash the password before updating to avoid issues with the $beforeUpdate hook
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await user.$query().patch({ password_hash: hashedPassword });
 
     res.json({ message: 'Password has been reset successfully.' });
   } catch (error) {
