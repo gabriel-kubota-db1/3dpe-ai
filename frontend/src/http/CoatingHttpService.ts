@@ -13,7 +13,7 @@ export const createCoating = async (coating: Omit<Coating, 'id'>): Promise<Coati
 };
 
 export const updateCoating = async (id: number, coating: Partial<Coating>): Promise<Coating> => {
-  const response = await api.patch(`/coatings/${id}`, coating);
+  const response = await api.put(`/coatings/${id}`, coating);
   return response.data;
 };
 
