@@ -10,17 +10,9 @@ export class Patient extends Model {
   phone?: string;
   cpf?: string;
   rg?: string;
-  date_of_birth?: string;
-  nationality?: string;
-  naturality?: string;
+  date_of_birth?: string; // Stored as YYYY-MM-DD
   responsible_name?: string;
   responsible_cpf?: string;
-  cep?: string;
-  state?: string;
-  city?: string;
-  street?: string;
-  number?: string;
-  complement?: string;
   created_at!: string;
   updated_at!: string;
 
@@ -49,4 +41,18 @@ export class Patient extends Model {
       },
     },
   };
+
+  // Remove fields that are no longer in the table
+  $parseJson(json: Pojo, opt?: any): Pojo {
+    const newJson = super.$parseJson(json, opt);
+    delete newJson.nationality;
+    delete newJson.naturality;
+    delete newJson.cep;
+    delete newJson.state;
+    delete newJson.city;
+    delete newJson.street;
+    delete newJson.number;
+    delete newJson.complement;
+    return newJson;
+  }
 }
