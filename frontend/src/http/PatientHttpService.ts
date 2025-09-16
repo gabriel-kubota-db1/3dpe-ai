@@ -1,4 +1,4 @@
-import api from './axios';
+import { api } from './api';
 import { Patient, PatientAuditLog } from '@/@types/patient';
 
 export const getPatients = async (): Promise<Patient[]> => {

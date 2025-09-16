@@ -1,5 +1,4 @@
-import { Route, Outlet } from 'react-router-dom';
-import PageLayout from '../../../components/layout/PageLayout';
+import { Route } from 'react-router-dom';
 
 // Patient Management
 import ListPatientsPage from '../pages/PatientManagement/ListPatients';

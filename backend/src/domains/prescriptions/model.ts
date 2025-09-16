@@ -1,6 +1,6 @@
 import { Model, RelationMappings, RelationMappingsThunk } from 'objection';
 import { Patient } from '../patients/model';
-import { InsoleModel } from '../insole-models/model';
+import { InsoleModel } from '../insoleModels/model';
 import { Palmilogram } from './palmilogramModel';
 
 export class InsolePrescription extends Model {
