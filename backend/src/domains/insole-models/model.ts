@@ -24,7 +24,7 @@ export class InsoleModel extends Model {
   static relationMappings = {
     coating: {
       relation: Model.BelongsToOneRelation,
-      modelClass: path.join(__dirname, '../coatings/model'),
+      modelClass: Coating,
       join: {
         from: 'insole_models.coating_id',
         to: 'coatings.id',

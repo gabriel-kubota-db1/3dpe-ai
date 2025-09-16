@@ -2,7 +2,6 @@ import { Router } from 'express';
 import * as controller from './controller';
 import { validateRequest } from '../../middlewares/validateRequest';
 import {
-  userCreateSchema,
   userUpdateSchema,
   physiotherapistRegisterSchema,
   industryRegisterSchema,

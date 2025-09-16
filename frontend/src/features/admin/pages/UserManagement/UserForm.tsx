@@ -26,6 +26,7 @@ const documentMask = [
 const phoneMask = [
   {
     mask: '(00) 0000-0000',
+    maxLength: 10,
   },
   {
     mask: '(00) 00000-0000',
