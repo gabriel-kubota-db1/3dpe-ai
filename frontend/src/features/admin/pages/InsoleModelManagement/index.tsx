@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, InputNumber } from 'antd';
+import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, Select } from 'antd';
 import { Form, Field } from 'react-final-form';
 import { InsoleModel } from '@/@types/insoleModel';
+import { Coating } from '@/@types/coating';
 import * as InsoleModelService from '@/http/InsoleModelHttpService';
+import * as CoatingService from '@/http/CoatingHttpService';
 
 const { Title } = Typography;
 
@@ -16,6 +18,11 @@ const InsoleModelManagementPage = () => {
   const { data: insoleModels, isLoading } = useQuery<InsoleModel[], Error>({
     queryKey: ['insoleModels'],
     queryFn: InsoleModelService.getInsoleModels,
+  });
+
+  const { data: coatings, isLoading: isLoadingCoatings } = useQuery<Coating[], Error>({
+    queryKey: ['coatings'],
+    queryFn: CoatingService.getCoatings,
   });
 
   const { mutate: createOrUpdateModel, isPending: isSaving } = useMutation({
@@ -57,12 +64,7 @@ const InsoleModelManagementPage = () => {
   };
 
   const onSubmit = (values: Omit<InsoleModel, 'id' | 'created_at' | 'updated_at'>) => {
-    const payload = { ...values };
-    if (payload.coating_id === '') {
-      payload.coating_id = null;
-    }
-    
-    createOrUpdateModel(editingModel ? { ...payload, id: editingModel.id } : payload);
+    createOrUpdateModel(editingModel ? { ...values, id: editingModel.id } : values);
   };
 
   const columns = [
@@ -129,10 +131,25 @@ const InsoleModelManagementPage = () => {
                   </AntdForm.Item>
                 )}
               </Field>
-              <Field name="coating_id">
-                {({ input }) => (
-                  <AntdForm.Item label="Coating ID (Optional)">
-                    <InputNumber {...input} style={{ width: '100%' }} placeholder="Enter coating ID" />
+              <Field name="coating_id" validate={value => (value ? undefined : 'Coating is required')}>
+                {({ input, meta }) => (
+                  <AntdForm.Item
+                    label="Coating"
+                    validateStatus={meta.touched && meta.error ? 'error' : ''}
+                    help={meta.touched && meta.error}
+                    required
+                  >
+                    <Select
+                      {...input}
+                      placeholder="Select a coating"
+                      loading={isLoadingCoatings}
+                      disabled={isLoadingCoatings}
+                      options={coatings?.map(coating => ({
+                        label: coating.description,
+                        value: coating.id,
+                      }))}
+                      allowClear
+                    />
                   </AntdForm.Item>
                 )}
               </Field>
