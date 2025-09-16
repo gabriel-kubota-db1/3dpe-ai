@@ -9,16 +9,16 @@ const booleanSchema = Joi.alternatives().try(
 
 export const couponSchema = Joi.object({
   code: Joi.string().uppercase().alphanum().min(3).required(),
-  discount_type: Joi.string().valid('percentage', 'fixed').required(),
-  value: Joi.number().positive().required(),
-  expiry_date: Joi.date().iso().required(),
+  value: Joi.number().min(0).max(100).required(),
+  start_date: Joi.date().iso().required(),
+  finish_date: Joi.date().iso().required().greater(Joi.ref('start_date')),
   active: booleanSchema.required(),
 });
 
 export const couponUpdateSchema = Joi.object({
   code: Joi.string().uppercase().alphanum().min(3).optional(),
-  discount_type: Joi.string().valid('percentage', 'fixed').optional(),
-  value: Joi.number().positive().optional(),
-  expiry_date: Joi.date().iso().optional(),
+  value: Joi.number().min(0).max(100).optional(),
+  start_date: Joi.date().iso().optional(),
+  finish_date: Joi.date().iso().optional(),
   active: booleanSchema.optional(),
-}).min(1).unknown(true); // At least one field must be provided for update, allow unknown fields
+}).min(1).unknown(true);

@@ -1,4 +1,4 @@
-import api from './axios';
+import { api } from './api';
 // Define Prescription types later
 // import { Prescription } from '@/@types/prescription';
 

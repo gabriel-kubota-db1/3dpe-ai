@@ -6,15 +6,15 @@ if (!env.JWT_SECRET) {
 }
 
 export const generateToken = (payload: object) => {
-  return jwt.sign(payload, env.JWT_SECRET!, { expiresIn: Number(env.JWT_EXPIRES_IN) });
+  return jwt.sign(payload, env.JWT_SECRET!, { expiresIn: env.JWT_EXPIRES_IN || '1d' });
 };
 
 export const generateRefreshToken = (payload: object) => {
-  return jwt.sign(payload, env.JWT_SECRET!, { expiresIn: Number(env.JWT_EXPIRES_IN) });
+  return jwt.sign(payload, env.JWT_SECRET!, { expiresIn: '7d' });
 };
 
 export const generatePasswordResetToken = (payload: object) => {
-  return jwt.sign(payload, env.JWT_SECRET!, { expiresIn: Number(env.JWT_EXPIRES_IN) });
+  return jwt.sign(payload, env.JWT_SECRET!, { expiresIn: '15m' });
 };
 
 export const verifyToken = (token: string) => {
