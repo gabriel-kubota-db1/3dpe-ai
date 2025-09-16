@@ -19,6 +19,8 @@ export class User extends Model {
   number?: string;
   complement?: string;
   password_hash!: string;
+  reset_password_token?: string;
+  reset_password_expires?: Date;
   created_at!: string;
   updated_at!: string;
 
@@ -52,15 +54,6 @@ export class User extends Model {
   async $beforeInsert() {
     if (this.password_hash) {
       this.password_hash = await bcrypt.hash(this.password_hash, 10);
-    }
-  }
-
-  async $beforeUpdate() {
-    if (this.password_hash) {
-      const userInDb = await User.query().findById(this.id);
-      if (userInDb && userInDb.password_hash !== this.password_hash) {
-        this.password_hash = await bcrypt.hash(this.password_hash, 10);
-      }
     }
   }
 

@@ -1,5 +1,5 @@
-import { Route } from 'react-router-dom';
-import PageLayout from '@/components/Layout/PageLayout';
+import { Route, Outlet } from 'react-router-dom';
+import PageLayout from '../../../components/layout/PageLayout';
 
 // Patient Management
 import ListPatientsPage from '../pages/PatientManagement/ListPatients';
@@ -11,7 +11,7 @@ import ListPrescriptionsPage from '../pages/PrescriptionManagement/ListPrescript
 import CreatePrescriptionPage from '../pages/PrescriptionManagement/CreatePrescription';
 
 const physiotherapistRoutes = (
-  <Route path="physiotherapist" element={<PageLayout />}>
+  <Route path="physiotherapist" element={<PageLayout><Outlet /></PageLayout>}>
     {/* Patient Routes */}
     <Route path="patients" element={<ListPatientsPage />} />
     <Route path="patients/new" element={<PatientFormPage />} />
