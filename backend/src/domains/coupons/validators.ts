@@ -21,4 +21,4 @@ export const couponUpdateSchema = Joi.object({
   value: Joi.number().positive().optional(),
   expiry_date: Joi.date().iso().optional(),
   active: booleanSchema.optional(),
-}).min(1); // At least one field must be provided for update
+}).min(1).unknown(true); // At least one field must be provided for update, allow unknown fields

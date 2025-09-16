@@ -19,7 +19,8 @@ export const validateRequest = (schemas: ValidationSchemas) => {
       if (v.schema) {
         const { error, value } = v.schema.validate(v.data, { 
           abortEarly: false, 
-          convert: true // Enable type conversion
+          convert: true, // Enable type conversion
+          stripUnknown: true // Strip unknown fields
         });
         if (error) {
           const errors = error.details.map((detail) => detail.message);

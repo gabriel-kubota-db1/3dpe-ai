@@ -34,7 +34,7 @@ export const userUpdateSchema = Joi.object({
   council_number: Joi.string().when('role', { is: 'physiotherapist', then: Joi.required() }),
   council_uf: Joi.string().length(2).when('role', { is: 'physiotherapist', then: Joi.required() }),
   loyalty_discount: Joi.number().min(0).when('role', { is: 'physiotherapist', then: Joi.optional() }),
-}).min(1);
+}).min(1).unknown(true); // Allow unknown fields and strip them
 
 const baseUserSchema = {
   name: Joi.string().min(3).required(),

@@ -43,12 +43,8 @@ export const getProfile = async (req: Request, res: Response) => {
 
 export const updateProfile = async (req: Request, res: Response) => {
   try {
-    const { password, ...updateData } = req.body;
+    const { password, id, document, role, created_at, updated_at, active, ...updateData } = req.body;
     
-    // Don't allow role changes via profile update
-    delete updateData.role;
-    delete updateData.active;
-
     if (password && password.trim() !== '') {
       // Pass the plain password to be hashed by the model's hook
       (updateData as any).password_hash = password;
@@ -135,7 +131,7 @@ export const getUserById = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const { password, ...updateData } = req.body;
+    const { password, id, document, role, created_at, updated_at, ...updateData } = req.body;
 
     if (password && password.trim() !== '') {
       // Pass the plain password to be hashed by the model's hook
