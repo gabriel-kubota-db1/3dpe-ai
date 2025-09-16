@@ -13,6 +13,7 @@ interface LoginResponse {
   data: {
     token: string;
     user: User;
+    refreshToken?: string;
   }
 }
 
@@ -24,7 +25,7 @@ const LoginPage = () => {
   const mutation = useMutation<LoginResponse, Error, any>({
     mutationFn: (values) => api.post('/auth/login', values),
     onSuccess: (data) => {
-      login(data.data.token, data.data.user);
+      login(data.data.token, data.data.user, data.data.refreshToken);
       message.success('Login successful!');
       navigate('/profile');
     },

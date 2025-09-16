@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Form, Field } from 'react-final-form';
 import { Input, Button, Typography, Row, Col, App, Spin, DatePicker, Form as AntdForm, Divider } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -39,21 +40,29 @@ const cepMask = {
 };
 
 const UserProfilePage = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { message } = App.useApp();
   const queryClient = useQueryClient();
+  const [formKey, setFormKey] = useState(0);
 
-  const { data: profile, isLoading, isError } = useQuery<User, Error>({
-    queryKey: ['profile', user?.id],
+  const { data: profile, isLoading, isError, refetch } = useQuery<User, Error>({
+    queryKey: ['user-profile'],
     queryFn: fetchProfile,
-    enabled: !!user,
+    enabled: !!user?.id,
+    staleTime: 0, // Always fetch fresh data
+    initialData: user || undefined, // Use user from AuthContext as initial data
   });
 
   const mutation = useMutation<User, Error, Partial<User>>({
-    mutationFn: (updatedProfile) => api.put('/users/profile', updatedProfile),
+    mutationFn: async (updatedProfile) => {
+      const response = await api.put('/users/profile', updatedProfile);
+      return response.data;
+    },
     onSuccess: (data) => {
-      queryClient.setQueryData(['profile', user?.id], data);
+      queryClient.setQueryData(['user-profile'], data);
+      updateUser(data);
       message.success('Profile updated successfully!');
+      setFormKey(prev => prev + 1); // Force form re-render with new data
     },
     onError: (error: any) => {
       const errorMessage = error.response?.data?.message || 'Failed to update profile.';
@@ -87,17 +96,61 @@ const UserProfilePage = () => {
     }
   };
 
-  if (isLoading) return <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />;
-  if (isError) return <div style={{ textAlign: 'center', marginTop: 50 }}>Error loading profile.</div>;
+  // Use user from AuthContext as fallback and update React Query cache
+  useEffect(() => {
+    if (user && !profile) {
+      queryClient.setQueryData(['user-profile'], user);
+    }
+  }, [user, profile, queryClient]);
+
+  // Force re-fetch when component mounts
+  useEffect(() => {
+    if (user?.id) {
+      refetch();
+    }
+  }, [user?.id, refetch]);
+
+  // Use profile data if available, otherwise fallback to user from AuthContext
+  const currentUserData = profile || user;
+
+  // Update form key when user data changes to force re-render
+  useEffect(() => {
+    setFormKey(prev => prev + 1);
+  }, [currentUserData?.document, currentUserData?.phone, currentUserData?.cep, currentUserData?.id]);
+
+  if (isLoading && !currentUserData) {
+    return <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />;
+  }
+
+  if (isError && !currentUserData) {
+    return <div style={{ textAlign: 'center', marginTop: 50 }}>Error loading profile.</div>;
+  }
+
+  if (!currentUserData) {
+    return <Spin size="large" style={{ display: 'block', margin: '100px auto' }} />;
+  }
+
+  // Prepare initial values with proper handling of all fields
+  const initialValues = {
+    name: currentUserData.name || '',
+    email: currentUserData.email || '',
+    document: currentUserData.document || '',
+    phone: currentUserData.phone || '',
+    cep: currentUserData.cep || '',
+    state: currentUserData.state || '',
+    city: currentUserData.city || '',
+    street: currentUserData.street || '',
+    number: currentUserData.number || '',
+    complement: currentUserData.complement || '',
+    date_of_birth: currentUserData.date_of_birth ? dayjs(currentUserData.date_of_birth) : null,
+  };
 
   return (
     <div style={{ padding: '24px', background: '#fff', minHeight: '100%' }}>
       <Form
+        key={formKey} // Force re-render when profile updates
         onSubmit={onSubmit}
-        initialValues={{
-          ...profile,
-          date_of_birth: profile?.date_of_birth ? dayjs(profile.date_of_birth) : null,
-        }}
+        initialValues={initialValues}
         render={({ handleSubmit, form, submitting, pristine }) => (
           <form onSubmit={handleSubmit} style={{ maxWidth: '1000px', margin: '0 auto' }}>
             <Title level={2}>My Profile</Title>
@@ -118,7 +171,16 @@ const UserProfilePage = () => {
                 <Field name="document">
                   {({ input }) => (
                     <AntdForm.Item label="Document (CPF/CNPJ)">
-                      <MaskedAntdInput {...input} mask={documentMask} unmask={true} size="large" disabled style={{ width: '100%' }} />
+                      <MaskedAntdInput 
+                        {...input} 
+                        mask={documentMask} 
+                        unmask={true} 
+                        size="large" 
+                        disabled 
+                        style={{ width: '100%' }}
+                        value={input.value}
+                        onChange={input.onChange}
+                      />
                     </AntdForm.Item>
                   )}
                 </Field>
@@ -136,7 +198,16 @@ const UserProfilePage = () => {
                 <Field name="phone">
                   {({ input }) => (
                     <AntdForm.Item label="Phone Number">
-                      <MaskedAntdInput {...input} mask={phoneMask} unmask={true} size="large" placeholder="(XX) XXXXX-XXXX" style={{ width: '100%' }} />
+                      <MaskedAntdInput 
+                        {...input} 
+                        mask={phoneMask} 
+                        unmask={true} 
+                        size="large" 
+                        placeholder="(XX) XXXXX-XXXX" 
+                        style={{ width: '100%' }}
+                        value={input.value}
+                        onChange={input.onChange}
+                      />
                     </AntdForm.Item>
                   )}
                 </Field>
@@ -164,6 +235,8 @@ const UserProfilePage = () => {
                         unmask
                         size="large"
                         onBlur={() => handleCepBlur(input.value, form)}
+                        value={input.value}
+                        onChange={input.onChange}
                       />
                     </AntdForm.Item>
                   )}
@@ -218,7 +291,13 @@ const UserProfilePage = () => {
 
             <Row justify="end" style={{ marginTop: '24px' }}>
               <Col>
-                <Button type="primary" htmlType="submit" disabled={submitting || pristine} loading={mutation.isPending} size="large">
+                <Button 
+                  type="primary" 
+                  htmlType="submit" 
+                  disabled={submitting || pristine} 
+                  loading={mutation.isPending} 
+                  size="large"
+                >
                   Save Changes
                 </Button>
               </Col>

@@ -5,6 +5,10 @@ export const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+export const refreshSchema = Joi.object({
+  refreshToken: Joi.string().required(),
+});
+
 export const forgotPasswordSchema = Joi.object({
   email: Joi.string().email().required(),
 });

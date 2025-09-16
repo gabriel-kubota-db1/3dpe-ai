@@ -46,11 +46,10 @@ export const MaskedAntdInput = ({
   // Sync the external value (from final-form) with the mask's internal value
   useEffect(() => {
     if (maskRef.current) {
-      if (value !== undefined && value !== null) {
-        maskRef.current.value = String(value);
-      } else {
-        // Handle clearing the input
-        maskRef.current.value = '';
+      const currentValue = value || '';
+      // Only update if the value is actually different to avoid infinite loops
+      if (maskRef.current.value !== currentValue) {
+        maskRef.current.value = currentValue;
       }
     }
   }, [value, maskRef]);

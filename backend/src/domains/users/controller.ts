@@ -42,6 +42,30 @@ export const getProfile = async (req: Request, res: Response) => {
   }
 };
 
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const { password, ...updateData } = req.body;
+    
+    // Don't allow role changes via profile update
+    delete updateData.role;
+    delete updateData.active;
+
+    if (password && password.trim() !== '') {
+      // Pass the plain password to be hashed by the model's hook
+      (updateData as any).password_hash = password;
+    }
+    
+    const user = await User.query().patchAndFetchById((req as any).user.id, updateData);
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error updating profile', error: error.message });
+  }
+};
+
 
 // For Admin User Registration
 const registerUser = async (req: Request, res: Response, role: 'physiotherapist' | 'industry') => {
