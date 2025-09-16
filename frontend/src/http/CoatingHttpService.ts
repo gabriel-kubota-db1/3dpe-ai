@@ -1,7 +1,22 @@
-import api from './axios';
-import { Coating } from '@/@types/coating';
+import { api } from './api';
+import { Coating, CoatingType } from '@/@types/coating';
 
-export const getCoatings = (): Promise<Coating[]> => api.get('/coatings').then(res => res.data);
-export const createCoating = (data: Omit<Coating, 'id'>): Promise<Coating> => api.post('/coatings', data).then(res => res.data);
-export const updateCoating = (id: number, data: Partial<Coating>): Promise<Coating> => api.put(`/coatings/${id}`, data).then(res => res.data);
-export const deleteCoating = (id: number): Promise<void> => api.delete(`/coatings/${id}`);
+export const getCoatings = async (coatingType?: CoatingType): Promise<Coating[]> => {
+  const params = coatingType ? { coating_type: coatingType } : {};
+  const response = await api.get('/coatings', { params });
+  return response.data;
+};
+
+export const createCoating = async (coating: Omit<Coating, 'id'>): Promise<Coating> => {
+  const response = await api.post('/coatings', coating);
+  return response.data;
+};
+
+export const updateCoating = async (id: number, coating: Partial<Coating>): Promise<Coating> => {
+  const response = await api.patch(`/coatings/${id}`, coating);
+  return response.data;
+};
+
+export const deleteCoating = async (id: number): Promise<void> => {
+  await api.delete(`/coatings/${id}`);
+};

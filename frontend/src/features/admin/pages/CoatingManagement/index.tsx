@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography } from 'antd';
+import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, InputNumber, Select, Tag } from 'antd';
 import { Form, Field } from 'react-final-form';
 import { Coating } from '@/@types/coating';
 import * as CoatingService from '@/http/CoatingHttpService';
 
 const { Title } = Typography;
+const { Option } = Select;
 
 const CoatingManagementPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -15,7 +16,7 @@ const CoatingManagementPage = () => {
 
   const { data: coatings, isLoading } = useQuery<Coating[], Error>({
     queryKey: ['coatings'],
-    queryFn: CoatingService.getCoatings,
+    queryFn: () => CoatingService.getCoatings(),
   });
 
   const { mutate: createOrUpdateCoating, isPending: isSaving } = useMutation({
@@ -62,12 +63,13 @@ const CoatingManagementPage = () => {
 
   const columns = [
     { title: 'Description', dataIndex: 'description', key: 'description' },
-    {
-      title: 'Active',
-      dataIndex: 'active',
-      key: 'active',
-      render: (active: boolean) => <Switch checked={active} disabled />,
-    },
+    { title: 'Coating Type', dataIndex: 'coating_type', key: 'coating_type', render: (type: string) => <Tag color={type === 'EVA' ? 'blue' : 'green'}>{type}</Tag> },
+    { title: 'Product Type', dataIndex: 'type', key: 'type' },
+    { title: 'Number Range', dataIndex: 'number_range', key: 'number_range' },
+    { title: 'Cost (R$)', dataIndex: 'cost_value', key: 'cost_value' },
+    { title: 'Sell (R$)', dataIndex: 'sell_value', key: 'sell_value' },
+    { title: 'Weight (g)', dataIndex: 'weight', key: 'weight' },
+    { title: 'Active', dataIndex: 'active', key: 'active', render: (active: boolean) => <Switch checked={active} disabled /> },
     {
       title: 'Actions',
       key: 'actions',
@@ -107,34 +109,20 @@ const CoatingManagementPage = () => {
       >
         <Form
           onSubmit={onSubmit}
-          initialValues={editingCoating || { description: '', active: true }}
-          render={({ handleSubmit, form }) => (
+          initialValues={editingCoating || { description: '', active: true, coating_type: 'EVA', type: 'INSOLE' }}
+          render={({ handleSubmit }) => (
             <form onSubmit={handleSubmit}>
-              <Field name="description">
-                {({ input, meta }) => (
-                  <AntdForm.Item
-                    label="Description"
-                    validateStatus={meta.touched && meta.error ? 'error' : ''}
-                    help={meta.touched && meta.error}
-                  >
-                    <Input {...input} placeholder="Enter coating description" />
-                  </AntdForm.Item>
-                )}
-              </Field>
-              <Field name="active" type="checkbox">
-                {({ input }) => (
-                  <AntdForm.Item label="Active">
-                    <Switch {...input} checked={input.checked} />
-                  </AntdForm.Item>
-                )}
-              </Field>
+              <Field name="description" render={({ input }) => <AntdForm.Item label="Description" required><Input {...input} /></AntdForm.Item>} />
+              <Field name="coating_type" render={({ input }) => <AntdForm.Item label="Coating Type" required><Select {...input}><Option value="EVA">EVA</Option><Option value="Fabric">Fabric</Option></Select></AntdForm.Item>} />
+              <Field name="type" render={({ input }) => <AntdForm.Item label="Product Type" required><Select {...input}><Option value="INSOLE">INSOLE</Option><Option value="SLIPPER">SLIPPER</Option><Option value="ELEMENT">ELEMENT</Option></Select></AntdForm.Item>} />
+              <Field name="number_range" render={({ input }) => <AntdForm.Item label="Number Range" required><Input {...input} placeholder="e.g., 34-38" /></AntdForm.Item>} />
+              <Field name="cost_value" render={({ input }) => <AntdForm.Item label="Cost Value (R$)" required><InputNumber {...input} style={{ width: '100%' }} min={0} precision={2} /></AntdForm.Item>} />
+              <Field name="sell_value" render={({ input }) => <AntdForm.Item label="Sell Value (R$)" required><InputNumber {...input} style={{ width: '100%' }} min={0} precision={2} /></AntdForm.Item>} />
+              <Field name="weight" render={({ input }) => <AntdForm.Item label="Weight (grams)" required><InputNumber {...input} style={{ width: '100%' }} min={0} /></AntdForm.Item>} />
+              <Field name="active" type="checkbox" render={({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>} />
               <div style={{ textAlign: 'right' }}>
-                <Button onClick={closeModal} style={{ marginRight: 8 }}>
-                  Cancel
-                </Button>
-                <Button type="primary" htmlType="submit" loading={isSaving}>
-                  Save
-                </Button>
+                <Button onClick={closeModal} style={{ marginRight: 8 }}>Cancel</Button>
+                <Button type="primary" htmlType="submit" loading={isSaving}>Save</Button>
               </div>
             </form>
           )}
