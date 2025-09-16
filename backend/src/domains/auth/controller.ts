@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../users/model.js';
 import { env } from '../../config/env.js';
-import { generateToken } from '@/utils/jwt.js';
+import { generateToken, generatePasswordResetToken, verifyToken } from '../../utils/jwt.js';
+import { sendPasswordResetEmail } from '../../services/EmailService.js';
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -27,18 +28,50 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const forgotPassword = async (req: Request, res: Response) => {
-  // In a real app, you would generate a token, save it, and email a link.
-  // For this example, we'll just simulate the success response.
   const { email } = req.body;
-  console.log(`Password reset requested for: ${email}`);
-  console.log(`A real implementation would send an email with a reset link.`);
-  res.json({ message: 'If a user with that email exists, a password reset link has been sent.' });
+
+  try {
+    const user = await User.query().findOne({ email });
+
+    if (user) {
+      const resetToken = generatePasswordResetToken({ id: user.id });
+      await sendPasswordResetEmail(user.email, resetToken);
+    }
+    
+    // Always send a generic success response to prevent user enumeration
+    res.json({ message: 'If a user with that email exists, a password reset link has been sent.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    // Do not reveal server errors to the client in this flow
+    res.json({ message: 'If a user with that email exists, a password reset link has been sent.' });
+  }
 };
 
 export const resetPassword = async (req: Request, res: Response) => {
-  // In a real app, you would verify the token from the request.
   const { token, password } = req.body;
-  console.log(`Password reset for token: ${token} with new password.`);
-  console.log(`A real implementation would find the user by the token and update their password.`);
-  res.json({ message: 'Password has been reset successfully.' });
+
+  try {
+    const decoded = verifyToken(token);
+
+    if (!decoded || typeof decoded !== 'object' || !decoded.id) {
+      return res.status(400).json({ message: 'Invalid or expired token.' });
+    }
+
+    const user = await User.query().findById(decoded.id);
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid token.' });
+    }
+
+    // The $beforeUpdate hook in the User model will automatically hash the password
+    await user.$query().patch({ password });
+
+    res.json({ message: 'Password has been reset successfully.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(400).json({ message: 'Token has expired.' });
+    }
+    res.status(500).json({ message: 'An error occurred while resetting the password.' });
+  }
 };
