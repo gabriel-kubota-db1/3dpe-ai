@@ -12,7 +12,7 @@ export const createInsoleModel = async (insoleModelData: Omit<InsoleModel, 'id' 
 };
 
 export const updateInsoleModel = async (id: number, insoleModelData: Partial<InsoleModel>): Promise<InsoleModel> => {
-  const { data } = await api.patch(`/insole-models/${id}`, insoleModelData);
+  const { data } = await api.put(`/insole-models/${id}`, insoleModelData);
   return data;
 };
 
