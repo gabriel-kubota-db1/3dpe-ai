@@ -3,15 +3,16 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { setupDatabase } from './config/database';
 
-// Import domain routers
+// Import routers
 import userRoutes from './domains/users/routes';
-import authRoutes from './domains/auth/routes';
-import coatingRoutes from './domains/coatings/routes';
-import insoleModelRoutes from './domains/insole-models/routes';
-import couponRoutes from './domains/coupons/routes';
+import insoleModelsRoutes from './domains/insoleModels/routes';
+import physiotherapistsRoutes from './domains/physiotherapists/routes';
+import industriesRoutes from './domains/industries/routes';
+import patientRoutes from './domains/patients/routes';
+import prescriptionRoutes from './domains/prescriptions/routes';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 // Setup Database
 setupDatabase();
@@ -23,12 +24,17 @@ app.use(express.json());
 
 // API Routes
 app.use('/api/users', userRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/coatings', coatingRoutes);
-app.use('/api/insole-models', insoleModelRoutes);
-app.use('/api/coupons', couponRoutes);
+app.use('/api/insole-models', insoleModelsRoutes);
+app.use('/api/physiotherapists', physiotherapistsRoutes);
+app.use('/api/industries', industriesRoutes);
+app.use('/api/patients', patientRoutes);
+app.use('/api/prescriptions', prescriptionRoutes);
 
+
+app.get('/', (req, res) => {
+  res.send('3DPé Backend is running!');
+});
 
 app.listen(port, () => {
-  console.log(`Backend server is running at http://localhost:${port}`);
+  console.log(`Server is running on http://localhost:${port}`);
 });
