@@ -5,6 +5,9 @@ import { Form, Field } from 'react-final-form';
 import { Coupon } from '@/@types/coupon';
 import * as CouponService from '@/http/CouponHttpService';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -22,6 +25,10 @@ const CouponManagementPage = () => {
 
   const { mutate: createOrUpdateCoupon, isPending: isSaving } = useMutation({
     mutationFn: (values: Omit<Coupon, 'id'> | Coupon) => {
+      console.log('Mutation function received:', values);
+      console.log('start_date type:', typeof values.start_date, values.start_date);
+      console.log('finish_date type:', typeof values.finish_date, values.finish_date);
+      
       if ('id' in values) {
         return CouponService.updateCoupon(values.id, values);
       }
@@ -60,17 +67,24 @@ const CouponManagementPage = () => {
 
   const onSubmit = (values: any) => {
     const { date_range, ...rest } = values;
+    
+    // For RangePicker, ensure we get the correct date regardless of time/timezone
+    // Send as ISO strings at start of day to match backend Joi validation
+    const startDate = dayjs(date_range[0]).startOf('day');
+    const endDate = dayjs(date_range[1]).startOf('day');
+    
     const payload = {
       ...rest,
-      start_date: dayjs(date_range[0]).format('YYYY-MM-DD'),
-      finish_date: dayjs(date_range[1]).format('YYYY-MM-DD'),
+      start_date: startDate.toISOString(),
+      finish_date: endDate.toISOString(),
     };
+    
     createOrUpdateCoupon(editingCoupon ? { ...payload, id: editingCoupon.id } : payload);
   };
 
   const columns = [
     { title: 'Code', dataIndex: 'code', key: 'code' },
-    { title: 'Value (%)', dataIndex: 'value', key: 'value' },
+    { title: 'Value (%)', dataIndex: 'value', key: 'value', render: (value: string) => `${Number(value).toFixed(0)}%` },
     { title: 'Start Date', dataIndex: 'start_date', key: 'start_date', render: (date: string) => dayjs(date).format('DD/MM/YYYY') },
     { title: 'Finish Date', dataIndex: 'finish_date', key: 'finish_date', render: (date: string) => dayjs(date).format('DD/MM/YYYY') },
     { title: 'Active', dataIndex: 'active', key: 'active', render: (active: boolean) => <Switch checked={active} disabled /> },
@@ -96,7 +110,7 @@ const CouponManagementPage = () => {
 
   const initialFormValues = editingCoupon
     ? { ...editingCoupon, date_range: [dayjs(editingCoupon.start_date), dayjs(editingCoupon.finish_date)] }
-    : { code: '', value: 10, date_range: null, active: true };
+    : { code: '', value: null, date_range: null, active: true };
 
   return (
     <div>
@@ -114,10 +128,12 @@ const CouponManagementPage = () => {
         onCancel={closeModal}
         footer={null}
         destroyOnClose
+        key={editingCoupon?.id || 'new'}
       >
         <Form
           onSubmit={onSubmit}
           initialValues={initialFormValues}
+          key={editingCoupon?.id || 'new'}
           render={({ handleSubmit }) => (
             <form onSubmit={handleSubmit}>
               <Field name="code" >
@@ -127,7 +143,7 @@ const CouponManagementPage = () => {
                 {({ input }) => <AntdForm.Item label="Value (%)" required><InputNumber {...input} min={0} max={100} addonAfter="%" style={{ width: '100%' }} /></AntdForm.Item>}
               </Field>
               <Field name="date_range">
-                {({ input }) => <AntdForm.Item label="Validity Period" required><RangePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" /></AntdForm.Item>}
+                {({ input }) => <AntdForm.Item label="Validity Period" required><RangePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" showTime={false} /></AntdForm.Item>}
               </Field>
               <Field name="active" type="checkbox">
                 {({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>}

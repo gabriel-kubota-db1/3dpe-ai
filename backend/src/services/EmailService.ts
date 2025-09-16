@@ -2,11 +2,11 @@ import nodemailer from 'nodemailer';
 import { env } from '../config/env.js';
 
 const transporter = nodemailer.createTransport({
-  host: env.EMAIL_HOST,
-  port: env.EMAIL_PORT,
+  host: env.SMTP_HOST,
+  port: env.SMTP_PORT,
   auth: {
-    user: env.EMAIL_USER,
-    pass: env.EMAIL_PASS,
+    user: env.SMTP_USER,
+    pass: env.SMTP_PASS,
   },
 });
 
@@ -19,7 +19,7 @@ interface EmailOptions {
 export const sendEmail = async (options: EmailOptions) => {
   try {
     const info = await transporter.sendMail({
-      from: `"3DPé Support" <${env.EMAIL_USER}>`,
+      from: `"3DPé Support" <${env.SMTP_USER}>`,
       ...options,
     });
     console.log('Message sent: %s', info.messageId);

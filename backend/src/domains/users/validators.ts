@@ -42,3 +42,20 @@ export const loginSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
 });
+
+export const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
+export const resetPasswordSchema = Joi.object({
+  token: Joi.string().required(),
+  password: Joi.string().min(6).required(),
+});
+
+export const refreshTokenSchema = Joi.object({
+  refreshToken: Joi.string().required(),
+});
+
+export const logoutSchema = Joi.object({
+  refreshToken: Joi.string().optional(),
+});

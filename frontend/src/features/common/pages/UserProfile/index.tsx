@@ -73,7 +73,7 @@ const UserProfilePage = () => {
   const onSubmit = (values: any) => {
     const formattedValues = {
       ...values,
-      date_of_birth: values.date_of_birth ? dayjs(values.date_of_birth).format('YYYY-MM-DD') : null,
+      date_of_birth: values.date_of_birth ? dayjs(values.date_of_birth).startOf('day').format('YYYY-MM-DD') : null,
     };
     mutation.mutate(formattedValues);
   };

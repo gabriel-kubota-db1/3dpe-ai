@@ -19,6 +19,8 @@ export class User extends Model {
   number?: string;
   complement?: string;
   password_hash!: string;
+  reset_password_token?: string;
+  reset_password_expires?: Date;
   created_at!: string;
   updated_at!: string;
 
@@ -71,6 +73,8 @@ export class User extends Model {
   $formatJson(json: Pojo): Pojo {
     json = super.$formatJson(json);
     delete json.password_hash;
+    delete json.reset_password_token;
+    delete json.reset_password_expires;
     return json;
   }
 }

@@ -11,9 +11,9 @@ const { Title } = Typography;
 
 interface LoginResponse {
   data: {
-    token: string;
-    user: User;
+    accessToken: string;
     refreshToken?: string;
+    user: User;
   }
 }
 
@@ -25,7 +25,8 @@ const LoginPage = () => {
   const mutation = useMutation<LoginResponse, Error, any>({
     mutationFn: (values) => api.post('/auth/login', values),
     onSuccess: (data) => {
-      login(data.data.token, data.data.user, data.data.refreshToken);
+      console.log(data.data);
+      login(data.data.accessToken, data.data.user, data.data.refreshToken);
       message.success('Login successful!');
       navigate('/profile');
     },

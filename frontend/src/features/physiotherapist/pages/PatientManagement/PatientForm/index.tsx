@@ -40,7 +40,7 @@ const PatientFormPage = () => {
   const onSubmit = (values: any) => {
     const submissionValues = { ...values };
     if (values.date_of_birth && dayjs.isDayjs(values.date_of_birth)) {
-      submissionValues.date_of_birth = values.date_of_birth.format('YYYY-MM-DD');
+      submissionValues.date_of_birth = values.date_of_birth.startOf('day').format('YYYY-MM-DD');
     }
     mutation.mutate(submissionValues);
   };

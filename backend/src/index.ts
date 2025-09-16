@@ -8,6 +8,9 @@ import userRoutes from './domains/users/routes';
 import insoleModelsRoutes from './domains/insole-models/routes';
 import patientRoutes from './domains/patients/routes';
 import prescriptionRoutes from './domains/prescriptions/routes';
+import couponRoutes from './domains/coupons/routes';
+import authRoutes from './domains/auth/routes';
+import coatingsRoutes from './domains/coatings/routes';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -21,10 +24,13 @@ app.use(helmet());
 app.use(express.json());
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/insole-models', insoleModelsRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/prescriptions', prescriptionRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/coatings', coatingsRoutes);
 
 
 app.get('/', (req, res) => {
