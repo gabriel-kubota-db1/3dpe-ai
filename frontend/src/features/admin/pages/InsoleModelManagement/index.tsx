@@ -82,8 +82,10 @@ const InsoleModelManagementPage = () => {
     { title: 'Description', dataIndex: 'description', key: 'description' },
     { title: 'Type', dataIndex: 'type', key: 'type' },
     { title: 'Coating', dataIndex: 'coating', key: 'coating', render: (_: any, record: InsoleModel) => record.coating ? <Tag>{record.coating.description}</Tag> : '-' },
+    { title: 'Coating Type', key: 'coating_type', render: (_: any, record: InsoleModel) => record.coating ? <Tag color={record.coating.coating_type === 'EVA' ? 'blue' : 'green'}>{record.coating.coating_type}</Tag> : '-' },
     { title: 'Number Range', dataIndex: 'number_range', key: 'number_range' },
-    { title: 'Sell Value (R$)', dataIndex: 'sell_value', key: 'sell_value' },
+    { title: 'Cost Value (R$)', dataIndex: 'cost_value', key: 'cost_value', render: (value: number) => `R$ ${Number(value).toFixed(2)}` },
+    { title: 'Sell Value (R$)', dataIndex: 'sell_value', key: 'sell_value', render: (value: number) => `R$ ${Number(value).toFixed(2)}` },
     { title: 'Active', dataIndex: 'active', key: 'active', render: (active: boolean) => <Switch checked={active} disabled /> },
     {
       title: 'Actions',
