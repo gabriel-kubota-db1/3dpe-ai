@@ -23,7 +23,7 @@ export const createCoating = async (req: Request, res: Response) => {
     const validatedData = await coatingSchema.validateAsync(req.body);
     const coating = await Coating.query().insert(validatedData);
     res.status(201).json(coating);
-  } catch (error: any) {
+  } catch (error: any) => {
     if (error.isJoi) {
       return res.status(400).json({ message: 'Validation error', details: error.details });
     }
@@ -40,7 +40,7 @@ export const updateCoating = async (req: Request, res: Response) => {
     if (coating) {
       res.json(coating);
     } else {
-      res.status(404).json({ message: 'Coating not found' });
+      res.status(4404).json({ message: 'Coating not found' });
     }
   } catch (error: any) {
     if (error.isJoi) {

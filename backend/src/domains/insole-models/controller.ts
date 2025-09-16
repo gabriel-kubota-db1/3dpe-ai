@@ -4,10 +4,8 @@ import { insoleModelSchema, insoleModelUpdateSchema } from './validators';
 
 export const getAllInsoleModels = async (req: Request, res: Response) => {
   try {
-    const insoleModels = await InsoleModel.query()
-      .withGraphFetched('coating')
-      .orderBy('description', 'ASC');
-    res.json(insoleModels);
+    const models = await InsoleModel.query().withGraphFetched('coating').orderBy('description');
+    res.json(models);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching insole models', error: error.message });
   }
@@ -16,8 +14,8 @@ export const getAllInsoleModels = async (req: Request, res: Response) => {
 export const createInsoleModel = async (req: Request, res: Response) => {
   try {
     const validatedData = await insoleModelSchema.validateAsync(req.body);
-    const insoleModel = await InsoleModel.query().insert(validatedData);
-    res.status(201).json(insoleModel);
+    const model = await InsoleModel.query().insert(validatedData);
+    res.status(201).json(model);
   } catch (error: any) {
     if (error.isJoi) {
       return res.status(400).json({ message: 'Validation error', details: error.details });
@@ -28,17 +26,18 @@ export const createInsoleModel = async (req: Request, res: Response) => {
 
 export const updateInsoleModel = async (req: Request, res: Response) => {
   try {
-    const validatedData = await insoleModelUpdateSchema.validateAsync(req.body);
+    const { id, created_at, updated_at, coating, ...updateData } = req.body;
+    const validatedData = await insoleModelUpdateSchema.validateAsync(updateData);
     
-    const insoleModel = await InsoleModel.query().patchAndFetchById(req.params.id, validatedData);
-
-    if (insoleModel) {
-      res.json(insoleModel);
+    const model = await InsoleModel.query().patchAndFetchById(req.params.id, validatedData);
+    if (model) {
+      const modelWithCoating = await model.$fetchGraph('coating');
+      res.json(modelWithCoating);
     } else {
       res.status(404).json({ message: 'Insole model not found' });
     }
   } catch (error: any) {
-     if (error.isJoi) {
+    if (error.isJoi) {
       return res.status(400).json({ message: 'Validation error', details: error.details });
     }
     res.status(500).json({ message: 'Error updating insole model', error: error.message });

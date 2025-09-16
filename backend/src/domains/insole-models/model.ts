@@ -1,16 +1,21 @@
 import { Model } from 'objection';
-import path from 'path';
 import { Coating } from '../coatings/model';
+
+export type ProductType = 'INSOLE' | 'SLIPPER' | 'ELEMENT';
 
 export class InsoleModel extends Model {
   id!: number;
   description!: string;
   coating_id?: number | null;
+  number_range!: string;
+  cost_value!: number;
+  sell_value!: number;
+  weight!: number;
+  type!: ProductType;
   active!: boolean;
   created_at!: string;
   updated_at!: string;
 
-  // Optional: not a database column, but will be populated by the relation
   coating?: Coating;
 
   static get tableName() {

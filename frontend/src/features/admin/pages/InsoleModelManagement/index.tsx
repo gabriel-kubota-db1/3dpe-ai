@@ -1,17 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, Select, Tag } from 'antd';
+import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, Select, Tag, Row, Col, InputNumber } from 'antd';
 import { Form, Field } from 'react-final-form';
 import { InsoleModel } from '@/@types/insoleModel';
-import { Coating } from '@/@types/coating';
+import { Coating, CoatingType } from '@/@types/coating';
 import * as InsoleModelService from '@/http/InsoleModelHttpService';
 import * as CoatingService from '@/http/CoatingHttpService';
 
 const { Title } = Typography;
+const { Option } = Select;
 
 const InsoleModelManagementPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingModel, setEditingModel] = useState<InsoleModel | null>(null);
+  const [selectedCoatingType, setSelectedCoatingType] = useState<CoatingType | null>(null);
   const queryClient = useQueryClient();
   const { message } = App.useApp();
 
@@ -21,9 +23,18 @@ const InsoleModelManagementPage = () => {
   });
 
   const { data: coatings, isLoading: isLoadingCoatings } = useQuery<Coating[], Error>({
-    queryKey: ['coatings'],
-    queryFn: CoatingService.getCoatings,
+    queryKey: ['coatings', selectedCoatingType],
+    queryFn: () => CoatingService.getCoatings(selectedCoatingType!),
+    enabled: !!selectedCoatingType,
   });
+
+  useEffect(() => {
+    if (editingModel && editingModel.coating) {
+      setSelectedCoatingType(editingModel.coating.coating_type);
+    } else {
+      setSelectedCoatingType(null);
+    }
+  }, [editingModel]);
 
   const { mutate: createOrUpdateModel, isPending: isSaving } = useMutation({
     mutationFn: (values: Partial<InsoleModel>) => {
@@ -68,21 +79,12 @@ const InsoleModelManagementPage = () => {
   };
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', key: 'id', sorter: (a: InsoleModel, b: InsoleModel) => a.id - b.id },
-    { title: 'Description', dataIndex: 'description', key: 'description', sorter: (a: InsoleModel, b: InsoleModel) => a.description.localeCompare(b.description) },
-    { 
-      title: 'Coating', 
-      dataIndex: 'coating', 
-      key: 'coating',
-      render: (_: any, record: InsoleModel) => record.coating ? <Tag>{record.coating.description}</Tag> : '-',
-      sorter: (a: InsoleModel, b: InsoleModel) => (a.coating?.description || '').localeCompare(b.coating?.description || ''),
-    },
-    {
-      title: 'Active',
-      dataIndex: 'active',
-      key: 'active',
-      render: (active: boolean) => <Switch checked={active} disabled />,
-    },
+    { title: 'Description', dataIndex: 'description', key: 'description' },
+    { title: 'Type', dataIndex: 'type', key: 'type' },
+    { title: 'Coating', dataIndex: 'coating', key: 'coating', render: (_: any, record: InsoleModel) => record.coating ? <Tag>{record.coating.description}</Tag> : '-' },
+    { title: 'Number Range', dataIndex: 'number_range', key: 'number_range' },
+    { title: 'Sell Value (R$)', dataIndex: 'sell_value', key: 'sell_value' },
+    { title: 'Active', dataIndex: 'active', key: 'active', render: (active: boolean) => <Switch checked={active} disabled /> },
     {
       title: 'Actions',
       key: 'actions',
@@ -119,60 +121,72 @@ const InsoleModelManagementPage = () => {
         onCancel={closeModal}
         footer={null}
         destroyOnClose
+        width={800}
       >
         <Form
           onSubmit={onSubmit}
-          initialValues={editingModel || { description: '', coating_id: null, active: true }}
-          render={({ handleSubmit }) => (
+          initialValues={editingModel || { active: true, type: 'INSOLE' }}
+          render={({ handleSubmit, form }) => (
             <form onSubmit={handleSubmit}>
-              <Field name="description" validate={value => (value ? undefined : 'Description is required')}>
-                {({ input, meta }) => (
-                  <AntdForm.Item
-                    label="Description"
-                    validateStatus={meta.touched && meta.error ? 'error' : ''}
-                    help={meta.touched && meta.error}
-                    required
-                  >
-                    <Input {...input} placeholder="Enter model description" />
-                  </AntdForm.Item>
-                )}
-              </Field>
-              <Field name="coating_id" validate={value => (value ? undefined : 'Coating is required')}>
-                {({ input, meta }) => (
-                  <AntdForm.Item
-                    label="Coating"
-                    validateStatus={meta.touched && meta.error ? 'error' : ''}
-                    help={meta.touched && meta.error}
-                    required
-                  >
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Field name="description" render={({ input }) => <AntdForm.Item label="Description" required><Input {...input} /></AntdForm.Item>} />
+                </Col>
+                <Col span={12}>
+                  <Field name="type" render={({ input }) => <AntdForm.Item label="Product Type" required><Select {...input}><Option value="INSOLE">INSOLE</Option><Option value="SLIPPER">SLIPPER</Option><Option value="ELEMENT">ELEMENT</Option></Select></AntdForm.Item>} />
+                </Col>
+                <Col span={12}>
+                  <AntdForm.Item label="Coating Type" required>
                     <Select
-                      {...input}
-                      placeholder="Select a coating"
-                      loading={isLoadingCoatings}
-                      disabled={isLoadingCoatings}
-                      options={coatings?.map(coating => ({
-                        label: coating.description,
-                        value: coating.id,
-                      }))}
-                      allowClear
-                    />
+                      value={selectedCoatingType}
+                      onChange={(value) => {
+                        setSelectedCoatingType(value);
+                        form.change('coating_id', undefined);
+                      }}
+                      placeholder="Select coating type"
+                    >
+                      <Option value="EVA">EVA</Option>
+                      <Option value="Fabric">Fabric</Option>
+                    </Select>
                   </AntdForm.Item>
-                )}
-              </Field>
-              <Field name="active" type="checkbox">
-                {({ input }) => (
-                  <AntdForm.Item label="Active">
-                    <Switch {...input} checked={input.checked} />
-                  </AntdForm.Item>
-                )}
-              </Field>
+                </Col>
+                <Col span={12}>
+                  <Field name="coating_id">
+                    {({ input }) => (
+                      <AntdForm.Item label="Coating" required>
+                        <Select
+                          {...input}
+                          placeholder="Select a coating"
+                          loading={isLoadingCoatings}
+                          disabled={!selectedCoatingType || isLoadingCoatings}
+                          options={coatings?.map(c => ({ label: c.description, value: c.id }))}
+                          allowClear
+                        />
+                      </AntdForm.Item>
+                    )}
+                  </Field>
+                </Col>
+                <Col span={12}>
+                  <Field name="number_range" render={({ input }) => <AntdForm.Item label="Number Range" required><Input {...input} placeholder="e.g., 34-38" /></AntdForm.Item>} />
+                </Col>
+                <Col span={12}>
+                  <Field name="weight" render={({ input }) => <AntdForm.Item label="Weight (grams)" required><InputNumber {...input} style={{ width: '100%' }} min={0} /></AntdForm.Item>} />
+                </Col>
+                <Col span={12}>
+                  <Field name="cost_value" render={({ input }) => <AntdForm.Item label="Cost Value (R$)" required><InputNumber {...input} style={{ width: '100%' }} min={0} precision={2} /></AntdForm.Item>} />
+                </Col>
+                <Col span={12}>
+                  <Field name="sell_value" render={({ input }) => <AntdForm.Item label="Sell Value (R$)" required><InputNumber {...input} style={{ width: '100%' }} min={0} precision={2} /></AntdForm.Item>} />
+                </Col>
+                <Col span={24}>
+                  <Field name="active" type="checkbox">
+                    {({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>}
+                  </Field>
+                </Col>
+              </Row>
               <div style={{ textAlign: 'right', marginTop: '24px' }}>
-                <Button onClick={closeModal} style={{ marginRight: 8 }}>
-                  Cancel
-                </Button>
-                <Button type="primary" htmlType="submit" loading={isSaving}>
-                  Save
-                </Button>
+                <Button onClick={closeModal} style={{ marginRight: 8 }}>Cancel</Button>
+                <Button type="primary" htmlType="submit" loading={isSaving}>Save</Button>
               </div>
             </form>
           )}

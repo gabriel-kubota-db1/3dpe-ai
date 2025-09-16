@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, Field } from 'react-final-form';
 import { FormSpy } from 'react-final-form';
@@ -7,10 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import * as PatientService from '@/http/PatientHttpService';
 import * as InsoleModelService from '@/http/InsoleModelHttpService';
 import * as PrescriptionService from '@/http/PrescriptionHttpService';
-import * as CoatingService from '@/http/CoatingHttpService';
 import { Patient } from '@/@types/patient';
-import { InsoleModel } from '@/@types/insole';
-import { Coating, CoatingType } from '@/@types/coating';
+import { InsoleModel } from '@/@types/insoleModel';
 import FootSvg from './FootSvg';
 
 const { Title } = Typography;
@@ -37,7 +34,6 @@ const CreatePrescriptionPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { message } = App.useApp();
-  const [selectedCoatingType, setSelectedCoatingType] = useState<CoatingType | null>(null);
 
   const { data: patients, isLoading: isLoadingPatients } = useQuery<Patient[], Error>({
     queryKey: ['patients'],
@@ -49,18 +45,10 @@ const CreatePrescriptionPage = () => {
     queryFn: InsoleModelService.getInsoleModels,
   });
 
-  const { data: filteredCoatings, isLoading: isLoadingCoatings } = useQuery<Coating[], Error>({
-    queryKey: ['coatings', selectedCoatingType],
-    queryFn: () => CoatingService.getCoatings(selectedCoatingType!),
-    enabled: !!selectedCoatingType,
-  });
-
   const { mutate: createPrescription, isPending } = useMutation({
     mutationFn: (values: any) => {
-        const { patient_id, insole_model_id, numeration, coating_id, ...rest } = values;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { coating_type, ...palmilhogram } = rest;
-        const payload = { patient_id, insole_model_id, numeration, coating_id, palmilhogram };
+        const { patient_id, insole_model_id, numeration, ...palmilhogram } = values;
+        const payload = { patient_id, insole_model_id, numeration, palmilhogram };
         return PrescriptionService.createPrescription(payload);
     },
     onSuccess: () => {
@@ -86,22 +74,16 @@ const CreatePrescriptionPage = () => {
       <Title level={3}>New Prescription</Title>
       <Form
         onSubmit={onSubmit}
-        render={({ handleSubmit, values, form }) => (
+        render={({ handleSubmit, values }) => (
           <form onSubmit={handleSubmit}>
             <Row gutter={24}>
-              <Col xs={24} md={6}>
+              <Col xs={24} md={8}>
                 <Field name="patient_id" render={({ input }) => <AntdForm.Item label="Patient" required><Select {...input} placeholder="Select a patient">{patients?.map(p => <Option key={p.id} value={p.id}>{p.name}</Option>)}</Select></AntdForm.Item>} />
               </Col>
-              <Col xs={24} md={6}>
-                <Field name="insole_model_id" render={({ input }) => <AntdForm.Item label="Insole Model" required><Select {...input} placeholder="Select a model">{insoleModels?.map(m => <Option key={m.id} value={m.id}>{m.name}</Option>)}</Select></AntdForm.Item>} />
+              <Col xs={24} md={8}>
+                <Field name="insole_model_id" render={({ input }) => <AntdForm.Item label="Insole Model" required><Select {...input} placeholder="Select a model">{insoleModels?.map(m => <Option key={m.id} value={m.id}>{m.description}</Option>)}</Select></AntdForm.Item>} />
               </Col>
-              <Col xs={24} md={6}>
-                <Field name="coating_type" render={({ input }) => <AntdForm.Item label="Coating Type" required><Select {...input} placeholder="Select coating type" onChange={(value) => { input.onChange(value); setSelectedCoatingType(value); form.change('coating_id', undefined); }}><Option value="EVA">EVA</Option><Option value="Fabric">Fabric</Option></Select></AntdForm.Item>} />
-              </Col>
-              <Col xs={24} md={6}>
-                <Field name="coating_id" render={({ input }) => <AntdForm.Item label="Coating" required><Select {...input} placeholder="Select a coating" loading={isLoadingCoatings} disabled={!selectedCoatingType}>{filteredCoatings?.map(c => <Option key={c.id} value={c.id}>{c.description}</Option>)}</Select></AntdForm.Item>} />
-              </Col>
-              <Col xs={24}>
+              <Col xs={24} md={8}>
                 <Field name="numeration" render={({ input }) => <AntdForm.Item label="Numeration (Shoe Size)" required><Input {...input} /></AntdForm.Item>} />
               </Col>
             </Row>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, InputNumber, Select, Tag } from 'antd';
+import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, Select, Tag } from 'antd';
 import { Form, Field } from 'react-final-form';
 import { Coating } from '@/@types/coating';
 import * as CoatingService from '@/http/CoatingHttpService';
@@ -21,10 +21,10 @@ const CoatingManagementPage = () => {
 
   const { mutate: createOrUpdateCoating, isPending: isSaving } = useMutation({
     mutationFn: (values: Omit<Coating, 'id'> | Coating) => {
-      if ('id' in values) {
+      if ('id' in values && values.id) {
         return CoatingService.updateCoating(values.id, values);
       }
-      return CoatingService.createCoating(values);
+      return CoatingService.createCoating(values as Omit<Coating, 'id'>);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coatings'] });
@@ -64,11 +64,6 @@ const CoatingManagementPage = () => {
   const columns = [
     { title: 'Description', dataIndex: 'description', key: 'description' },
     { title: 'Coating Type', dataIndex: 'coating_type', key: 'coating_type', render: (type: string) => <Tag color={type === 'EVA' ? 'blue' : 'green'}>{type}</Tag> },
-    { title: 'Product Type', dataIndex: 'type', key: 'type' },
-    { title: 'Number Range', dataIndex: 'number_range', key: 'number_range' },
-    { title: 'Cost (R$)', dataIndex: 'cost_value', key: 'cost_value' },
-    { title: 'Sell (R$)', dataIndex: 'sell_value', key: 'sell_value' },
-    { title: 'Weight (g)', dataIndex: 'weight', key: 'weight' },
     { title: 'Active', dataIndex: 'active', key: 'active', render: (active: boolean) => <Switch checked={active} disabled /> },
     {
       title: 'Actions',
@@ -109,18 +104,13 @@ const CoatingManagementPage = () => {
       >
         <Form
           onSubmit={onSubmit}
-          initialValues={editingCoating || { description: '', active: true, coating_type: 'EVA', type: 'INSOLE' }}
+          initialValues={editingCoating || { description: '', active: true, coating_type: 'EVA' }}
           render={({ handleSubmit }) => (
             <form onSubmit={handleSubmit}>
               <Field name="description" render={({ input }) => <AntdForm.Item label="Description" required><Input {...input} /></AntdForm.Item>} />
               <Field name="coating_type" render={({ input }) => <AntdForm.Item label="Coating Type" required><Select {...input}><Option value="EVA">EVA</Option><Option value="Fabric">Fabric</Option></Select></AntdForm.Item>} />
-              <Field name="type" render={({ input }) => <AntdForm.Item label="Product Type" required><Select {...input}><Option value="INSOLE">INSOLE</Option><Option value="SLIPPER">SLIPPER</Option><Option value="ELEMENT">ELEMENT</Option></Select></AntdForm.Item>} />
-              <Field name="number_range" render={({ input }) => <AntdForm.Item label="Number Range" required><Input {...input} placeholder="e.g., 34-38" /></AntdForm.Item>} />
-              <Field name="cost_value" render={({ input }) => <AntdForm.Item label="Cost Value (R$)" required><InputNumber {...input} style={{ width: '100%' }} min={0} precision={2} /></AntdForm.Item>} />
-              <Field name="sell_value" render={({ input }) => <AntdForm.Item label="Sell Value (R$)" required><InputNumber {...input} style={{ width: '100%' }} min={0} precision={2} /></AntdForm.Item>} />
-              <Field name="weight" render={({ input }) => <AntdForm.Item label="Weight (grams)" required><InputNumber {...input} style={{ width: '100%' }} min={0} /></AntdForm.Item>} />
               <Field name="active" type="checkbox" render={({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>} />
-              <div style={{ textAlign: 'right' }}>
+              <div style={{ textAlign: 'right', marginTop: 24 }}>
                 <Button onClick={closeModal} style={{ marginRight: 8 }}>Cancel</Button>
                 <Button type="primary" htmlType="submit" loading={isSaving}>Save</Button>
               </div>
