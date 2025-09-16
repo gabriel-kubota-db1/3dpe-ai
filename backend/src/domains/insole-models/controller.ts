@@ -4,7 +4,9 @@ import { insoleModelSchema, insoleModelUpdateSchema } from './validators';
 
 export const getAllInsoleModels = async (req: Request, res: Response) => {
   try {
-    const insoleModels = await InsoleModel.query().orderBy('description', 'ASC');
+    const insoleModels = await InsoleModel.query()
+      .withGraphFetched('coating')
+      .orderBy('description', 'ASC');
     res.json(insoleModels);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching insole models', error: error.message });

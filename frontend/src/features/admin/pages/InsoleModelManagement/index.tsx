@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, Select } from 'antd';
+import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, Select, Tag } from 'antd';
 import { Form, Field } from 'react-final-form';
 import { InsoleModel } from '@/@types/insoleModel';
 import { Coating } from '@/@types/coating';
@@ -70,7 +70,13 @@ const InsoleModelManagementPage = () => {
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id', sorter: (a: InsoleModel, b: InsoleModel) => a.id - b.id },
     { title: 'Description', dataIndex: 'description', key: 'description', sorter: (a: InsoleModel, b: InsoleModel) => a.description.localeCompare(b.description) },
-    { title: 'Coating ID', dataIndex: 'coating_id', key: 'coating_id' },
+    { 
+      title: 'Coating', 
+      dataIndex: 'coating', 
+      key: 'coating',
+      render: (_: any, record: InsoleModel) => record.coating ? <Tag>{record.coating.description}</Tag> : '-',
+      sorter: (a: InsoleModel, b: InsoleModel) => (a.coating?.description || '').localeCompare(b.coating?.description || ''),
+    },
     {
       title: 'Active',
       dataIndex: 'active',

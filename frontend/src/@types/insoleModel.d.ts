@@ -1,3 +1,5 @@
+import { Coating } from './coating';
+
 export interface InsoleModel {
   id: number;
   description: string;
@@ -5,4 +7,5 @@ export interface InsoleModel {
   active: boolean;
   created_at: string;
   updated_at: string;
+  coating?: Coating;
 }
