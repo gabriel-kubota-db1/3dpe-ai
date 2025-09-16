@@ -7,32 +7,9 @@ import * as UserService from '@/http/UserHttpService';
 import { User } from '@/@types/user';
 import dayjs from 'dayjs';
 import { useCep } from '../../hooks/useCep';
-import { MaskedAntdInput } from '@/components/Form/MaskedAntdInput';
-import { useAuth } from '@/context/AuthContext';
 
 const { Title } = Typography;
 const { Option } = Select;
-
-const documentMask = [
-  {
-    mask: '000.000.000-00',
-    maxLength: 11,
-  },
-  {
-    mask: '00.000.000/0000-00',
-  },
-];
-
-const phoneMask = [
-  {
-    mask: '(00) 0000-0000',
-  },
-  {
-    mask: '(00) 00000-0000',
-  },
-];
-
-const cepMask = '00000-000';
 
 const UserFormPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -40,7 +17,6 @@ const UserFormPage = () => {
   const isEditMode = !!id;
   const queryClient = useQueryClient();
   const { message } = App.useApp();
-  const { user: currentUser } = useAuth();
   const [selectedRole, setSelectedRole] = useState<'physiotherapist' | 'industry' | null>(null);
 
   const { data: user, isLoading: isLoadingUser } = useQuery<User, Error>({
@@ -96,10 +72,6 @@ const UserFormPage = () => {
       submissionValues.date_of_birth = values.date_of_birth.format('YYYY-MM-DD');
     }
 
-    if (isEditMode && (!submissionValues.password || submissionValues.password.trim() === '')) {
-      delete submissionValues.password;
-    }
-
     if (isEditMode) {
       updateUser(submissionValues);
     } else {
@@ -111,8 +83,8 @@ const UserFormPage = () => {
     return <Spin tip="Loading user data..." />;
   }
 
-  const initialValues = isEditMode && user
-    ? { ...user, active: !!user.active, date_of_birth: user.date_of_birth ? dayjs(user.date_of_birth) : undefined }
+  const initialValues = isEditMode && user 
+    ? { ...user, date_of_birth: user.date_of_birth ? dayjs(user.date_of_birth) : undefined } 
     : { active: true, role: null };
 
   return (
@@ -167,27 +139,16 @@ const UserFormPage = () => {
                       <Field name="document">
                         {({ input, meta }) => (
                           <AntdForm.Item label="Document (CPF/CNPJ)" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
-                            <MaskedAntdInput
-                              {...input}
-                              mask={documentMask}
-                              unmask={true}
-                              disabled={isEditMode && currentUser?.role !== 'admin'}
-                              placeholder="Enter document"
-                            />
+                            <Input {...input} />
                           </AntdForm.Item>
                         )}
                       </Field>
                     </Col>
                     <Col xs={24} sm={12}>
-                      <Field name="password">
-                        {({ input, meta }) => (
-                          <AntdForm.Item
-                            label="Password"
-                            required={!isEditMode}
-                            validateStatus={meta.touched && meta.error ? 'error' : ''}
-                            help={isEditMode ? "Leave blank to keep current password" : (meta.touched && meta.error)}
-                          >
-                            <Input.Password {...input} placeholder={isEditMode ? "Enter new password" : "Required"} />
+                      <Field name="date_of_birth">
+                        {({ input }) => (
+                          <AntdForm.Item label="Date of Birth">
+                            <DatePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" />
                           </AntdForm.Item>
                         )}
                       </Field>
@@ -195,27 +156,11 @@ const UserFormPage = () => {
                   </Row>
 
                   <Row gutter={16}>
-                    {values.role === 'physiotherapist' && (
-                      <Col xs={24} sm={12}>
-                        <Field name="date_of_birth">
-                          {({ input }) => (
-                            <AntdForm.Item label="Date of Birth">
-                              <DatePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" />
-                            </AntdForm.Item>
-                          )}
-                        </Field>
-                      </Col>
-                    )}
-                    <Col xs={24} sm={values.role === 'physiotherapist' ? 12 : 24}>
+                    <Col xs={24} sm={12}>
                       <Field name="phone">
                         {({ input }) => (
                           <AntdForm.Item label="Phone">
-                            <MaskedAntdInput
-                              {...input}
-                              mask={phoneMask}
-                              unmask={true}
-                              placeholder="(XX) XXXXX-XXXX"
-                            />
+                            <Input {...input} />
                           </AntdForm.Item>
                         )}
                       </Field>
@@ -230,13 +175,10 @@ const UserFormPage = () => {
                       <Field name="cep">
                         {({ input }) => (
                           <AntdForm.Item label="CEP">
-                            <MaskedAntdInput
-                              {...input}
-                              mask={cepMask}
-                              unmask={true}
+                            <Input 
+                              {...input} 
                               onBlur={() => fetchAddressByCep(input.value)}
                               suffix={isCepLoading ? <Spin size="small" /> : null}
-                              placeholder="00000-000"
                             />
                           </AntdForm.Item>
                         )}

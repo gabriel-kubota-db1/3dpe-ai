@@ -8,18 +8,11 @@ import adminRoutes from '@/features/admin/routes';
 import PrivateRoute from './PrivateRoute';
 
 const AppRoutes = () => {
-  const { isLoading, user, isInitialized, isAuthenticated } = useAuth();
+  const { isLoading, user } = useAuth();
 
-  // Show loading during initial authentication check
-  if (!isInitialized || isLoading) {
+  if (isLoading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        backgroundColor: '#f0f2f5'
-      }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <Spin size="large" />
       </div>
     );
@@ -27,40 +20,21 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* Auth routes - available when not authenticated */}
       {authRoutes}
       
-      {/* Protected routes - available when authenticated */}
+      {/* Common Routes for all authenticated users */}
       <Route element={<PrivateRoute />}>
         {commonRoutes}
       </Route>
 
-      {/* Admin routes - available when authenticated as admin */}
+      {/* Admin Routes */}
       {user?.role === 'admin' && (
         <Route element={<PrivateRoute allowedRoles={['admin']} />}>
           {adminRoutes}
         </Route>
       )}
 
-      {/* Default redirects */}
-      <Route 
-        path="/" 
-        element={
-          <Navigate 
-            to={isAuthenticated ? "/profile" : "/login"} 
-            replace 
-          />
-        } 
-      />
-      <Route 
-        path="*" 
-        element={
-          <Navigate 
-            to={isAuthenticated ? "/profile" : "/login"} 
-            replace 
-          />
-        } 
-      />
+      <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );
 };
