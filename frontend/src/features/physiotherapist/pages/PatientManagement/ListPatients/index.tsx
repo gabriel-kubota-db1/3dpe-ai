@@ -4,6 +4,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import * as PatientService from '@/http/PatientHttpService';
 import { Patient } from '@/@types/patient';
+import { formatCPF, formatDate, formatPhone } from '@/utils/formatter';
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -25,11 +26,25 @@ const ListPatientsPage = () => {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
+      render: (email?: string) => email || 'N/A',
     },
     {
       title: 'Phone',
       dataIndex: 'phone',
       key: 'phone',
+      render: (phone?: string) => formatPhone(phone),
+    },
+    {
+      title: 'CPF',
+      dataIndex: 'cpf',
+      key: 'cpf',
+      render: (cpf?: string) => formatCPF(cpf),
+    },
+    {
+      title: 'Date of Birth',
+      dataIndex: 'date_of_birth',
+      key: 'date_of_birth',
+      render: (date?: string) => formatDate(date),
     },
     {
       title: 'Actions',
