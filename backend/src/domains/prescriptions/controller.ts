@@ -1,73 +1,73 @@
 import { Request, Response } from 'express';
-import { InsolePrescription } from './model';
-import { Palmilogram } from './palmilogramModel';
-import { transaction } from 'objection';
+import Prescription from './model';
 
-// Get all prescriptions for the logged-in physiotherapist
-export const getAllPrescriptions = async (req: Request, res: Response) => {
+export const createPrescription = async (req: Request, res: Response) => {
   try {
     // @ts-ignore
-    const physiotherapistId = req.user.id; // Use user.id directly since physiotherapist_id references users.id
-    const prescriptions = await InsolePrescription.query()
-      .withGraphFetched('[patient, insoleModel]')
-      .whereExists(
-        InsolePrescription.relatedQuery('patient').where('physiotherapist_id', physiotherapistId)
-      )
-      .orderBy('created_at', 'desc');
+    const physiotherapist_id = req.user.id;
+    const prescription = await Prescription.query().insert({
+      ...req.body,
+      physiotherapist_id,
+    });
+    res.status(201).json(prescription);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error creating prescription', error: error.message });
+  }
+};
+
+export const getAllPrescriptions = async (req: Request, res: Response) => {
+  try {
+    const prescriptions = await Prescription.query()
+      .withGraphFetched('[patient(selectName), physiotherapist(selectName), insoleModel(selectName)]')
+      .modifiers({
+        selectName(builder) {
+          builder.select('name');
+        }
+      });
     res.json(prescriptions);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching prescriptions', error: error.message });
   }
 };
 
-// Get a single prescription by ID
 export const getPrescriptionById = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore
-    const physiotherapistId = req.user.id; // Use user.id directly since physiotherapist_id references users.id
-    const prescription = await InsolePrescription.query()
-      .findById(req.params.id)
-      .withGraphFetched('[patient, insoleModel, palmilogram]')
-      .whereExists(
-        InsolePrescription.relatedQuery('patient').where('physiotherapist_id', physiotherapistId)
-      );
-
-    if (!prescription) {
-      return res.status(404).json({ message: 'Prescription not found' });
+    const { id } = req.params;
+    const prescription = await Prescription.query().findById(id).withGraphFetched('[patient, physiotherapist, insoleModel]');
+    if (prescription) {
+      res.json(prescription);
+    } else {
+      res.status(404).json({ message: 'Prescription not found' });
     }
-    res.json(prescription);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching prescription', error: error.message });
   }
 };
 
-// Create a new prescription
-export const createPrescription = async (req: Request, res: Response) => {
-  const trx = await transaction.start(InsolePrescription.knex());
+export const updatePrescription = async (req: Request, res: Response) => {
   try {
-    const { patient_id, insole_model_id, numeration, palmilhogram } = req.body;
-
-    // TODO: Verify patient belongs to the physiotherapist
-
-    const newPalmilogram = await Palmilogram.query(trx).insert(palmilhogram);
-
-    const prescriptionData = {
-      patient_id,
-      insole_model_id,
-      numeration,
-      palmilhogram_id: newPalmilogram.id,
-    };
-
-    const newPrescription = await InsolePrescription.query(trx)
-      .insert(prescriptionData)
-      .withGraphFetched('[patient, insoleModel, palmilogram]');
-
-    await trx.commit();
-    res.status(201).json(newPrescription);
+    const { id } = req.params;
+    const prescription = await Prescription.query().patchAndFetchById(id, req.body);
+    if (prescription) {
+      res.json(prescription);
+    } else {
+      res.status(404).json({ message: 'Prescription not found' });
+    }
   } catch (error: any) {
-    await trx.rollback();
-    res.status(500).json({ message: 'Error creating prescription', error: error.message });
+    res.status(500).json({ message: 'Error updating prescription', error: error.message });
   }
 };
 
-// Note: Update and Delete are not implemented as per the prompt but can be added here.
+export const deletePrescription = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Prescription.query().deleteById(id);
+    if (deleted) {
+      res.status(204).send();
+    } else {
+      res.status(404).json({ message: 'Prescription not found' });
+    }
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error deleting prescription', error: error.message });
+  }
+};

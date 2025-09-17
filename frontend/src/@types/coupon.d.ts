@@ -1,8 +1,8 @@
 export interface Coupon {
   id: number;
   code: string;
+  discount_type: 'percentage' | 'fixed';
   value: number;
-  start_date: string;
-  finish_date: string;
+  expiry_date: string;
   active: boolean;
 }

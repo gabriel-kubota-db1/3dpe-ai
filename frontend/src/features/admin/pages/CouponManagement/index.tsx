@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, InputNumber, DatePicker, Tag } from 'antd';
+import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, Select, InputNumber, DatePicker, Tag } from 'antd';
 import { Form, Field } from 'react-final-form';
 import { Coupon } from '@/@types/coupon';
 import * as CouponService from '@/http/CouponHttpService';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
-const { RangePicker } = DatePicker;
+const { Option } = Select;
 
 const CouponManagementPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,10 +22,14 @@ const CouponManagementPage = () => {
 
   const { mutate: createOrUpdateCoupon, isPending: isSaving } = useMutation({
     mutationFn: (values: Omit<Coupon, 'id'> | Coupon) => {
-      if ('id' in values) {
-        return CouponService.updateCoupon(values.id, values);
+      const formattedValues = {
+        ...values,
+        expiry_date: dayjs(values.expiry_date).format('YYYY-MM-DD'),
+      };
+      if ('id' in formattedValues) {
+        return CouponService.updateCoupon(formattedValues.id, formattedValues);
       }
-      return CouponService.createCoupon(values);
+      return CouponService.createCoupon(formattedValues);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coupons'] });
@@ -58,21 +62,8 @@ const CouponManagementPage = () => {
     setIsModalOpen(false);
   };
 
-  const onSubmit = (values: any) => {
-    const { date_range, ...rest } = values;
-    
-    // For RangePicker, ensure we get the correct date in local timezone
-    // Format as YYYY-MM-DD to preserve the selected date regardless of timezone
-    const startDate = dayjs(date_range[0]).format('YYYY-MM-DD');
-    const endDate = dayjs(date_range[1]).format('YYYY-MM-DD');
-    
-    const payload = {
-      ...rest,
-      start_date: startDate,
-      finish_date: endDate,
-    };
-    
-    createOrUpdateCoupon(editingCoupon ? { ...payload, id: editingCoupon.id } : payload);
+  const onSubmit = (values: Omit<Coupon, 'id'>) => {
+    createOrUpdateCoupon(editingCoupon ? { ...values, id: editingCoupon.id } : values);
   };
 
   const columns = [
@@ -104,8 +95,8 @@ const CouponManagementPage = () => {
   ];
 
   const initialFormValues = editingCoupon
-    ? { ...editingCoupon, date_range: [dayjs(editingCoupon.start_date), dayjs(editingCoupon.finish_date)] }
-    : { code: '', value: undefined, date_range: [], active: true };
+    ? { ...editingCoupon, expiry_date: dayjs(editingCoupon.expiry_date) }
+    : { code: '', discount_type: 'percentage', value: 0, expiry_date: null, active: true };
 
   return (
     <div>
@@ -123,22 +114,30 @@ const CouponManagementPage = () => {
         onCancel={closeModal}
         footer={null}
         destroyOnClose
-        key={editingCoupon?.id || 'new'}
       >
         <Form
           onSubmit={onSubmit}
           initialValues={initialFormValues}
-          key={editingCoupon?.id || 'new'}
           render={({ handleSubmit }) => (
             <form onSubmit={handleSubmit}>
-              <Field name="code" >
-                {({ input }) => <AntdForm.Item label="Code" required><Input {...input} /></AntdForm.Item>}
+              <Field name="code">
+                {({ input }) => <AntdForm.Item label="Code"><Input {...input} /></AntdForm.Item>}
+              </Field>
+              <Field name="discount_type">
+                {({ input }) => (
+                  <AntdForm.Item label="Discount Type">
+                    <Select {...input}>
+                      <Option value="percentage">Percentage</Option>
+                      <Option value="fixed">Fixed</Option>
+                    </Select>
+                  </AntdForm.Item>
+                )}
               </Field>
               <Field name="value">
-                {({ input }) => <AntdForm.Item label="Value (%)" required><InputNumber {...input} min={0} max={100} addonAfter="%" style={{ width: '100%' }} /></AntdForm.Item>}
+                {({ input }) => <AntdForm.Item label="Value"><InputNumber {...input} style={{ width: '100%' }} /></AntdForm.Item>}
               </Field>
-              <Field name="date_range">
-                {({ input }) => <AntdForm.Item label="Validity Period" required><RangePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" showTime={false} /></AntdForm.Item>}
+              <Field name="expiry_date">
+                {({ input }) => <AntdForm.Item label="Expiry Date"><DatePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" /></AntdForm.Item>}
               </Field>
               <Field name="active" type="checkbox">
                 {({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>}

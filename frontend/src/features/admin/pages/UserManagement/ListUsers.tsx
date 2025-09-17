@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, Button, Popconfirm, Space, App, Typography, Tag } from 'antd';
+import { Table, Button, Switch, Popconfirm, Space, App, Typography, Tag } from 'antd';
 import { Link } from 'react-router-dom';
 import { UserListItem } from '@/@types/user';
 import * as UserService from '@/http/UserHttpService';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const { Title } = Typography;
 
@@ -19,15 +20,13 @@ const UserListPage = () => {
 
   const { data: users, isLoading } = useQuery<UserListItem[], Error>({
     queryKey: ['users'],
-    queryFn: UserService.getAllUsers,
+    queryFn: UserService.getUsers,
   });
 
   const { mutate: deleteUser } = useMutation({
     mutationFn: (id: number) => UserService.deleteUser(id),
-    onSuccess: (_, deletedUserId) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      queryClient.invalidateQueries({ queryKey: ['user', deletedUserId] });
-      queryClient.invalidateQueries({ queryKey: ['user-profile', deletedUserId] });
       message.success('User deleted successfully!');
     },
     onError: (error) => {
@@ -48,9 +47,7 @@ const UserListPage = () => {
       title: 'Active',
       dataIndex: 'active',
       key: 'active',
-      render: (active: boolean) => (
-        <Tag color={active ? 'green' : 'red'}>{active ? 'Active' : 'Inactive'}</Tag>
-      ),
+      render: (active: boolean) => <Switch checked={active} disabled />,
     },
     {
       title: 'Actions',
@@ -58,7 +55,7 @@ const UserListPage = () => {
       render: (_: any, record: UserListItem) => (
         <Space size="middle">
           <Link to={`/admin/users/edit/${record.id}`}>
-            <Button>Edit</Button>
+            <Button icon={<FaEdit />} />
           </Link>
           <Popconfirm
             title="Delete the user"
@@ -67,7 +64,7 @@ const UserListPage = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button danger>Delete</Button>
+            <Button danger icon={<FaTrash />} />
           </Popconfirm>
         </Space>
       ),

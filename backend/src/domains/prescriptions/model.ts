@@ -1,50 +1,72 @@
-import { Model, RelationMappings, RelationMappingsThunk } from 'objection';
-import { Patient } from '../patients/model';
-import { InsoleModel } from '../insole-models/model';
-import { Palmilogram } from './palmilogramModel';
+import { Model } from 'objection';
+import User from '../users/model';
+import InsoleModel from '../insole-models/model';
 
-export class InsolePrescription extends Model {
-  id!: number;
-  patient_id!: number;
-  insole_model_id!: number;
-  palmilhogram_id!: number;
-  numeration!: string;
-  status!: 'PENDING' | 'IN_PRODUCTION' | 'COMPLETED' | 'DELIVERED';
-  created_at!: string;
-  updated_at!: string;
-
-  patient?: Patient;
-  insoleModel?: InsoleModel;
-  palmilogram?: Palmilogram;
-
+class Prescription extends Model {
   static get tableName() {
-    return 'insole_prescriptions';
+    return 'prescriptions';
   }
 
-  static relationMappings: RelationMappings | RelationMappingsThunk = {
-    patient: {
-      relation: Model.BelongsToOneRelation,
-      modelClass: Patient,
-      join: {
-        from: 'insole_prescriptions.patient_id',
-        to: 'patients.id',
+  id!: number;
+  patient_id!: number;
+  physiotherapist_id!: number;
+  insole_model_id!: number;
+  shoe_size!: string;
+  status!: 'draft' | 'active' | 'canceled' | 'completed';
+  observation?: string;
+
+  // Palmilhograma fields
+  cic_left?: number;
+  cic_right?: number;
+  cavr_left?: number;
+  cavr_right?: number;
+  cavr_total_left?: number;
+  cavr_total_right?: number;
+  cavr_prolonged_left?: number;
+  cavr_prolonged_right?: number;
+  cavl_total_left?: number;
+  cavl_total_right?: number;
+  cavl_left?: number;
+  cavl_right?: number;
+  cavl_prolonged_left?: number;
+  cavl_prolonged_right?: number;
+  brc_left?: number;
+  brc_right?: number;
+  boton_left?: number;
+  boton_right?: number;
+  bic_left?: number;
+  bic_right?: number;
+  longitudinal_arch_left?: number;
+  longitudinal_arch_right?: number;
+
+  static get relationMappings() {
+    return {
+      patient: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: User,
+        join: {
+          from: 'prescriptions.patient_id',
+          to: 'users.id',
+        },
       },
-    },
-    insoleModel: {
-      relation: Model.BelongsToOneRelation,
-      modelClass: InsoleModel,
-      join: {
-        from: 'insole_prescriptions.insole_model_id',
-        to: 'insole_models.id',
+      physiotherapist: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: User,
+        join: {
+          from: 'prescriptions.physiotherapist_id',
+          to: 'users.id',
+        },
       },
-    },
-    palmilogram: {
-      relation: Model.BelongsToOneRelation,
-      modelClass: Palmilogram,
-      join: {
-        from: 'insole_prescriptions.palmilhogram_id',
-        to: 'palmilograms.id',
+      insoleModel: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: InsoleModel,
+        join: {
+          from: 'prescriptions.insole_model_id',
+          to: 'insole_models.id',
+        },
       },
-    },
-  };
+    };
+  }
 }
+
+export default Prescription;
