@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, Field } from 'react-final-form';
-import { Input, Button, App, Form as AntdForm, Typography, Card, Spin, Row, Col, DatePicker, Divider } from 'antd';
+import { Input, Button, App, Form as AntdForm, Typography, Card, Spin, Row, Col, DatePicker, Divider, Switch } from 'antd';
 import * as PatientService from '@/http/PatientHttpService';
 import { Patient } from '@/@types/patient';
 import dayjs from 'dayjs';
@@ -91,7 +91,7 @@ const PatientFormPage = () => {
         ...patient, 
         date_of_birth: patient.date_of_birth ? dayjs.utc(patient.date_of_birth) : undefined,
       }
-    : {};
+    : { active: true };
 
   return (
     <Card>
@@ -104,7 +104,22 @@ const PatientFormPage = () => {
           const { fetchAddressByCep, isLoading: isCepLoading } = useCep(form);
           return (
             <form onSubmit={handleSubmit}>
-              <Title level={4}>Personal Information</Title>
+              <Row gutter={16} justify="space-between" align="middle">
+                <Col>
+                  <Title level={4} style={{ marginBottom: 0 }}>Personal Information</Title>
+                </Col>
+                <Col>
+                  <Field name="active" initialValue={true} type="checkbox">
+                    {({ input }) => (
+                      <AntdForm.Item label="Active" style={{ marginBottom: 0 }}>
+                        <Switch {...input} checked={input.checked} />
+                      </AntdForm.Item>
+                    )}
+                  </Field>
+                </Col>
+              </Row>
+              <Divider style={{ marginTop: 8, marginBottom: 24 }} />
+
               <Row gutter={16}>
                 <Col xs={24} sm={12}>
                   <Field name="name">

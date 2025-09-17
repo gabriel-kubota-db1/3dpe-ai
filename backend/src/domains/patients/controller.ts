@@ -8,7 +8,25 @@ export const getAllPatients = async (req: Request, res: Response) => {
   try {
     // @ts-ignore
     const physiotherapistId = req.user.id;
-    const patients = await Patient.query().where('physiotherapist_id', physiotherapistId).orderBy('name');
+    const { search, active } = req.query;
+
+    const query = Patient.query().where('physiotherapist_id', physiotherapistId);
+
+    if (search && typeof search === 'string' && search.trim() !== '') {
+      const searchTerm = `%${search.trim()}%`;
+      query.where((builder) => {
+        builder
+          .where('name', 'like', searchTerm)
+          .orWhere('email', 'like', searchTerm)
+          .orWhere('cpf', 'like', searchTerm);
+      });
+    }
+
+    if (active === 'true' || active === 'false') {
+      query.where('active', active === 'true');
+    }
+
+    const patients = await query.orderBy('name');
     res.json(patients);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching patients', error: error.message });
@@ -28,7 +46,7 @@ export const getPatientById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Patient not found' });
     }
     res.json(patient);
-  } catch (error: any) {
+  } catch (error: any) => {
     res.status(500).json({ message: 'Error fetching patient', error: error.message });
   }
 };

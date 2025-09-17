@@ -24,6 +24,7 @@ export class Patient extends Model {
   responsible_phone?: string;
   medic_history?: string;
   observations?: string;
+  active!: boolean;
   created_at!: string;
   updated_at!: string;
 

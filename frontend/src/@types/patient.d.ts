@@ -20,6 +20,7 @@ export interface Patient {
   responsible_phone?: string;
   medic_history?: string;
   observations?: string;
+  active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -28,9 +29,9 @@ export interface PatientAuditLog {
   id: number;
   patient_id: number;
   user_id: number;
-  action: 'CREATED' | 'UPDATED';
-  old_data?: any;
-  new_data: any;
+  action: 'CREATED' | 'UPDATED' | 'DELETED';
+  old_data?: Partial<Patient>;
+  new_data?: Partial<Patient>;
   changed_at: string;
   user?: {
     name: string;

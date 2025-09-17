@@ -1,8 +1,13 @@
 import api from './axios';
 import { Patient, PatientAuditLog } from '@/@types/patient';
 
-export const getPatients = async (): Promise<Patient[]> => {
-  const { data } = await api.get('/patients');
+interface GetPatientsParams {
+  search?: string;
+  active?: string; // 'true', 'false', or undefined for 'all'
+}
+
+export const getPatients = async (params: GetPatientsParams = {}): Promise<Patient[]> => {
+  const { data } = await api.get('/patients', { params });
   return data;
 };
 

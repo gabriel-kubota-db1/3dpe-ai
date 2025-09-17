@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Card, Typography, Spin, Descriptions, Table, Tabs, Divider } from 'antd';
+import { Card, Typography, Spin, Descriptions, Table, Tabs, Divider, Tag } from 'antd';
 import * as PatientService from '@/http/PatientHttpService';
 import { Patient, PatientAuditLog } from '@/@types/patient';
 import dayjs from 'dayjs';
@@ -50,6 +50,11 @@ const PatientDetailsPage = () => {
           <Title level={4}>Personal Information</Title>
           <Descriptions bordered column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}>
             <Descriptions.Item label="Full Name">{patient.name}</Descriptions.Item>
+            <Descriptions.Item label="Status">
+              <Tag color={patient.active ? 'green' : 'red'}>
+                {patient.active ? 'Active' : 'Inactive'}
+              </Tag>
+            </Descriptions.Item>
             <Descriptions.Item label="Email">{patient.email || 'N/A'}</Descriptions.Item>
             <Descriptions.Item label="Phone">{formatPhone(patient.phone)}</Descriptions.Item>
             <Descriptions.Item label="Date of Birth">{formatDate(patient.date_of_birth)}</Descriptions.Item>
