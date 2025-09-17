@@ -9,7 +9,7 @@ import * as PrescriptionService from '@/http/PrescriptionHttpService';
 import { Patient } from '@/@types/patient';
 import { InsoleModel } from '@/@types/insoleModel';
 import { Prescription } from '@/@types/prescription';
-import { PalmilhogramaConfigurator } from '../../../components/PalmilhogramaConfigurator';
+import { PalmilhogramaConfigurator } from '@/features/physiotherapist/components/PalmilhogramaConfigurator';
 
 const { Title } = Typography;
 const { Option } = Select;
