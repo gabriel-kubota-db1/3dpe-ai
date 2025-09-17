@@ -72,6 +72,15 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamps(true, true);
   });
 
+  // Insole Models Table (moved here to be referenced by insole_prescriptions)
+  await knex.schema.createTable('insole_models', (table) => {
+    table.increments('id').primary();
+    table.string('description', 255).notNullable();
+    table.integer('coating_id').unsigned().nullable().references('id').inTable('coatings');
+    table.boolean('active').defaultTo(true);
+    table.timestamps(true, true);
+  });
+
   // Insole Prescriptions Table
   await knex.schema.createTable('insole_prescriptions', (table) => {
     table.increments('id').primary();
@@ -88,5 +97,6 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists('insole_prescriptions');
   await knex.schema.dropTableIfExists('palmilograms');
   await knex.schema.dropTableIfExists('patient_audit_logs');
+  await knex.schema.dropTableIfExists('insole_models');
   await knex.schema.dropTableIfExists('patients');
 }
