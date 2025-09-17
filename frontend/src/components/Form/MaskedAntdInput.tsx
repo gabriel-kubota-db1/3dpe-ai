@@ -32,8 +32,10 @@ export const MaskedAntdInput: React.FC<MaskedAntdInputProps> = ({
     }
     
     // For array of masks, choose based on length or maxLength
+    const cleanDigits = inputValue.replace(/\D/g, '');
+    
     for (const maskOption of mask) {
-      if (maskOption.maxLength && inputValue.replace(/\D/g, '').length <= maskOption.maxLength) {
+      if (maskOption.maxLength && cleanDigits.length <= maskOption.maxLength) {
         return maskOption.mask;
       }
     }
@@ -48,16 +50,23 @@ export const MaskedAntdInput: React.FC<MaskedAntdInputProps> = ({
     
     // Remove all non-numeric characters for processing
     const cleanValue = inputValue.replace(/\D/g, '');
+    
+    // Count the number of digit placeholders in the mask
+    const maxDigits = maskPattern.split('').filter(char => char === '0').length;
+    
+    // Limit clean value to the maximum number of digits allowed by the mask
+    const limitedCleanValue = cleanValue.slice(0, maxDigits);
+    
     let masked = '';
     let valueIndex = 0;
     
-    for (let i = 0; i < maskPattern.length && valueIndex < cleanValue.length; i++) {
+    for (let i = 0; i < maskPattern.length && valueIndex < limitedCleanValue.length; i++) {
       const maskChar = maskPattern[i];
       
       if (maskChar === '0') {
         // Placeholder for digit
-        if (valueIndex < cleanValue.length) {
-          masked += cleanValue[valueIndex];
+        if (valueIndex < limitedCleanValue.length) {
+          masked += limitedCleanValue[valueIndex];
           valueIndex++;
         }
       } else {
@@ -103,13 +112,20 @@ export const MaskedAntdInput: React.FC<MaskedAntdInputProps> = ({
     const currentCursorPos = e.target.selectionStart || 0;
     
     // Get clean numeric value from input
-    const cleanValue = removeMask(inputValue);
+    let cleanValue = removeMask(inputValue);
     
     // Get the previous clean value for comparison
     const previousCleanValue = removeMask(displayValue);
     
     // Apply appropriate mask
     const activeMask = getActiveMask(cleanValue);
+    
+    // Count the number of digit placeholders in the active mask to limit input
+    const maxDigits = activeMask.split('').filter(char => char === '0').length;
+    
+    // Limit clean value to the maximum number of digits allowed by the mask
+    cleanValue = cleanValue.slice(0, maxDigits);
+    
     const maskedValue = applyMask(cleanValue, activeMask);
     
     // Calculate new cursor position based on the number of digits added/removed

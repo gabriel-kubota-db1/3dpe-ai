@@ -58,6 +58,9 @@ const PatientFormPage = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
+      if (isEditMode) {
+        queryClient.invalidateQueries({ queryKey: ['patient', id] });
+      }
       message.success(`Patient ${isEditMode ? 'updated' : 'created'} successfully!`);
       navigate('/physiotherapist/patients');
     },
@@ -109,7 +112,7 @@ const PatientFormPage = () => {
                   <Title level={4} style={{ marginBottom: 0 }}>Personal Information</Title>
                 </Col>
                 <Col>
-                  <Field name="active" initialValue={true} type="checkbox">
+                  <Field name="active" type="checkbox">
                     {({ input }) => (
                       <AntdForm.Item label="Active" style={{ marginBottom: 0 }}>
                         <Switch {...input} checked={input.checked} />

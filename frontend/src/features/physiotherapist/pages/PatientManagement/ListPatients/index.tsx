@@ -24,7 +24,6 @@ const ListPatientsPage = () => {
   const { data: patients, isLoading } = useQuery<Patient[], Error>({
     queryKey: ['patients', queryParams],
     queryFn: () => PatientService.getPatients(queryParams),
-    keepPreviousData: true,
   });
 
   const columns = [
@@ -87,10 +86,10 @@ const ListPatientsPage = () => {
           </Button>
         </Link>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
         <Search
           placeholder="Search by name, email, or CPF"
-          style={{ width: 300 }}
+          style={{ width: '100%' }}
           onChange={(e) => setSearchTerm(e.target.value)}
           allowClear
         />

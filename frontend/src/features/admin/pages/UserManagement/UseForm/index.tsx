@@ -7,7 +7,7 @@ import * as UserService from '@/http/UserHttpService';
 import { User } from '@/@types/user';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { useCep } from '../../hooks/useCep';
+import { useCep } from '../../../hooks/useCep';
 import { MaskedAntdInput } from '@/components/Form/MaskedAntdInput';
 import { useAuth } from '@/context/AuthContext';
 
@@ -96,6 +96,13 @@ const UserFormPage = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       queryClient.invalidateQueries({ queryKey: ['user', id] });
+      queryClient.invalidateQueries({ queryKey: ['user-profile', Number(id)] });
+      
+      // If the updated user is the currently logged-in user, ensure their profile cache is invalidated
+      if (currentUser && Number(id) === currentUser.id) {
+        queryClient.invalidateQueries({ queryKey: ['user-profile', currentUser.id] });
+      }
+      
       message.success('User updated successfully!');
       navigate('/admin/users');
     },
@@ -407,7 +414,7 @@ const UserFormPage = () => {
 
                   <Field name="active" type="checkbox">
                     {({ input }) => (
-                      <AntdForm.Item label="Active Status">
+                      <AntdForm.Item label="Active">
                         <Switch {...input} checked={input.checked} />
                       </AntdForm.Item>
                     )}

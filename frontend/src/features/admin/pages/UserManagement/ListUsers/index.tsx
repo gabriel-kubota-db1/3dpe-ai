@@ -25,8 +25,10 @@ const UserListPage = () => {
 
   const { mutate: deleteUser } = useMutation({
     mutationFn: (id: number) => UserService.deleteUser(id),
-    onSuccess: () => {
+    onSuccess: (_, deletedUserId) => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['user', deletedUserId] });
+      queryClient.invalidateQueries({ queryKey: ['user-profile', deletedUserId] });
       message.success('User deleted successfully!');
     },
     onError: (error) => {
@@ -47,7 +49,9 @@ const UserListPage = () => {
       title: 'Active',
       dataIndex: 'active',
       key: 'active',
-      render: (active: boolean) => <Switch checked={active} disabled />,
+      render: (active: boolean) => (
+        <Tag color={active ? 'green' : 'red'}>{active ? 'Active' : 'Inactive'}</Tag>
+      ),
     },
     {
       title: 'Actions',

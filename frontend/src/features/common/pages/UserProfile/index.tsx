@@ -49,7 +49,7 @@ const UserProfilePage = () => {
   const [formKey, setFormKey] = useState(0);
 
   const { data: profile, isLoading, isError, refetch } = useQuery<User, Error>({
-    queryKey: ['user-profile'],
+    queryKey: ['user-profile', user?.id],
     queryFn: fetchProfile,
     enabled: !!user?.id,
     staleTime: 0, // Always fetch fresh data
@@ -62,7 +62,7 @@ const UserProfilePage = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['user-profile'], data);
+      queryClient.setQueryData(['user-profile', user?.id], data);
       updateUser(data);
       message.success('Profile updated successfully!');
       setFormKey(prev => prev + 1); // Force form re-render with new data
@@ -102,7 +102,7 @@ const UserProfilePage = () => {
   // Use user from AuthContext as fallback and update React Query cache
   useEffect(() => {
     if (user && !profile) {
-      queryClient.setQueryData(['user-profile'], user);
+      queryClient.setQueryData(['user-profile', user.id], user);
     }
   }, [user, profile, queryClient]);
 
