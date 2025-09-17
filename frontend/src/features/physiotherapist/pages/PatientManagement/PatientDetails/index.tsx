@@ -1,11 +1,11 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Card, Typography, Spin, Descriptions, Table, Tabs } from 'antd';
+import { Card, Typography, Spin, Descriptions, Table, Tabs, Divider } from 'antd';
 import * as PatientService from '@/http/PatientHttpService';
 import { Patient, PatientAuditLog } from '@/@types/patient';
 import dayjs from 'dayjs';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const AuditLogTab = ({ patientId }: { patientId: number }) => {
     const { data: logs, isLoading } = useQuery<PatientAuditLog[], Error>({
@@ -15,8 +15,8 @@ const AuditLogTab = ({ patientId }: { patientId: number }) => {
 
     const columns = [
         { title: 'Action', dataIndex: 'action', key: 'action' },
+        { title: 'Changed By', dataIndex: 'user', key: 'user', render: (user: { name: string }) => user?.name || 'System' },
         { title: 'Changed At', dataIndex: 'changed_at', key: 'changed_at', render: (date: string) => dayjs(date).format('DD/MM/YYYY HH:mm') },
-        { title: 'User ID', dataIndex: 'user_id', key: 'user_id' },
         // Add more columns to show diff between old_data and new_data if needed
     ];
 
@@ -45,13 +45,48 @@ const PatientDetailsPage = () => {
       key: '1',
       label: 'Patient Details',
       children: (
-        <Descriptions bordered column={1}>
-          <Descriptions.Item label="Name">{patient.name}</Descriptions.Item>
-          <Descriptions.Item label="Email">{patient.email}</Descriptions.Item>
-          <Descriptions.Item label="Phone">{patient.phone}</Descriptions.Item>
-          <Descriptions.Item label="CPF">{patient.cpf}</Descriptions.Item>
-          {/* Add all other fields */}
-        </Descriptions>
+        <>
+          <Title level={4}>Personal Information</Title>
+          <Descriptions bordered column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}>
+            <Descriptions.Item label="Full Name">{patient.name}</Descriptions.Item>
+            <Descriptions.Item label="Email">{patient.email || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="Phone">{patient.phone || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="Date of Birth">{patient.date_of_birth ? dayjs(patient.date_of_birth).format('DD/MM/YYYY') : 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="CPF">{patient.cpf || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="RG">{patient.rg || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="Nationality">{patient.nationality || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="Naturality">{patient.naturality || 'N/A'}</Descriptions.Item>
+          </Descriptions>
+
+          <Divider />
+
+          <Title level={4}>Address</Title>
+          <Descriptions bordered column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}>
+            <Descriptions.Item label="CEP">{patient.cep || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="Street">{patient.street || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="Number">{patient.number || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="Complement">{patient.complement || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="City">{patient.city || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="State">{patient.state || 'N/A'}</Descriptions.Item>
+          </Descriptions>
+
+          <Divider />
+
+          <Title level={4}>Responsible Person</Title>
+          <Descriptions bordered column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}>
+            <Descriptions.Item label="Name">{patient.responsible_name || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="CPF">{patient.responsible_cpf || 'N/A'}</Descriptions.Item>
+            <Descriptions.Item label="Phone">{patient.responsible_phone || 'N/A'}</Descriptions.Item>
+          </Descriptions>
+
+          <Divider />
+
+          <Title level={4}>Medical Information</Title>
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="Medical History"><pre style={{ whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'inherit' }}>{patient.medic_history || 'N/A'}</pre></Descriptions.Item>
+            <Descriptions.Item label="Observations"><pre style={{ whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'inherit' }}>{patient.observations || 'N/A'}</pre></Descriptions.Item>
+          </Descriptions>
+        </>
       ),
     },
     {

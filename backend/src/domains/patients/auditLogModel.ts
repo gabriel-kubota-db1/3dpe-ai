@@ -1,4 +1,5 @@
-import { Model } from 'objection';
+import { Model, RelationMappings, RelationMappingsThunk } from 'objection';
+import { User } from '../users/model';
 
 export class PatientAuditLog extends Model {
   id!: number;
@@ -9,7 +10,20 @@ export class PatientAuditLog extends Model {
   new_data!: object;
   changed_at!: string;
 
+  user?: User;
+
   static get tableName() {
     return 'patient_audit_logs';
   }
+
+  static relationMappings: RelationMappings | RelationMappingsThunk = {
+    user: {
+      relation: Model.BelongsToOneRelation,
+      modelClass: User,
+      join: {
+        from: 'patient_audit_logs.user_id',
+        to: 'users.id',
+      },
+    },
+  };
 }

@@ -1,0 +1,15 @@
+import type { Knex } from 'knex';
+
+export async function up(knex: Knex): Promise<void> {
+  return knex.schema.createTable('insole_models', (table) => {
+    table.increments('id').primary();
+    table.string('description', 255).notNullable();
+    table.integer('coating_id').unsigned().nullable().references('id').inTable('coatings');
+    table.boolean('active').defaultTo(true);
+    table.timestamps(true, true);
+  });
+}
+
+export async function down(knex: Knex): Promise<void> {
+  return knex.schema.dropTable('insole_models');
+}

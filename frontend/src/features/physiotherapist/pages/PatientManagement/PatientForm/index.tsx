@@ -26,6 +26,7 @@ const phoneMask = [
 
 const cpfMask = '000.000.000-00';
 const cepMask = '00000-000';
+const rgMask = '00.000.000-0';
 
 // Form validation
 const validate = (values: any) => {
@@ -144,7 +145,7 @@ const PatientFormPage = () => {
                   <Field name="rg">
                     {({ input }) => (
                       <AntdForm.Item label="RG">
-                        <Input {...input} placeholder="Enter RG" />
+                        <MaskedAntdInput {...input} mask={rgMask} unmask={true} placeholder="00.000.000-0" />
                       </AntdForm.Item>
                     )}
                   </Field>

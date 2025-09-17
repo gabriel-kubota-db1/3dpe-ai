@@ -113,6 +113,12 @@ export const getPatientAuditLogs = async (req: Request, res: Response) => {
 
         const logs = await PatientAuditLog.query()
             .where('patient_id', patientId)
+            .withGraphFetched('user(selectName)')
+            .modifiers({
+                selectName(builder) {
+                    builder.select('name');
+                }
+            })
             .orderBy('changed_at', 'desc');
             
         res.json(logs);

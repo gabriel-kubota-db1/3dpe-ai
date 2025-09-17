@@ -29,7 +29,10 @@ export interface PatientAuditLog {
   patient_id: number;
   user_id: number;
   action: 'CREATED' | 'UPDATED';
-  old_data?: Partial<Patient>;
-  new_data: Partial<Patient>;
+  old_data?: any;
+  new_data: any;
   changed_at: string;
+  user?: {
+    name: string;
+  };
 }
