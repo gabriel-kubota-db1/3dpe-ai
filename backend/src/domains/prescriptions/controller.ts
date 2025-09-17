@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { InsolePrescription } from './model';
 import { Palmilogram } from './palmilogramModel';
 import { transaction } from 'objection';
+import { Patient } from '../patients/model';
 
 // Get all prescriptions for the logged-in physiotherapist
 export const getAllPrescriptions = async (req: Request, res: Response) => {
@@ -46,8 +47,19 @@ export const createPrescription = async (req: Request, res: Response) => {
   const trx = await transaction.start(InsolePrescription.knex());
   try {
     const { patient_id, insole_model_id, numeration, status, observations, palmilhogram } = req.body;
+    // @ts-ignore
+    const physiotherapistId = req.user.id;
 
-    // TODO: Verify patient belongs to the physiotherapist
+    // Verify patient belongs to the physiotherapist
+    const patient = await Patient.query(trx).findOne({
+      id: patient_id,
+      physiotherapist_id: physiotherapistId,
+    });
+
+    if (!patient) {
+      await trx.rollback();
+      return res.status(403).json({ message: 'Patient not found or does not belong to this physiotherapist.' });
+    }
 
     const newPalmilogram = await Palmilogram.query(trx).insert(palmilhogram);
 
@@ -79,16 +91,40 @@ export const updatePrescription = async (req: Request, res: Response) => {
       const { id } = req.params;
       const { patient_id, insole_model_id, numeration, status, observations, palmilhogram } = req.body;
   
-      const prescription = await InsolePrescription.query(trx).findById(id);
+      // @ts-ignore
+      const physiotherapistId = req.user.id;
+
+      // Verify ownership before proceeding
+      const prescription = await InsolePrescription.query(trx)
+        .findById(id)
+        .whereExists(
+          InsolePrescription.relatedQuery('patient').where('physiotherapist_id', physiotherapistId)
+        );
+
       if (!prescription) {
         await trx.rollback();
-        return res.status(404).json({ message: 'Prescription not found' });
+        return res.status(404).json({ message: 'Prescription not found or you do not have permission to edit it.' });
+      }
+
+      // Also verify the new patient_id belongs to the physiotherapist if it's being changed
+      if (patient_id && patient_id !== prescription.patient_id) {
+        const newPatient = await Patient.query(trx).findOne({
+          id: patient_id,
+          physiotherapist_id: physiotherapistId,
+        });
+        if (!newPatient) {
+          await trx.rollback();
+          return res.status(403).json({ message: 'New patient not found or does not belong to this physiotherapist.' });
+        }
       }
   
-      // TODO: Verify patient belongs to the physiotherapist
-  
+      // Update palmilhogram if provided
       if (palmilhogram && prescription.palmilhogram_id) {
         await Palmilogram.query(trx).patch(palmilhogram).where('id', prescription.palmilhogram_id);
+      } else if (palmilhogram && !prescription.palmilhogram_id) {
+        // Create a new palmilhogram if one doesn't exist for this prescription
+        const newPalmilogram = await Palmilogram.query(trx).insert(palmilhogram);
+        prescription.palmilhogram_id = newPalmilogram.id;
       }
   
       const prescriptionData = {
@@ -97,6 +133,7 @@ export const updatePrescription = async (req: Request, res: Response) => {
         numeration,
         status,
         observations,
+        palmilhogram_id: prescription.palmilhogram_id, // Ensure palmilhogram_id is included in the update
       };
   
       const updatedPrescription = await InsolePrescription.query(trx)

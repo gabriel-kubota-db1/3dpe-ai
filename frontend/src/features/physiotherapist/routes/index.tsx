@@ -8,6 +8,7 @@ import PatientDetailsPage from '../pages/PatientManagement/PatientDetails';
 // Prescription Management
 import ListPrescriptionsPage from '../pages/PrescriptionManagement/ListPrescriptions';
 import CreatePrescriptionPage from '../pages/PrescriptionManagement/CreatePrescription';
+import PrescriptionDetailsPage from '../pages/PrescriptionManagement/PrescriptionDetails';
 
 const physiotherapistRoutes = (
   <Route path="physiotherapist">
@@ -20,6 +21,8 @@ const physiotherapistRoutes = (
     {/* Prescription Routes */}
     <Route path="prescriptions" element={<ListPrescriptionsPage />} />
     <Route path="prescriptions/new" element={<CreatePrescriptionPage />} />
+    <Route path="prescriptions/edit/:id" element={<CreatePrescriptionPage />} />
+    <Route path="prescriptions/details/:id" element={<PrescriptionDetailsPage />} />
   </Route>
 );
 

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { Table, Button, Card, Typography, Space } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Table, Button, Card, Typography, Space, Tooltip } from 'antd';
+import { PlusOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import * as PrescriptionService from '@/http/PrescriptionHttpService';
 import dayjs from 'dayjs';
@@ -42,7 +42,16 @@ const ListPrescriptionsPage = () => {
       key: 'actions',
       render: (_: any, record: any) => (
         <Space size="middle">
-          <Link to={`/physiotherapist/prescriptions/details/${record.id}`}>View</Link>
+          <Tooltip title="View Details">
+            <Link to={`/physiotherapist/prescriptions/details/${record.id}`}>
+              <Button icon={<EyeOutlined />} />
+            </Link>
+          </Tooltip>
+          <Tooltip title="Edit Prescription">
+            <Link to={`/physiotherapist/prescriptions/edit/${record.id}`}>
+              <Button icon={<EditOutlined />} />
+            </Link>
+          </Tooltip>
         </Space>
       ),
     },
