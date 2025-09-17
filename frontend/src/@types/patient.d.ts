@@ -7,8 +7,19 @@ export interface Patient {
   cpf?: string;
   rg?: string;
   date_of_birth?: string;
+  nationality?: string;
+  naturality?: string;
+  cep?: string;
+  state?: string;
+  city?: string;
+  street?: string;
+  number?: string;
+  complement?: string;
   responsible_name?: string;
   responsible_cpf?: string;
+  responsible_phone?: string;
+  medic_history?: string;
+  observations?: string;
   created_at: string;
   updated_at: string;
 }
