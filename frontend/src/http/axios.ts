@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getToken, removeToken } from '@/storage/token';
+import { getToken, clearAllTokens } from '@/storage/token';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -29,11 +29,18 @@ api.interceptors.response.use(
   (error) => {
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     if (error.response && error.response.status === 401) {
+      // Don't redirect if it's a logout request that failed
+      if (error.config?.url?.includes('/auth/logout')) {
+        return Promise.reject(error);
+      }
+      
       // If we get a 401, the token is invalid or expired.
       // Remove the token and redirect to the login page.
-      removeToken();
+      clearAllTokens();
       // Use window.location to redirect outside of React Router's context
-      window.location.href = '/login';
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

@@ -1,3 +1,7 @@
+import { Coating } from './coating';
+
+export type ProductType = 'INSOLE' | 'SLIPPER' | 'ELEMENT';
+
 export interface InsoleModel {
   id: number;
   description: string;

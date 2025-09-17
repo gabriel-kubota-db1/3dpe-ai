@@ -1,89 +1,115 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import User from './model';
-import { JWT_SECRET } from '../../config/env';
+import { User } from './model';
+import { generateToken } from '../../utils/jwt';
 
-// Helper to register a user with a specific role
-const registerUserByRole = async (req: Request, res: Response, role: 'physiotherapist' | 'industry' | 'patient') => {
-  try {
-    const { email, name, document } = req.body;
-
-    const existingUser = await User.query().where('email', email).orWhere('document', document).first();
-    if (existingUser) {
-      return res.status(409).json({ message: 'User with this email or document already exists.' });
-    }
-
-    // For admin creation, we generate a random password and should send a setup link (not implemented here)
-    const randomPassword = Math.random().toString(36).slice(-8);
-    const password_hash = await bcrypt.hash(randomPassword, 10);
-
-    const newUser = await User.query().insert({
-      ...req.body,
-      role,
-      password_hash,
-    });
-
-    // Omit password_hash from the response
-    const { password_hash: _, ...userResponse } = newUser;
-
-    res.status(201).json(userResponse);
-  } catch (error: any) {
-    res.status(500).json({ message: 'Error registering user', error: error.message });
-  }
-};
-
-export const registerPhysiotherapist = (req: Request, res: Response) => registerUserByRole(req, res, 'physiotherapist');
-export const registerIndustry = (req: Request, res: Response) => registerUserByRole(req, res, 'industry');
-export const registerPatient = (req: Request, res: Response) => registerUserByRole(req, res, 'patient');
-
-
+// For Auth
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const user = await User.query().findOne({ email });
 
-    if (!user || !user.password_hash) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+    if (user && (await user.verifyPassword(password))) {
+      const token = generateToken({ id: user.id, role: user.role });
+      res.json({
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      });
+    } else {
+      res.status(401).json({ message: 'Invalid credentials' });
     }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    if (!user.active) {
-      return res.status(403).json({ message: 'User account is inactive.' });
-    }
-
-    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
-
-    const { password_hash, ...userResponse } = user;
-
-    res.json({ user: userResponse, token });
   } catch (error: any) {
-    res.status(500).json({ message: 'Login failed', error: error.message });
+    res.status(500).json({ message: 'Error during login', error: error.message });
   }
 };
 
 export const getProfile = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore
-    const user = await User.query().findById(req.user.id).select('*', User.raw('DATE_FORMAT(date_of_birth, "%Y-%m-%d") as date_of_birth'));
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    // The user object is attached to the request by the isAuthenticated middleware
+    const user = await User.query().findById((req as any).user.id).select('id', 'name', 'email', 'role', 'document', 'phone', 'cep', 'state', 'city', 'street', 'number', 'complement', 'date_of_birth', 'active');
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ message: 'User not found' });
     }
-    const { password_hash, ...userResponse } = user;
-    res.json(userResponse);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching profile', error: error.message });
   }
 };
 
-// Admin controllers
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const { password, id, document, role, created_at, updated_at, active, ...updateData } = req.body;
+    
+    if (password && password.trim() !== '') {
+      // Pass the plain password to be hashed by the model's hook
+      (updateData as any).password_hash = password;
+    }
+    
+    const user = await User.query().patchAndFetchById((req as any).user.id, updateData);
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error updating profile', error: error.message });
+  }
+};
+
+
+// For Admin User Registration
+const registerUser = async (req: Request, res: Response, role: 'physiotherapist' | 'industry') => {
+  try {
+    const { password, ...userData } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ message: 'Password is required for new users.' });
+    }
+
+    const user = await User.query().insert({
+      ...userData,
+      role,
+      password_hash: password, // Pass plain password to be hashed by the model's hook
+    });
+
+    // Omit password from the response
+    const { password_hash, ...newUser } = user;
+
+    console.log(`
+      ===============================================
+      USER CREATED
+      Email: ${user.email}
+      Password was set during creation.
+      ===============================================
+    `);
+
+    res.status(201).json(newUser);
+  } catch (error: any) {
+    if (error.nativeError && error.nativeError.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ message: 'User with this email or identifier already exists.' });
+    }
+    res.status(500).json({ message: 'Error creating user', error: error.message });
+  }
+};
+
+export const registerPhysiotherapist = (req: Request, res: Response) => {
+  registerUser(req, res, 'physiotherapist');
+};
+
+export const registerIndustry = (req: Request, res: Response) => {
+  registerUser(req, res, 'industry');
+};
+
+
+// For Admin User Management
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await User.query().select('id', 'name', 'email', 'role', 'active', 'document');
+    const users = await User.query().select('id', 'name', 'email', 'role', 'active').where('role', '!=', 'admin');
     res.json(users);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching users', error: error.message });
@@ -92,12 +118,12 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const user = await User.query().findById(req.params.id).select('*', User.raw('DATE_FORMAT(date_of_birth, "%Y-%m-%d") as date_of_birth'));
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    const user = await User.query().findById(req.params.id).select('id', 'name', 'email', 'role', 'active', 'document', 'phone', 'cep', 'state', 'city', 'street', 'number', 'complement', 'date_of_birth', 'active');
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ message: 'User not found' });
     }
-    const { password_hash, ...userResponse } = user;
-    res.json(userResponse);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching user', error: error.message });
   }
@@ -105,13 +131,19 @@ export const getUserById = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const user = await User.query().patchAndFetchById(id, req.body);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    const { password, id, document, role, created_at, updated_at, ...updateData } = req.body;
+
+    if (password && password.trim() !== '') {
+      // Pass the plain password to be hashed by the model's hook
+      (updateData as any).password_hash = password;
     }
-    const { password_hash, ...userResponse } = user;
-    res.json(userResponse);
+    
+    const user = await User.query().patchAndFetchById(req.params.id, updateData);
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
   } catch (error: any) {
     res.status(500).json({ message: 'Error updating user', error: error.message });
   }
@@ -119,24 +151,13 @@ export const updateUser = async (req: Request, res: Response) => {
 
 export const deleteUser = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const deleted = await User.query().deleteById(id);
-    if (deleted) {
+    const numDeleted = await User.query().deleteById(req.params.id);
+    if (numDeleted > 0) {
       res.status(204).send();
     } else {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error: any) {
     res.status(500).json({ message: 'Error deleting user', error: error.message });
-  }
-};
-
-export const getUsersByRole = async (req: Request, res: Response) => {
-  try {
-    const { role } = req.params;
-    const users = await User.query().where('role', role).select('id', 'name');
-    res.json(users);
-  } catch (error: any) {
-    res.status(500).json({ message: 'Error fetching users by role', error: error.message });
   }
 };

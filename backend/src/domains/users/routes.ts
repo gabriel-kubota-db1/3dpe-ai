@@ -5,7 +5,6 @@ import {
   userUpdateSchema,
   physiotherapistRegisterSchema,
   industryRegisterSchema,
-  patientRegisterSchema,
   loginSchema,
 } from './validators';
 import { isAuthenticated } from '../../middlewares/isAuthenticated';
@@ -15,6 +14,9 @@ const router = Router();
 
 // Auth
 router.post('/login', validateRequest({ body: loginSchema }), controller.login);
+
+// Public registration (if any, e.g. patients)
+// router.post('/register', validateRequest({ body: userCreateSchema }), controller.register);
 
 // Admin-only registration
 router.post(
@@ -31,20 +33,13 @@ router.post(
   validateRequest({ body: industryRegisterSchema }),
   controller.registerIndustry
 );
-router.post(
-  '/register/patient',
-  isAuthenticated,
-  isAdmin,
-  validateRequest({ body: patientRegisterSchema }),
-  controller.registerPatient
-);
 
 // User profile
 router.get('/profile', isAuthenticated, controller.getProfile);
+router.put('/profile', isAuthenticated, validateRequest({ body: userUpdateSchema }), controller.updateProfile);
 
 // Admin User Management
 router.get('/', isAuthenticated, isAdmin, controller.getAllUsers);
-router.get('/role/:role', isAuthenticated, isAdmin, controller.getUsersByRole);
 router.get('/:id', isAuthenticated, isAdmin, controller.getUserById);
 router.put('/:id', isAuthenticated, isAdmin, validateRequest({ body: userUpdateSchema }), controller.updateUser);
 router.delete('/:id', isAuthenticated, isAdmin, controller.deleteUser);

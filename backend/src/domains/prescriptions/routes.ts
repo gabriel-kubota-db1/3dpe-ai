@@ -1,17 +1,18 @@
 import { Router } from 'express';
 import * as controller from './controller';
 import { validateRequest } from '../../middlewares/validateRequest';
-import { createPrescriptionSchema, updatePrescriptionSchema } from './validators';
+import { prescriptionSchema } from './validators';
 import { isAuthenticated } from '../../middlewares/isAuthenticated';
+import { isPhysiotherapist } from '../../middlewares/isPhysiotherapist';
 
 const router = Router();
 
-router.use(isAuthenticated);
+router.use(isAuthenticated, isPhysiotherapist);
 
-router.post('/', validateRequest({ body: createPrescriptionSchema }), controller.createPrescription);
 router.get('/', controller.getAllPrescriptions);
+router.post('/', validateRequest({ body: prescriptionSchema }), controller.createPrescription);
 router.get('/:id', controller.getPrescriptionById);
-router.put('/:id', validateRequest({ body: updatePrescriptionSchema }), controller.updatePrescription);
-router.delete('/:id', controller.deletePrescription);
+// router.put('/:id', ...);
+// router.delete('/:id', ...);
 
 export default router;
