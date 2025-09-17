@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, InputNumber, DatePicker } from 'antd';
+import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, InputNumber, DatePicker, Tag } from 'antd';
 import { Form, Field } from 'react-final-form';
 import { Coupon } from '@/@types/coupon';
 import * as CouponService from '@/http/CouponHttpService';
@@ -80,7 +80,9 @@ const CouponManagementPage = () => {
     { title: 'Value (%)', dataIndex: 'value', key: 'value', render: (value: string) => `${Number(value).toFixed(0)}%` },
     { title: 'Start Date', dataIndex: 'start_date', key: 'start_date', render: (date: string) => dayjs(date).format('DD/MM/YYYY') },
     { title: 'Finish Date', dataIndex: 'finish_date', key: 'finish_date', render: (date: string) => dayjs(date).format('DD/MM/YYYY') },
-    { title: 'Active', dataIndex: 'active', key: 'active', render: (active: boolean) => <Switch checked={active} disabled /> },
+    { title: 'Active', dataIndex: 'active', key: 'active', render: (active: boolean) => (
+        <Tag color={active ? 'green' : 'red'}>{active ? 'Active' : 'Inactive'}</Tag>
+      ),},
     {
       title: 'Actions',
       key: 'actions',

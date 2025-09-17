@@ -59,7 +59,7 @@ const UserListPage = () => {
       render: (_: any, record: UserListItem) => (
         <Space size="middle">
           <Link to={`/admin/users/edit/${record.id}`}>
-            <Button icon={<FaEdit />} />
+            <Button>Edit</Button>
           </Link>
           <Popconfirm
             title="Delete the user"
@@ -68,7 +68,7 @@ const UserListPage = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button danger icon={<FaTrash />} />
+            <Button danger>Delete</Button>
           </Popconfirm>
         </Space>
       ),

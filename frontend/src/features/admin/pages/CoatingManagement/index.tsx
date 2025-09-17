@@ -64,7 +64,9 @@ const CoatingManagementPage = () => {
   const columns = [
     { title: 'Description', dataIndex: 'description', key: 'description' },
     { title: 'Coating Type', dataIndex: 'coating_type', key: 'coating_type', render: (type: string) => <Tag color={type === 'EVA' ? 'blue' : 'green'}>{type}</Tag> },
-    { title: 'Active', dataIndex: 'active', key: 'active', render: (active: boolean) => <Switch checked={active} disabled /> },
+    { title: 'Active', dataIndex: 'active', key: 'active', render: (active: boolean) => (
+        <Tag color={active ? 'green' : 'red'}>{active ? 'Active' : 'Inactive'}</Tag>
+      ),},
     {
       title: 'Actions',
       key: 'actions',

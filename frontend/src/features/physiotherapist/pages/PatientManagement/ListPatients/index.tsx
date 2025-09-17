@@ -69,8 +69,8 @@ const ListPatientsPage = () => {
       key: 'actions',
       render: (_: any, record: Patient) => (
         <Space size="middle">
-          <Link to={`/physiotherapist/patients/edit/${record.id}`}>Edit</Link>
-          <Link to={`/physiotherapist/patients/details/${record.id}`}>Details</Link>
+          <Link to={`/physiotherapist/patients/edit/${record.id}`}><Button>Edit</Button></Link>
+          <Link to={`/physiotherapist/patients/details/${record.id}`}><Button>Details</Button></Link>
         </Space>
       ),
     },

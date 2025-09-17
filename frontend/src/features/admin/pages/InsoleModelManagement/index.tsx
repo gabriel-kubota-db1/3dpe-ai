@@ -86,7 +86,9 @@ const InsoleModelManagementPage = () => {
     { title: 'Number Range', dataIndex: 'number_range', key: 'number_range' },
     { title: 'Cost Value (R$)', dataIndex: 'cost_value', key: 'cost_value', render: (value: number) => `R$ ${Number(value).toFixed(2)}` },
     { title: 'Sell Value (R$)', dataIndex: 'sell_value', key: 'sell_value', render: (value: number) => `R$ ${Number(value).toFixed(2)}` },
-    { title: 'Active', dataIndex: 'active', key: 'active', render: (active: boolean) => <Switch checked={active} disabled /> },
+    { title: 'Active', dataIndex: 'active', key: 'active', render: (active: boolean) => (
+        <Tag color={active ? 'green' : 'red'}>{active ? 'Active' : 'Inactive'}</Tag>
+      ),},
     {
       title: 'Actions',
       key: 'actions',
@@ -127,7 +129,7 @@ const InsoleModelManagementPage = () => {
       >
         <Form
           onSubmit={onSubmit}
-          initialValues={editingModel || undefined}
+          initialValues={editingModel || { active: true }}
           render={({ handleSubmit, form }) => (
             <form onSubmit={handleSubmit}>
               <Row gutter={16}>
@@ -136,9 +138,13 @@ const InsoleModelManagementPage = () => {
                 </Col>
                 <Col span={12}>
                   <Field name="type">
-                    {() => (
+                    {({ input }) => (
                       <AntdForm.Item label="Product Type" required>
-                        <Select placeholder="Select product type">
+                        <Select
+                          value={input.value || undefined}
+                          onChange={input.onChange}
+                          placeholder="Select product type"
+                        >
                           <Option value="INSOLE">INSOLE</Option>
                           <Option value="SLIPPER">SLIPPER</Option>
                           <Option value="ELEMENT">ELEMENT</Option>
