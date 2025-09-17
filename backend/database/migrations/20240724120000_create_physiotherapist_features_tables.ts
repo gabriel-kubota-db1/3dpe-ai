@@ -19,6 +19,11 @@ export async function up(knex: Knex): Promise<void> {
     table.string('street');
     table.string('number');
     table.string('complement');
+    table.string('responsible_name');
+    table.string('responsible_cpf');
+    table.string('responsible_phone').nullable();
+    table.text('medic_history').nullable();
+    table.text('observations').nullable();
     table.timestamps(true, true);
   });
 
