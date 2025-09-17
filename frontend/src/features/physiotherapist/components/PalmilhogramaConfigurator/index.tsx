@@ -194,11 +194,12 @@ const parameters: PalmilhogramParameter[] = [
 interface PalmilhogramaConfiguratorProps {
   data: any;
   onChange: (data: any) => void;
+  readOnly?: boolean;
 }
 
 export const PalmilhogramaConfigurator: React.FC<
   PalmilhogramaConfiguratorProps
-> = ({ data, onChange }) => {
+> = ({ data, onChange, readOnly = false }) => {
   const [enabledParamsLeft, setEnabledParamsLeft] = useState<
     Record<string, boolean>
   >({});
@@ -208,7 +209,6 @@ export const PalmilhogramaConfigurator: React.FC<
   const [values, setValues] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    // Atualiza valores e checkboxes conforme os dados recebidos
     const vals: Record<string, number> = {};
     const enabledLeft: Record<string, boolean> = {};
     const enabledRight: Record<string, boolean> = {};
@@ -228,6 +228,7 @@ export const PalmilhogramaConfigurator: React.FC<
   }, [data]);
 
   const handleParameterToggleLeft = (paramKey: string, checked: boolean) => {
+    if (readOnly) return;
     setEnabledParamsLeft((prev) => ({ ...prev, [paramKey]: checked }));
     const param = parameters.find((p) => p.key === paramKey);
     if (!param) return;
@@ -238,12 +239,11 @@ export const PalmilhogramaConfigurator: React.FC<
       const newData = { ...data };
       delete newData[param.leftKey];
       onChange(newData);
-    } else {
-      // Ao marcar, só atualiza o estado do checkbox, não mexe no data
     }
   };
 
   const handleParameterToggleRight = (paramKey: string, checked: boolean) => {
+    if (readOnly) return;
     setEnabledParamsRight((prev) => ({ ...prev, [paramKey]: checked }));
     const param = parameters.find((p) => p.key === paramKey);
     if (!param) return;
@@ -254,12 +254,11 @@ export const PalmilhogramaConfigurator: React.FC<
       const newData = { ...data };
       delete newData[param.rightKey];
       onChange(newData);
-    } else {
-      // Ao marcar, só atualiza o estado do checkbox, não mexe no data
     }
   };
 
   const handleValueChange = (key: string, value: number | null) => {
+    if (readOnly) return;
     const newValues = { ...values };
     if (value !== null) {
       newValues[key] = value;
@@ -343,10 +342,8 @@ export const PalmilhogramaConfigurator: React.FC<
           if (param.key === "bic") fillColor = "#607d8b";
           if (param.key === "longitudinal_arch") fillColor = "#8bc34a";
 
-          // Renderiza o SVG do array, injetando o fill se estiver selecionado
           const svgObj = svg.find((s) => s.key === param.key);
           if (!svgObj) return null;
-          // Clona o elemento SVG e aplica o fill se estiver selecionado
           return (
             <g key={param.key}>
               {React.cloneElement(svgObj.svg, {
@@ -391,6 +388,7 @@ export const PalmilhogramaConfigurator: React.FC<
               <Checkbox
                 checked={isEnabled}
                 onChange={(e) => toggleHandler(param.key, e.target.checked)}
+                disabled={readOnly}
               />
               <span style={{ flex: 1, fontSize: 12 }}>{param.label}</span>
               {isEnabled && (
@@ -402,6 +400,7 @@ export const PalmilhogramaConfigurator: React.FC<
                   min={0}
                   step={0.1}
                   precision={1}
+                  disabled={readOnly}
                 />
               )}
             </div>
