@@ -197,7 +197,7 @@ const InsoleModelManagementPage = () => {
                   <Field name="sell_value" render={({ input }) => <AntdForm.Item label="Sell Value (R$)" required><InputNumber {...input} style={{ width: '100%' }} min={0} precision={2} /></AntdForm.Item>} />
                 </Col>
                 <Col span={24}>
-                  <Field name="active" type="checkbox">
+                  <Field name="active" initialValue={true} type="checkbox">
                     {({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>}
                   </Field>
                 </Col>
