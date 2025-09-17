@@ -1,30 +1,17 @@
 import type { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
-  await knex.schema.table('patients', (table) => {
-    // Fields from previous migration
-    table.string('cpf').nullable();
-    table.date('date_of_birth').nullable();
-    
-    // Fields from this migration
-    table.string('nationality').nullable();
-    table.string('naturality').nullable();
-    table.string('cep', 9).nullable();
-    table.string('state', 2).nullable();
-    table.string('city').nullable();
-    table.string('street').nullable();
-    table.string('number').nullable();
-    table.string('complement').nullable();
+  await knex.schema.alterTable('patients', (table) => {
+    table.string('responsible_name');
+    table.string('responsible_cpf');
     table.string('responsible_phone').nullable();
-
-    // New fields
     table.text('medic_history').nullable();
     table.text('observations').nullable();
   });
 }
 
 export async function down(knex: Knex): Promise<void> {
-  await knex.schema.table('patients', (table) => {
+  await knex.schema.alterTable('patients', (table) => {
     table.dropColumn('cpf');
     table.dropColumn('date_of_birth');
     table.dropColumn('nationality');

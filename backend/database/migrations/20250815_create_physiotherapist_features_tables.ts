@@ -13,8 +13,6 @@ export async function up(knex: Knex): Promise<void> {
     table.date('date_of_birth');
     table.string('nationality');
     table.string('naturality'); // City of birth
-    table.string('responsible_name');
-    table.string('responsible_cpf');
     table.string('cep');
     table.string('state', 2);
     table.string('city');
