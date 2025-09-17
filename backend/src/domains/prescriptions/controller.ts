@@ -120,7 +120,9 @@ export const updatePrescription = async (req: Request, res: Response) => {
   
       // Update palmilhogram if provided
       if (palmilhogram && prescription.palmilhogram_id) {
-        await Palmilogram.query(trx).patch(palmilhogram).where('id', prescription.palmilhogram_id);
+        // Omit fields that should not be updated
+        const { id: palmId, created_at, updated_at, ...palmilhogramData } = palmilhogram;
+        await Palmilogram.query(trx).patch(palmilhogramData).where('id', prescription.palmilhogram_id);
       } else if (palmilhogram && !prescription.palmilhogram_id) {
         // Create a new palmilhogram if one doesn't exist for this prescription
         const newPalmilogram = await Palmilogram.query(trx).insert(palmilhogram);

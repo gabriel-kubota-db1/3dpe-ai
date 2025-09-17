@@ -69,8 +69,11 @@ const PrescriptionDetailsPage = () => {
           </Descriptions>
         </TabPane>
         <TabPane tab="Palmilhograma" key="2">
-          {/* The configurator is rendered here for viewing purposes. Interactions are not saved. */}
-          <PalmilhogramaConfigurator data={prescription.palmilogram || {}} onChange={() => {}} />
+          <PalmilhogramaConfigurator 
+            data={prescription.palmilogram || {}} 
+            onChange={() => {}} 
+            readOnly 
+          />
         </TabPane>
       </Tabs>
     </Card>

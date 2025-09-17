@@ -24,7 +24,7 @@ const ListPrescriptionsPage = () => {
       title: 'Insole Model',
       dataIndex: 'insoleModel',
       key: 'insoleModel',
-      render: (model: any) => model?.name || 'N/A',
+      render: (model: any) => model?.description || 'N/A',
     },
     {
       title: 'Date',
