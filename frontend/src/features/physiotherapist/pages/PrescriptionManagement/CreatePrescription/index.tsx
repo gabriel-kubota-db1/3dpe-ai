@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, Field } from 'react-final-form';
 import { Input, Button, App, Form as AntdForm, Typography, Card, Spin, Row, Col, Select, Steps } from 'antd';
@@ -44,6 +44,22 @@ const PrescriptionForm = () => {
     enabled: isEditMode,
   });
 
+  const initialValues = useMemo(() => (isEditMode && prescription ? {
+    ...prescription,
+    palmilhogram: prescription.palmilogram || {},
+  } : {
+    status: 'DRAFT',
+    palmilhogram: {},
+  }), [isEditMode, prescription]);
+
+  const [formData, setFormData] = useState(initialValues);
+
+  useEffect(() => {
+    // When initialValues are loaded (e.g., for edit mode), update formData
+    setFormData(initialValues);
+  }, [initialValues]);
+
+
   const mutationOptions = {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
@@ -88,20 +104,19 @@ const PrescriptionForm = () => {
     }
   };
 
-  const nextStep = () => setCurrentStep(s => s + 1);
-  const prevStep = () => setCurrentStep(s => s - 1);
+  const next = (values: any) => {
+    setFormData(values);
+    setCurrentStep(s => s + 1);
+  };
+
+  const prev = (values: any) => {
+    setFormData(values);
+    setCurrentStep(s => s - 1);
+  };
 
   if (isLoadingPatients || isLoadingModels || (isEditMode && isLoadingPrescription)) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}><Spin tip="Loading data..." /></div>;
   }
-
-  const initialValues = isEditMode && prescription ? {
-    ...prescription,
-    palmilhogram: prescription.palmilogram || {},
-  } : {
-    status: 'DRAFT',
-    palmilhogram: {},
-  };
 
   return (
     <Card>
@@ -112,8 +127,8 @@ const PrescriptionForm = () => {
       </Steps>
       <Form
         onSubmit={onSubmit}
-        initialValues={initialValues}
-        render={({ handleSubmit }) => (
+        initialValues={formData}
+        render={({ handleSubmit, values }) => (
           <form onSubmit={handleSubmit}>
             <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
               <Row gutter={24}>
@@ -148,12 +163,12 @@ const PrescriptionForm = () => {
                 Cancel
               </Button>
               {currentStep > 0 && (
-                <Button onClick={prevStep} style={{ marginRight: 8 }}>
+                <Button onClick={() => prev(values)} style={{ marginRight: 8 }}>
                   Previous
                 </Button>
               )}
               {currentStep < 1 && (
-                <Button type="primary" onClick={nextStep}>
+                <Button type="primary" onClick={() => next(values)}>
                   Next
                 </Button>
               )}
