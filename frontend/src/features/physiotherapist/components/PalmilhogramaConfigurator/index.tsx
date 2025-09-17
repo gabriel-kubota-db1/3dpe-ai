@@ -32,6 +32,7 @@ export const PalmilhogramaConfigurator = ({ data, onChange, readOnly = false }: 
   }, [data]);
 
   const handleChange = (field: string, value: number | null) => {
+    if (readOnly) return;
     const newValues = { ...values, [field]: value };
     setValues(newValues);
     onChange(newValues);

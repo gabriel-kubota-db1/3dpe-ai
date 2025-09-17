@@ -107,4 +107,81 @@ const PrescriptionForm = () => {
               <div>
                 <Row gutter={24}>
                   <Col xs={24} md={12}>
-                    <Field name="patient_id" render={({ input })
+                    <Field name="patient_id" render={({ input }) => (
+                      <AntdForm.Item label="Patient" required>
+                        <Select {...input} placeholder="Select a patient" loading={isLoadingPatients}>
+                          {patients?.map(p => <Option key={p.id} value={p.id}>{p.name}</Option>)}
+                        </Select>
+                      </AntdForm.Item>
+                    )} />
+                  </Col>
+                  <Col xs={24} md={12}>
+                    <Field name="insole_model_id" render={({ input }) => (
+                      <AntdForm.Item label="Insole Model" required>
+                        <Select {...input} placeholder="Select an insole model" loading={isLoadingModels}>
+                          {insoleModels?.map(m => <Option key={m.id} value={m.id}>{m.description}</Option>)}
+                        </Select>
+                      </AntdForm.Item>
+                    )} />
+                  </Col>
+                </Row>
+                <Row gutter={24}>
+                  <Col xs={24} md={12}>
+                    <Field name="numeration" render={({ input }) => (
+                      <AntdForm.Item label="Numeration (Shoe Size)" required>
+                        <InputNumber {...input} style={{ width: '100%' }} min={10} max={50} />
+                      </AntdForm.Item>
+                    )} />
+                  </Col>
+                   <Col xs={24} md={12}>
+                    <Field name="status" render={({ input }) => (
+                      <AntdForm.Item label="Status" required>
+                        <Select {...input}>
+                            <Option value="DRAFT">Draft</Option>
+                            <Option value="PENDING">Pending</Option>
+                            <Option value="COMPLETED">Completed</Option>
+                        </Select>
+                      </AntdForm.Item>
+                    )} />
+                  </Col>
+                </Row>
+                <Field name="observations" render={({ input }) => (
+                  <AntdForm.Item label="Observations">
+                    <TextArea {...input} rows={4} placeholder="Enter any observations" />
+                  </AntdForm.Item>
+                )} />
+              </div>
+            )}
+
+            {currentStep === 1 && (
+              <div>
+                <Field name="palmilhogram" component={PalmilhogramaAdapter} />
+              </div>
+            )}
+
+            <div style={{ marginTop: 24, display: 'flex', justifyContent: 'space-between' }}>
+              {currentStep > 0 && (
+                <Button onClick={prevStep}>
+                  Previous
+                </Button>
+              )}
+              <div />
+              {currentStep < 1 && (
+                <Button type="primary" onClick={nextStep}>
+                  Next
+                </Button>
+              )}
+              {currentStep === 1 && (
+                <Button type="primary" htmlType="submit" loading={isCreating || isUpdating}>
+                  {isEditMode ? 'Update' : 'Create'} Prescription
+                </Button>
+              )}
+            </div>
+          </form>
+        )}
+      />
+    </Card>
+  );
+};
+
+export default PrescriptionForm;
