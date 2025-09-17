@@ -46,7 +46,7 @@ export const getPatientById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Patient not found' });
     }
     res.json(patient);
-  } catch (error: any) => {
+  } catch (error: any) {
     res.status(500).json({ message: 'Error fetching patient', error: error.message });
   }
 };
