@@ -9,7 +9,8 @@ export class InsolePrescription extends Model {
   insole_model_id!: number;
   palmilhogram_id!: number;
   numeration!: string;
-  status!: 'PENDING' | 'IN_PRODUCTION' | 'COMPLETED' | 'DELIVERED';
+  status!: 'DRAFT' | 'ACTIVE' | 'CANCELED' | 'COMPLETED';
+  observations?: string;
   created_at!: string;
   updated_at!: string;
 

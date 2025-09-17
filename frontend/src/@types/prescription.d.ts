@@ -1,7 +1,8 @@
-import { Model } from 'objection';
+import { Patient } from "./patient";
+import { InsoleModel } from "./insoleModel";
 
-export class Palmilogram extends Model {
-  id!: number;
+export interface Palmilhogram {
+  id?: number;
   
   // Left Foot
   cic_left?: number;
@@ -28,8 +29,19 @@ export class Palmilogram extends Model {
   boton_right?: number;
   bic_right?: number;
   longitudinal_arch_right?: number;
+}
 
-  static get tableName() {
-    return 'palmilograms';
-  }
+export interface Prescription {
+  id: number;
+  patient_id: number;
+  insole_model_id: number;
+  palmilhogram_id: number;
+  numeration: string;
+  status: 'DRAFT' | 'ACTIVE' | 'CANCELED' | 'COMPLETED';
+  observations?: string;
+  created_at: string;
+  updated_at: string;
+  patient?: Patient;
+  insoleModel?: InsoleModel;
+  palmilogram?: Palmilhogram;
 }
