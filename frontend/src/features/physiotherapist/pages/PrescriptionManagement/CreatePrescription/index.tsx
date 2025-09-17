@@ -1,43 +1,36 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, Field } from 'react-final-form';
-import { FormSpy } from 'react-final-form';
-import { Input, Button, App, Form as AntdForm, Typography, Card, Spin, Row, Col, Select, Checkbox, InputNumber } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { Input, Button, App, Form as AntdForm, Typography, Card, Spin, Row, Col, Select, Steps } from 'antd';
+import { useNavigate, useParams } from 'react-router-dom';
 import * as PatientService from '@/http/PatientHttpService';
 import * as InsoleModelService from '@/http/InsoleModelHttpService';
 import * as PrescriptionService from '@/http/PrescriptionHttpService';
 import { Patient } from '@/@types/patient';
 import { InsoleModel } from '@/@types/insoleModel';
-import FootSvg from './FootSvg';
+import { Prescription } from '@/@types/prescription';
+import { PalmilhogramaConfigurator } from '../../../components/PalmilhogramaConfigurator';
 
 const { Title } = Typography;
 const { Option } = Select;
+const { TextArea } = Input;
 
-const PalmilhogramField = ({ name, label, values }: { name: string, label: string, values: any }) => (
-  <Row align="middle" style={{ marginBottom: 8 }}>
-    <Col span={12}>
-      <Field name={name} type="checkbox">
-        {({ input }) => <Checkbox {...input}>{label}</Checkbox>}
-      </Field>
-    </Col>
-    <Col span={12}>
-      {values[name] && (
-        <Field name={`${name}_value`}>
-          {({ input }) => <InputNumber {...input} min={1} placeholder="mm" style={{ width: '100%' }} />}
-        </Field>
-      )}
-    </Col>
-  </Row>
+// Adapter to connect PalmilhogramaConfigurator with React Final Form's Field component
+const PalmilhogramaAdapter = ({ input: { value, onChange } }: any) => (
+    <PalmilhogramaConfigurator data={value || {}} onChange={onChange} />
 );
 
-const CreatePrescriptionPage = () => {
+const PrescriptionForm = () => {
+  const { id } = useParams<{ id: string }>();
+  const isEditMode = !!id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { message } = App.useApp();
+  const [currentStep, setCurrentStep] = useState(0);
 
   const { data: patients, isLoading: isLoadingPatients } = useQuery<Patient[], Error>({
     queryKey: ['patients'],
-    queryFn: PatientService.getPatients,
+    queryFn: () => PatientService.getPatients(),
   });
 
   const { data: insoleModels, isLoading: isLoadingModels } = useQuery<InsoleModel[], Error>({
@@ -45,83 +38,130 @@ const CreatePrescriptionPage = () => {
     queryFn: InsoleModelService.getInsoleModels,
   });
 
-  const { mutate: createPrescription, isPending } = useMutation({
-    mutationFn: (values: any) => {
-        const { patient_id, insole_model_id, numeration, ...palmilhogram } = values;
-        const payload = { patient_id, insole_model_id, numeration, palmilhogram };
-        return PrescriptionService.createPrescription(payload);
-    },
+  const { data: prescription, isLoading: isLoadingPrescription } = useQuery<Prescription, Error>({
+    queryKey: ['prescription', id],
+    queryFn: () => PrescriptionService.getPrescription(Number(id)),
+    enabled: isEditMode,
+  });
+
+  const mutationOptions = {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
-      message.success('Prescription created successfully!');
+      if (isEditMode) {
+        queryClient.invalidateQueries({ queryKey: ['prescription', id] });
+        message.success('Prescription updated successfully!');
+      } else {
+        message.success('Prescription created successfully!');
+      }
       navigate('/physiotherapist/prescriptions');
     },
-    onError: (error) => {
-      message.error(error.message || 'Failed to create prescription.');
+    onError: (error: Error) => {
+      message.error(error.message || `Failed to ${isEditMode ? 'update' : 'create'} prescription.`);
     },
+  };
+
+  const { mutate: createPrescription, isPending: isCreating } = useMutation({
+    mutationFn: (values: any) => PrescriptionService.createPrescription(values),
+    ...mutationOptions,
+  });
+
+  const { mutate: updatePrescription, isPending: isUpdating } = useMutation({
+    mutationFn: (values: any) => PrescriptionService.updatePrescription(Number(id), values),
+    ...mutationOptions,
   });
 
   const onSubmit = (values: any) => {
-    createPrescription(values);
+    // Filter out null values from palmilhogram before submitting
+    const cleanedPalmilhogram = { ...values.palmilhogram };
+    Object.keys(cleanedPalmilhogram).forEach(key => {
+        if (cleanedPalmilhogram[key] === null) {
+            delete cleanedPalmilhogram[key];
+        }
+    });
+
+    const submissionValues = { ...values, palmilhogram: cleanedPalmilhogram };
+
+    if (isEditMode) {
+        updatePrescription(submissionValues);
+    } else {
+        createPrescription(submissionValues);
+    }
   };
 
-  if (isLoadingPatients || isLoadingModels) {
-    return <Spin tip="Loading data..." />;
+  const nextStep = () => setCurrentStep(s => s + 1);
+  const prevStep = () => setCurrentStep(s => s - 1);
+
+  if (isLoadingPatients || isLoadingModels || (isEditMode && isLoadingPrescription)) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}><Spin tip="Loading data..." /></div>;
   }
+
+  const initialValues = isEditMode && prescription ? {
+    ...prescription,
+    palmilhogram: prescription.palmilogram || {},
+  } : {
+    status: 'DRAFT',
+    palmilhogram: {},
+  };
 
   return (
     <Card>
-      <Title level={3}>New Prescription</Title>
+      <Title level={3}>{isEditMode ? 'Edit' : 'New'} Prescription</Title>
+      <Steps current={currentStep} style={{ margin: '24px 0' }}>
+        <Steps.Step title="Basic Information" />
+        <Steps.Step title="Palmilhograma" />
+      </Steps>
       <Form
         onSubmit={onSubmit}
-        render={({ handleSubmit, values }) => (
+        initialValues={initialValues}
+        render={({ handleSubmit }) => (
           <form onSubmit={handleSubmit}>
-            <Row gutter={24}>
-              <Col xs={24} md={8}>
-                <Field name="patient_id" render={({ input }) => <AntdForm.Item label="Patient" required><Select {...input} placeholder="Select a patient">{patients?.map(p => <Option key={p.id} value={p.id}>{p.name}</Option>)}</Select></AntdForm.Item>} />
-              </Col>
-              <Col xs={24} md={8}>
-                <Field name="insole_model_id" render={({ input }) => <AntdForm.Item label="Insole Model" required><Select {...input} placeholder="Select a model">{insoleModels?.map(m => <Option key={m.id} value={m.id}>{m.description}</Option>)}</Select></AntdForm.Item>} />
-              </Col>
-              <Col xs={24} md={8}>
-                <Field name="numeration" render={({ input }) => <AntdForm.Item label="Numeration (Shoe Size)" required><Input {...input} /></AntdForm.Item>} />
-              </Col>
-            </Row>
-
-            <Title level={4} style={{ marginTop: 24 }}>Palmilhogram</Title>
-            
-            <Row gutter={32}>
+            <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
+              <Row gutter={24}>
                 <Col xs={24} md={12}>
-                    <Title level={5}>Left Foot</Title>
-                    <PalmilhogramField name="cic_left" label="CIC" values={values} />
-                    <PalmilhogramField name="cavr_left" label="CAVR" values={values} />
-                    <PalmilhogramField name="medial_longitudinal_arch_left" label="Medial Arch" values={values} />
-                    <PalmilhogramField name="lateral_longitudinal_arch_left" label="Lateral Arch" values={values} />
-                    <PalmilhogramField name="transverse_arch_left" label="Transverse Arch" values={values} />
-                    <PalmilhogramField name="calcaneus_left" label="Calcaneus" values={values} />
+                  <Field name="patient_id" render={({ input, meta }) => <AntdForm.Item label="Patient" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}><Select {...input} placeholder="Select a patient">{patients?.map(p => <Option key={p.id} value={p.id}>{p.name}</Option>)}</Select></AntdForm.Item>} />
                 </Col>
                 <Col xs={24} md={12}>
-                    <Title level={5}>Right Foot</Title>
-                    <PalmilhogramField name="cic_right" label="CIC" values={values} />
-                    <PalmilhogramField name="cavr_right" label="CAVR" values={values} />
-                    <PalmilhogramField name="medial_longitudinal_arch_right" label="Medial Arch" values={values} />
-                    <PalmilhogramField name="lateral_longitudinal_arch_right" label="Lateral Arch" values={values} />
-                    <PalmilhogramField name="transverse_arch_right" label="Transverse Arch" values={values} />
-                    <PalmilhogramField name="calcaneus_right" label="Calcaneus" values={values} />
+                  <Field name="insole_model_id" render={({ input, meta }) => <AntdForm.Item label="Insole Model" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}><Select {...input} placeholder="Select a model">{insoleModels?.map(m => <Option key={m.id} value={m.id}>{m.description}</Option>)}</Select></AntdForm.Item>} />
                 </Col>
-            </Row>
+              </Row>
+              <Row gutter={24}>
+                  <Col xs={24} md={12}>
+                      <Field name="numeration" render={({ input, meta }) => <AntdForm.Item label="Numeration (Shoe Size)" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}><Input {...input} /></AntdForm.Item>} />
+                  </Col>
+                  <Col xs={24} md={12}>
+                      <Field name="status" render={({ input, meta }) => <AntdForm.Item label="Status" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}><Select {...input}><Option value="DRAFT">Draft</Option><Option value="ACTIVE">Active</Option><Option value="CANCELED">Canceled</Option><Option value="COMPLETED">Completed</Option></Select></AntdForm.Item>} />
+                  </Col>
+              </Row>
+              <Row>
+                  <Col span={24}>
+                      <Field name="observations" render={({ input, meta }) => <AntdForm.Item label="Observations" validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}><TextArea {...input} rows={4} /></AntdForm.Item>} />
+                  </Col>
+              </Row>
+            </div>
 
-            <FormSpy subscription={{ values: true }}>
-              {({ values }) => <FootSvg values={values} />}
-            </FormSpy>
+            <div style={{ display: currentStep === 1 ? 'block' : 'none' }}>
+                <Field name="palmilhogram" component={PalmilhogramaAdapter} />
+            </div>
 
             <div style={{ textAlign: 'right', marginTop: 24 }}>
               <Button onClick={() => navigate('/physiotherapist/prescriptions')} style={{ marginRight: 8 }}>
                 Cancel
               </Button>
-              <Button type="primary" htmlType="submit" loading={isPending}>
-                Create Prescription
-              </Button>
+              {currentStep > 0 && (
+                <Button onClick={prevStep} style={{ marginRight: 8 }}>
+                  Previous
+                </Button>
+              )}
+              {currentStep < 1 && (
+                <Button type="primary" onClick={nextStep}>
+                  Next
+                </Button>
+              )}
+              {currentStep === 1 && (
+                <Button type="primary" htmlType="submit" loading={isCreating || isUpdating}>
+                  {isEditMode ? 'Update Prescription' : 'Create Prescription'}
+                </Button>
+              )}
             </div>
           </form>
         )}
@@ -130,4 +170,4 @@ const CreatePrescriptionPage = () => {
   );
 };
 
-export default CreatePrescriptionPage;
+export default PrescriptionForm;
