@@ -5,7 +5,7 @@ import CouponPage from '../pages/CouponManagement';
 
 // Import User Management pages
 import UserListPage from '../pages/UserManagement/ListUsers';
-import UserFormPage from '../pages/UserManagement/UseForm';
+import UserFormPage from '../pages/UserManagement/UserForm';
 
 const adminRoutes = (
   <>

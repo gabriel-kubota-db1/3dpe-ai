@@ -21,10 +21,7 @@ export const createCoupon = async (req: Request, res: Response) => {
 
 export const updateCoupon = async (req: Request, res: Response) => {
   try {
-    // Remove read-only fields that shouldn't be updated
-    const { id, created_at, updated_at, ...updateData } = req.body;
-    
-    const coupon = await Coupon.query().patchAndFetchById(req.params.id, updateData);
+    const coupon = await Coupon.query().patchAndFetchById(req.params.id, req.body);
     if (coupon) {
       res.json(coupon);
     } else {

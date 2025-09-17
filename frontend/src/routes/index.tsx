@@ -5,7 +5,6 @@ import { Spin } from 'antd';
 import authRoutes from '@/features/auth/routes';
 import commonRoutes from '@/features/common/routes';
 import adminRoutes from '@/features/admin/routes';
-import physiotherapistRoutes from '@/features/physiotherapist/routes';
 import PrivateRoute from './PrivateRoute';
 
 const AppRoutes = () => {
@@ -32,13 +31,6 @@ const AppRoutes = () => {
       {user?.role === 'admin' && (
         <Route element={<PrivateRoute allowedRoles={['admin']} />}>
           {adminRoutes}
-        </Route>
-      )}
-
-      {/* Physiotherapist Routes */}
-      {user?.role === 'physiotherapist' && (
-        <Route element={<PrivateRoute allowedRoles={['physiotherapist']} />}>
-          {physiotherapistRoutes}
         </Route>
       )}
 
