@@ -19,7 +19,7 @@ const UserListPage = () => {
 
   const { data: users, isLoading } = useQuery<UserListItem[], Error>({
     queryKey: ['users'],
-    queryFn: UserService.getAllUsers,
+    queryFn: UserService.getUsers,
   });
 
   const { mutate: deleteUser } = useMutation({

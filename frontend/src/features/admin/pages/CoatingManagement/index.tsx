@@ -111,7 +111,7 @@ const CoatingManagementPage = () => {
             <form onSubmit={handleSubmit}>
               <Field name="description" render={({ input }) => <AntdForm.Item label="Description" required><Input {...input} /></AntdForm.Item>} />
               <Field name="coating_type" render={({ input }) => <AntdForm.Item label="Coating Type" required><Select {...input}><Option value="EVA">EVA</Option><Option value="Fabric">Fabric</Option></Select></AntdForm.Item>} />
-              <Field name="active" type="checkbox" render={({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>} />
+              <Field name="active" initialValue={true} type="checkbox" render={({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>} />
               <div style={{ textAlign: 'right', marginTop: 24 }}>
                 <Button onClick={closeModal} style={{ marginRight: 8 }}>Cancel</Button>
                 <Button type="primary" htmlType="submit" loading={isSaving}>Save</Button>

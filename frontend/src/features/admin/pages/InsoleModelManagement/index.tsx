@@ -138,9 +138,13 @@ const InsoleModelManagementPage = () => {
                 </Col>
                 <Col span={12}>
                   <Field name="type">
-                    {() => (
+                    {({ input }) => (
                       <AntdForm.Item label="Product Type" required>
-                        <Select placeholder="Select product type">
+                        <Select 
+                          {...input} 
+                          placeholder="Select product type"
+                          value={input.value || undefined}
+                        >
                           <Option value="INSOLE">INSOLE</Option>
                           <Option value="SLIPPER">SLIPPER</Option>
                           <Option value="ELEMENT">ELEMENT</Option>
