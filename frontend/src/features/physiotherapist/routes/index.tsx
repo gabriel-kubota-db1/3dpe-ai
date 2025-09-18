@@ -1,8 +1,5 @@
 import { Route } from 'react-router-dom';
 
-// Dashboard
-import PhysiotherapistDashboard from '../pages/Dashboard';
-
 // Patient Management
 import ListPatientsPage from '../pages/PatientManagement/ListPatients';
 import PatientFormPage from '../pages/PatientManagement/PatientForm';
@@ -19,26 +16,26 @@ import CheckoutPage from '../pages/OrderManagement/Checkout';
 import OrderDetailsPage from '../pages/OrderManagement/OrderDetails';
 import SelectPrescriptionsPage from '../pages/OrderManagement/SelectPrescriptions';
 
-const physiotherapistRoutes = [
-  <Route key="physiotherapist-dashboard" path="physiotherapist" element={<PhysiotherapistDashboard />} />,
+const physiotherapistRoutes = (
+  <Route path="physiotherapist">
+    {/* Patient Routes */}
+    <Route path="patients" element={<ListPatientsPage />} />
+    <Route path="patients/new" element={<PatientFormPage />} />
+    <Route path="patients/edit/:id" element={<PatientFormPage />} />
+    <Route path="patients/details/:id" element={<PatientDetailsPage />} />
 
-  // Patient Routes
-  <Route key="physiotherapist-patients" path="physiotherapist/patients" element={<ListPatientsPage />} />,
-  <Route key="physiotherapist-patients-new" path="physiotherapist/patients/new" element={<PatientFormPage />} />,
-  <Route key="physiotherapist-patients-edit" path="physiotherapist/patients/edit/:id" element={<PatientFormPage />} />,
-  <Route key="physiotherapist-patients-details" path="physiotherapist/patients/details/:id" element={<PatientDetailsPage />} />,
+    {/* Prescription Routes */}
+    <Route path="prescriptions" element={<ListPrescriptionsPage />} />
+    <Route path="prescriptions/new" element={<CreatePrescriptionPage />} />
+    <Route path="prescriptions/edit/:id" element={<CreatePrescriptionPage />} />
+    <Route path="prescriptions/details/:id" element={<PrescriptionDetailsPage />} />
 
-  // Prescription Routes
-  <Route key="physiotherapist-prescriptions" path="physiotherapist/prescriptions" element={<ListPrescriptionsPage />} />,
-  <Route key="physiotherapist-prescriptions-new" path="physiotherapist/prescriptions/new" element={<CreatePrescriptionPage />} />,
-  <Route key="physiotherapist-prescriptions-edit" path="physiotherapist/prescriptions/edit/:id" element={<CreatePrescriptionPage />} />,
-  <Route key="physiotherapist-prescriptions-details" path="physiotherapist/prescriptions/details/:id" element={<PrescriptionDetailsPage />} />,
-
-  // Order Routes
-  <Route key="physiotherapist-orders" path="physiotherapist/orders" element={<ListOrdersPage />} />,
-  <Route key="physiotherapist-orders-new" path="physiotherapist/orders/new" element={<SelectPrescriptionsPage />} />,
-  <Route key="physiotherapist-orders-checkout" path="physiotherapist/orders/checkout" element={<CheckoutPage />} />,
-  <Route key="physiotherapist-orders-details" path="physiotherapist/orders/:id" element={<OrderDetailsPage />} />,
-];
+    {/* Order Routes */}
+    <Route path="orders" element={<ListOrdersPage />} />
+    <Route path="orders/new" element={<SelectPrescriptionsPage />} />
+    <Route path="orders/checkout" element={<CheckoutPage />} />
+    <Route path="orders/:id" element={<OrderDetailsPage />} />
+  </Route>
+);
 
 export default physiotherapistRoutes;

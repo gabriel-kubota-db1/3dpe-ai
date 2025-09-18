@@ -73,6 +73,7 @@ const PrescriptionDetailsPage = () => {
             data={prescription.palmilogram || {}} 
             onChange={() => {}} 
             readOnly 
+            showTitle={false}
           />
         </TabPane>
       </Tabs>

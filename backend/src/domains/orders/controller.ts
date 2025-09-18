@@ -141,7 +141,7 @@ export const getPhysioOrderDetails = async (req: Request, res: Response) => {
     const order = await Order.query()
       .findById(id)
       .where('physiotherapist_id', physiotherapistId)
-      .withGraphFetched('[prescriptions.[patient, insoleModel], physiotherapist]');
+      .withGraphFetched('[prescriptions.[patient, insoleModel, palmilogram], physiotherapist]');
     
     if (!order) {
       return res.status(404).json({ message: 'Order not found or you do not have permission to view it.' });
@@ -229,7 +229,7 @@ export const getAdminOrderDetails = async (req: Request, res: Response) => {
     const { id } = req.params;
     const order = await Order.query()
       .findById(id)
-      .withGraphFetched('[prescriptions.[patient, insoleModel], physiotherapist]');
+      .withGraphFetched('[prescriptions.[patient, insoleModel, palmilogram], physiotherapist]');
     
     if (!order) {
       return res.status(404).json({ message: 'Order not found.' });

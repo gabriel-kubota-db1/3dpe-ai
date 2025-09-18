@@ -6,11 +6,11 @@ import authRoutes from '@/features/auth/routes';
 import commonRoutes from '@/features/common/routes';
 import adminRoutes from '@/features/admin/routes';
 import physiotherapistRoutes from '@/features/physiotherapist/routes';
-import industryRoutes from '@/features/industry/routes';
 import PrivateRoute from './PrivateRoute';
+import industryRoutes from '@/features/industry/routes';
 
 const AppRoutes = () => {
-  const { isLoading, user, isAuthenticated } = useAuth();
+  const { isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
@@ -22,36 +22,34 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* Auth routes - public */}
       {authRoutes}
       
-      {/* Root redirect */}
-      <Route path="/" element={
-        <Navigate to={
-          !isAuthenticated ? "/login" :
-          user?.role === 'admin' ? "/admin" :
-          user?.role === 'physiotherapist' ? "/physiotherapist" :
-          user?.role === 'industry' ? "/industry" :
-          "/login"
-        } replace />
-      } />
-      
-      {/* Protected routes */}
+      {/* Common Routes for all authenticated users */}
       <Route element={<PrivateRoute />}>
-        {/* Common Routes for all authenticated users */}
         {commonRoutes}
-        
-        {/* Admin Routes */}
-        {user?.role === 'admin' && adminRoutes}
-        
-        {/* Physiotherapist Routes */}
-        {user?.role === 'physiotherapist' && physiotherapistRoutes}
-        
-        {/* Industry Routes */}
-        {user?.role === 'industry' && industryRoutes}
       </Route>
 
-      {/* Fallback route */}
+      {/* Admin Routes */}
+      {user?.role === 'admin' && (
+        <Route element={<PrivateRoute allowedRoles={['admin']} />}>
+          {adminRoutes}
+        </Route>
+      )}
+
+      {/* Physiotherapist Routes */}
+      {user?.role === 'physiotherapist' && (
+        <Route element={<PrivateRoute allowedRoles={['physiotherapist']} />}>
+          {physiotherapistRoutes}
+        </Route>
+      )}
+
+      {/* Indsutry Routes */}
+      {user?.role === 'industry' && (
+        <Route element={<PrivateRoute allowedRoles={['industry']} />}>
+          {industryRoutes}
+        </Route>
+      )}
+
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );

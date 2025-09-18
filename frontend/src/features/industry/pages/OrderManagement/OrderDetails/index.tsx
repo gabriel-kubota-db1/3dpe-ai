@@ -4,10 +4,11 @@ import { Card, Typography, Spin, Button, Row, Col, Divider, Tag, Descriptions, E
 import { PrinterOutlined } from '@ant-design/icons';
 import * as OrderService from '@/http/OrderHttpService';
 import { Order } from '@/@types/order';
-import { InsolePrescription } from '@/@types/prescription';
+import { Prescription } from '@/@types/prescription';
 import { PalmilhogramaConfigurator } from '@/features/physiotherapist/components/PalmilhogramaConfigurator';
 import dayjs from 'dayjs';
 import './print.css';
+import { formatCPF } from '@/utils/formatter';
 
 const { Title } = Typography;
 
@@ -66,7 +67,7 @@ const OrderDetailsPage = () => {
                   <Descriptions bordered column={1} size="small">
                     <Descriptions.Item label="Name">{order.physiotherapist?.name}</Descriptions.Item>
                     <Descriptions.Item label="Email">{order.physiotherapist?.email}</Descriptions.Item>
-                    <Descriptions.Item label="Document">{order.physiotherapist?.document}</Descriptions.Item>
+                    <Descriptions.Item label="Document">{formatCPF(order.physiotherapist?.document)}</Descriptions.Item>
                   </Descriptions>
                 </Col>
                 <Col xs={24} md={12}>
@@ -86,14 +87,20 @@ const OrderDetailsPage = () => {
         
         <Title level={4} style={{ marginTop: 24 }} className="no-print">Prescriptions</Title>
         
-        {order.prescriptions?.map((prescription: InsolePrescription) => (
+        {order.prescriptions?.map((prescription: Prescription) => (
           <div className="print-page prescription-section" key={prescription.id}>
             <Card type="inner" title={`Prescription for ${prescription.patient?.name}`} style={{ marginTop: 16 }} className="page-container">
               <Descriptions bordered column={1} size="small" style={{ marginBottom: 24 }}>
-                <Descriptions.Item label="Insole Model">{prescription.insoleModel?.name}</Descriptions.Item>
+                <Descriptions.Item label="Insole Model">{prescription.insoleModel?.description}</Descriptions.Item>
                 <Descriptions.Item label="Model Price">R$ {prescription.insoleModel?.sell_value.toFixed(2)}</Descriptions.Item>
+                <Descriptions.Item label="Numeration">{prescription.numeration}</Descriptions.Item>
+                {prescription.observations && (
+                  <Descriptions.Item label="Observations">{prescription.observations}</Descriptions.Item>
+                )}
               </Descriptions>
-              <PalmilhogramaConfigurator data={prescription} onChange={() => {}} readOnly showTitle={false} />
+              <div className="palmilogram-container">
+                <PalmilhogramaConfigurator data={prescription.palmilogram || {}} onChange={() => {}} readOnly showTitle={false} />
+              </div>
             </Card>
           </div>
         ))}
