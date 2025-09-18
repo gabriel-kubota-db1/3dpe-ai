@@ -26,7 +26,7 @@ const OrderDetailsPage = () => {
 
   const { data: order, isLoading, isError } = useQuery<Order, Error>({
     queryKey: ['adminOrderDetails', id],
-    queryFn: () => OrderService.getAdminOrderDetails(Number(id)),
+    queryFn: () => OrderService.getIndustryOrderDetails(Number(id)),
     enabled: !!id,
   });
 

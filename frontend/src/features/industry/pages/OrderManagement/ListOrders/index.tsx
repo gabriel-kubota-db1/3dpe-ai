@@ -141,22 +141,22 @@ const ListOrdersPage = () => {
 
       <Form form={form} layout="vertical" onValuesChange={handleValuesChange} style={{ marginBottom: 24 }}>
         <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item name="status" label="Filter by Status">
+          <Col span={3}>
+            <Form.Item name="status">
               <Select placeholder="Select a status" allowClear>
                 <Option value="ALL">All Statuses</Option>
                 {statusOptions.map(opt => <Option key={opt.value} value={opt.value}>{opt.label}</Option>)}
               </Select>
             </Form.Item>
           </Col>
-          <Col span={8}>
-            <Form.Item name="search" label="Search by Order ID or Physiotherapist">
-              <Input placeholder="Enter search term" />
+          <Col span={21}>
+            <Form.Item name="search">
+              <Input placeholder="Search by Order ID or Physiotherapist" style={{ width: '100%' }} />
             </Form.Item>
           </Col>
         </Row>
       </Form>
-
+      
       {selectedRowKeys.length > 0 && (
         <div style={{ marginBottom: 16, background: '#e6f7ff', padding: '8px 16px', border: '1px solid #91d5ff', borderRadius: 4 }}>
           <Space>
@@ -172,7 +172,7 @@ const ListOrdersPage = () => {
         loading={isLoading}
         rowKey="id"
       />
-      
+
       {selectedOrder && (
         <EditOrderStatusModal
           order={selectedOrder}
