@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { isAuthenticated } from '../../middlewares/isAuthenticated';
 import { isPhysiotherapist } from '../../middlewares/isPhysiotherapist';
 import { isAdmin } from '../../middlewares/isAdmin';
-import { isIndustry } from '../../middlewares/isIndustry'; // Assuming this will be created
+import { isIndustry } from '../../middlewares/isIndustry';
 import { validateRequest } from '../../middlewares/validateRequest';
 import { checkoutSchema, statusUpdateSchema, batchStatusUpdateSchema, shippingSchema } from './validators';
 import * as controller from './controller';
@@ -14,6 +14,8 @@ const physioRouter = Router();
 physioRouter.get('/', controller.listPhysioOrders);
 physioRouter.post('/shipping', validateRequest({ body: shippingSchema }), controller.getShippingOptions);
 physioRouter.post('/checkout', validateRequest({ body: checkoutSchema }), controller.createCheckout);
+physioRouter.get('/:id', controller.getPhysioOrderDetails);
+physioRouter.post('/:id/pay', controller.processMockPayment);
 
 // --- Industry Routes ---
 const industryRouter = Router();

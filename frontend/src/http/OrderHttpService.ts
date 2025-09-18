@@ -1,9 +1,13 @@
-import api from './axios';
+import { api } from './api';
 import { Order } from '@/@types/order';
 
-// Physiotherapist
 export const getPhysioOrders = async (): Promise<Order[]> => {
   const { data } = await api.get('/orders/physiotherapist');
+  return data;
+};
+
+export const getPhysioOrder = async (id: number): Promise<Order> => {
+  const { data } = await api.get(`/orders/physiotherapist/${id}`);
   return data;
 };
 
@@ -17,29 +21,7 @@ export const createCheckout = async (payload: any): Promise<Order> => {
   return data;
 };
 
-// Industry
-export const getIndustryOrders = async (): Promise<Order[]> => {
-  const { data } = await api.get('/orders/industry');
-  return data;
-};
-
-export const updateOrderStatusByIndustry = async (id: number, status: string): Promise<Order> => {
-  const { data } = await api.put(`/orders/industry/${id}/status`, { status });
-  return data;
-};
-
-// Admin
-export const getAdminOrders = async (): Promise<Order[]> => {
-  const { data } = await api.get('/orders/admin');
-  return data;
-};
-
-export const batchUpdateStatusByAdmin = async (orderIds: number[], status: string): Promise<any> => {
-  const { data } = await api.put('/orders/admin/status', { orderIds, status });
-  return data;
-};
-
-export const exportOrdersToCsv = async (): Promise<Blob> => {
-  const { data } = await api.get('/orders/admin/export/csv', { responseType: 'blob' });
+export const confirmPayment = async (id: number): Promise<Order> => {
+  const { data } = await api.post(`/orders/physiotherapist/${id}/pay`);
   return data;
 };

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { Table, Card, Typography, Tag } from 'antd';
+import { Table, Card, Typography, Tag, Button } from 'antd';
+import { Link } from 'react-router-dom';
 import * as OrderService from '@/http/OrderHttpService';
 import { Order } from '@/@types/order';
 import dayjs from 'dayjs';
@@ -50,6 +51,15 @@ const ListOrdersPage = () => {
       dataIndex: 'prescriptions',
       key: 'prescriptions',
       render: (prescriptions: any[]) => prescriptions?.length || 0,
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_: any, record: Order) => (
+        <Link to={`/physiotherapist/orders/${record.id}`}>
+          <Button type="link">Details</Button>
+        </Link>
+      ),
     },
   ];
 

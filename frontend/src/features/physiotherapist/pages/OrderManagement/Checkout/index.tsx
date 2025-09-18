@@ -1,17 +1,15 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Form, Field } from 'react-final-form';
-import { Card, Typography, Spin, Steps, Button, App, Row, Col, Descriptions, Radio, Input, Divider } from 'antd';
+import { Card, Typography, Spin, Steps, Button, App, Row, Col, Descriptions, Radio, Divider, Alert } from 'antd';
+import { FaCreditCard, FaPix } from 'react-icons/fa6';
 import * as PrescriptionService from '@/http/PrescriptionHttpService';
 import * as OrderService from '@/http/OrderHttpService';
 import { Prescription } from '@/@types/prescription';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { MaskedAntdInput } from '@/components/Form/MaskedAntdInput';
 
 const { Title, Text } = Typography;
-
-const cepMask = '00000-000';
 
 const CheckoutPage = () => {
   const location = useLocation();
@@ -30,25 +28,31 @@ const CheckoutPage = () => {
     enabled: prescriptionIds.length > 0,
   });
 
+  useEffect(() => {
+    if (user?.cep) {
+      handleGetShipping();
+    }
+  }, [user?.cep, prescriptionIds]);
+
   const { mutate: createOrder, isPending: isCreatingOrder } = useMutation({
     mutationFn: (values: any) => OrderService.createCheckout(values),
-    onSuccess: () => {
-      message.success('Order created successfully!');
-      navigate('/physiotherapist/orders');
+    onSuccess: (data) => {
+      message.success('Order created successfully! Please proceed with the payment.');
+      navigate(`/physiotherapist/orders/${data.id}`);
     },
     onError: (error: any) => {
       message.error(error.response?.data?.message || 'Failed to create order.');
     },
   });
 
-  const handleGetShipping = async (cep: string) => {
-    if (!cep || cep.replace(/\D/g, '').length !== 8) {
-      message.error('Please enter a valid CEP.');
+  const handleGetShipping = async () => {
+    if (!user?.cep) {
+      message.error('You must have a CEP registered in your profile to calculate shipping.');
       return;
     }
     setIsShippingLoading(true);
     try {
-      const options = await OrderService.getShippingOptions({ cep, prescriptionIds });
+      const options = await OrderService.getShippingOptions({ cep: user.cep, prescriptionIds });
       setShippingOptions(options);
     } catch (error: any) {
       message.error(error.response?.data?.message || 'Failed to get shipping options.');
@@ -63,7 +67,7 @@ const CheckoutPage = () => {
       prescriptionIds,
       shipping: selectedShipping,
       payment: {
-        method: 'Credit Card', // Mocked
+        method: values.paymentMethod,
       },
       observations: values.observations,
     };
@@ -87,7 +91,7 @@ const CheckoutPage = () => {
 
       <Form
         onSubmit={onSubmit}
-        initialValues={{ cep: user?.cep || '' }}
+        initialValues={{ paymentMethod: 'Credit Card' }}
         render={({ handleSubmit, values }) => (
           <form onSubmit={handleSubmit}>
             {currentStep === 0 && (
@@ -102,33 +106,37 @@ const CheckoutPage = () => {
                 </Descriptions>
                 <Divider />
                 <Title level={4}>Shipping</Title>
-                <Row gutter={16} align="bottom">
-                  <Col>
-                    <Field name="cep">
-                      {({ input }) => (
-                        <MaskedAntdInput {...input} mask={cepMask} unmask={true} placeholder="Enter CEP" />
-                      )}
-                    </Field>
-                  </Col>
-                  <Col>
-                    <Button onClick={() => handleGetShipping(values.cep)} loading={isShippingLoading}>
-                      Calculate Shipping
-                    </Button>
-                  </Col>
-                </Row>
+                {!user?.cep ? (
+                  <Alert message="Please register a CEP in your profile to calculate shipping." type="warning" showIcon />
+                ) : (
+                  <Row gutter={16} align="middle">
+                    <Col><Text>Shipping to CEP: <strong>{user.cep}</strong></Text></Col>
+                    <Col><Button onClick={handleGetShipping} loading={isShippingLoading}>Recalculate Shipping</Button></Col>
+                  </Row>
+                )}
                 {shippingOptions && (
-                  <Field name="shipping.carrier">
+                  <Field name="shipping.carrier" required>
                     {({ input }) => (
                       <Radio.Group {...input} style={{ marginTop: 16 }}>
                         {Object.entries(shippingOptions).map(([key, opt]: [string, any]) => (
                           <Radio key={key} value={key}>
-                            {`${opt.company} - R$ ${opt.price.toFixed(2)} (Up to ${opt.deadline} days)`}
+                            {`${opt.company} (${opt.carrier}) - R$ ${opt.price.toFixed(2)} (Up to ${opt.deadline} days)`}
                           </Radio>
                         ))}
                       </Radio.Group>
                     )}
                   </Field>
                 )}
+                <Divider />
+                <Title level={4}>Payment Method</Title>
+                <Field name="paymentMethod" required>
+                  {({ input }) => (
+                    <Radio.Group {...input}>
+                      <Radio.Button value="Credit Card"><FaCreditCard style={{ marginRight: 8 }} />Credit Card</Radio.Button>
+                      <Radio.Button value="PIX"><FaPix style={{ marginRight: 8 }} />PIX</Radio.Button>
+                    </Radio.Group>
+                  )}
+                </Field>
               </div>
             )}
 
@@ -138,24 +146,18 @@ const CheckoutPage = () => {
                 <Descriptions bordered column={1}>
                   <Descriptions.Item label="Subtotal">{`R$ ${orderValue.toFixed(2)}`}</Descriptions.Item>
                   <Descriptions.Item label="Shipping">{`R$ ${shippingOptions[values.shipping.carrier].price.toFixed(2)} (${shippingOptions[values.shipping.carrier].carrier})`}</Descriptions.Item>
+                  <Descriptions.Item label="Payment Method">{values.paymentMethod}</Descriptions.Item>
                   <Descriptions.Item label="Total">
                     <Text strong>{`R$ ${(orderValue + shippingOptions[values.shipping.carrier].price).toFixed(2)}`}</Text>
                   </Descriptions.Item>
                 </Descriptions>
-                <Divider />
-                <Title level={4}>Payment</Title>
-                <Card>
-                  <Text>Payment gateway integration (e.g., AbacatePay iframe) would be here.</Text>
-                  <br />
-                  <Text strong>For now, click "Finalize Order" to simulate a successful payment.</Text>
-                </Card>
               </div>
             )}
 
             <div style={{ textAlign: 'right', marginTop: 24 }}>
               {currentStep > 0 && <Button onClick={() => setCurrentStep(0)} style={{ marginRight: 8 }}>Back</Button>}
-              {currentStep < 1 && <Button type="primary" onClick={() => setCurrentStep(1)} disabled={!values.shipping?.carrier}>Next</Button>}
-              {currentStep === 1 && <Button type="primary" htmlType="submit" loading={isCreatingOrder}>Finalize Order</Button>}
+              {currentStep < 1 && <Button type="primary" onClick={() => setCurrentStep(1)} disabled={!values.shipping?.carrier || !values.paymentMethod}>Next</Button>}
+              {currentStep === 1 && <Button type="primary" htmlType="submit" loading={isCreatingOrder}>Create Order & Proceed to Payment</Button>}
             </div>
           </form>
         )}

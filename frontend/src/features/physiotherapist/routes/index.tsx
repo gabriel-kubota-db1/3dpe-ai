@@ -1,39 +1,94 @@
-import { Route } from 'react-router-dom';
-
-// Patient Management
-import ListPatientsPage from '../pages/PatientManagement/ListPatients';
-import PatientFormPage from '../pages/PatientManagement/PatientForm';
-import PatientDetailsPage from '../pages/PatientManagement/PatientDetails';
-
-// Prescription Management
-import ListPrescriptionsPage from '../pages/PrescriptionManagement/ListPrescriptions';
-import CreatePrescriptionPage from '../pages/PrescriptionManagement/CreatePrescription';
-import PrescriptionDetailsPage from '../pages/PrescriptionManagement/PrescriptionDetails';
-
-// Order Management
-import SelectPrescriptionsPage from '../pages/OrderManagement/SelectPrescriptions';
-import CheckoutPage from '../pages/OrderManagement/Checkout';
+import { PrivateRoute } from '@/routes/PrivateRoute';
+import { PhysiotherapistDashboard } from '../pages/Dashboard';
+import { CreatePatientPage } from '../pages/PatientManagement/CreatePatient';
+import { ListPatientsPage } from '../pages/PatientManagement/ListPatients';
+import { EditPatientPage } from '../pages/PatientManagement/EditPatient';
+import { CreatePrescriptionPage } from '../pages/PrescriptionManagement/CreatePrescription';
+import { ListPrescriptionsPage } from '../pages/PrescriptionManagement/ListPrescriptions';
+import { EditPrescriptionPage } from '../pages/PrescriptionManagement/EditPrescription';
 import ListOrdersPage from '../pages/OrderManagement/ListOrders';
+import CheckoutPage from '../pages/OrderManagement/Checkout';
+import OrderDetailsPage from '../pages/OrderManagement/OrderDetails';
 
-const physiotherapistRoutes = (
-  <Route path="physiotherapist">
-    {/* Patient Routes */}
-    <Route path="patients" element={<ListPatientsPage />} />
-    <Route path="patients/new" element={<PatientFormPage />} />
-    <Route path="patients/edit/:id" element={<PatientFormPage />} />
-    <Route path="patients/details/:id" element={<PatientDetailsPage />} />
-
-    {/* Prescription Routes */}
-    <Route path="prescriptions" element={<ListPrescriptionsPage />} />
-    <Route path="prescriptions/new" element={<CreatePrescriptionPage />} />
-    <Route path="prescriptions/edit/:id" element={<CreatePrescriptionPage />} />
-    <Route path="prescriptions/details/:id" element={<PrescriptionDetailsPage />} />
-
-    {/* Order Routes */}
-    <Route path="orders" element={<ListOrdersPage />} />
-    <Route path="orders/new" element={<SelectPrescriptionsPage />} />
-    <Route path="orders/checkout" element={<CheckoutPage />} />
-  </Route>
-);
-
-export default physiotherapistRoutes;
+export const physiotherapistRoutes = [
+  {
+    path: '/physiotherapist',
+    element: (
+      <PrivateRoute roles={['physiotherapist']}>
+        <PhysiotherapistDashboard />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/physiotherapist/patients',
+    element: (
+      <PrivateRoute roles={['physiotherapist']}>
+        <ListPatientsPage />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/physiotherapist/patients/create',
+    element: (
+      <PrivateRoute roles={['physiotherapist']}>
+        <CreatePatientPage />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/physiotherapist/patients/edit/:id',
+    element: (
+      <PrivateRoute roles={['physiotherapist']}>
+        <EditPatientPage />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/physiotherapist/prescriptions',
+    element: (
+      <PrivateRoute roles={['physiotherapist']}>
+        <ListPrescriptionsPage />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/physiotherapist/prescriptions/create/:patientId',
+    element: (
+      <PrivateRoute roles={['physiotherapist']}>
+        <CreatePrescriptionPage />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/physiotherapist/prescriptions/edit/:id',
+    element: (
+      <PrivateRoute roles={['physiotherapist']}>
+        <EditPrescriptionPage />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/physiotherapist/orders',
+    element: (
+      <PrivateRoute roles={['physiotherapist']}>
+        <ListOrdersPage />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/physiotherapist/orders/checkout',
+    element: (
+      <PrivateRoute roles={['physiotherapist']}>
+        <CheckoutPage />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/physiotherapist/orders/:id',
+    element: (
+      <PrivateRoute roles={['physiotherapist']}>
+        <OrderDetailsPage />
+      </PrivateRoute>
+    ),
+  },
+];
