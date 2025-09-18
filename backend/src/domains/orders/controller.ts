@@ -146,7 +146,7 @@ export const createCheckout = async (req: Request, res: Response) => {
       total_value: totalValue,
       payment_method: payment.method,
       gateway_id: paymentResult.transactionId,
-      transaction_date: new Date().toISOString(),
+      transaction_date: new Date().toISOString().slice(0, 19).replace('T', ' '),
       status: 'PROCESSING', // Assuming payment is successful
       observations,
     });

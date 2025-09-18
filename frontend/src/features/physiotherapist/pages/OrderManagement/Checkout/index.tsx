@@ -88,7 +88,7 @@ const CheckoutPage = () => {
       <Form
         onSubmit={onSubmit}
         initialValues={{ cep: user?.cep || '' }}
-        render={({ handleSubmit, values, form }) => (
+        render={({ handleSubmit, values }) => (
           <form onSubmit={handleSubmit}>
             {currentStep === 0 && (
               <div>
@@ -122,7 +122,7 @@ const CheckoutPage = () => {
                       <Radio.Group {...input} style={{ marginTop: 16 }}>
                         {Object.entries(shippingOptions).map(([key, opt]: [string, any]) => (
                           <Radio key={key} value={key}>
-                            {`${opt.carrier} - R$ ${opt.price.toFixed(2)} (Up to ${opt.deadline} days)`}
+                            {`${opt.company} - R$ ${opt.price.toFixed(2)} (Up to ${opt.deadline} days)`}
                           </Radio>
                         ))}
                       </Radio.Group>
