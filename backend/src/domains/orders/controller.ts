@@ -4,6 +4,8 @@ import { transaction } from 'objection';
 import { InsolePrescription } from '../prescriptions/model';
 import axios from 'axios';
 import { getCurrentMySQLDateTime } from '../../utils/datetime';
+import { Coupon } from '../coupons/model';
+import dayjs from 'dayjs';
 
 // --- Melhor Envio Integration ---
 const calculateShippingWithMelhorEnvio = async (cep: string, items: any[]) => {
@@ -83,7 +85,7 @@ export const getShippingOptions = async (req: Request, res: Response) => {
 export const createCheckout = async (req: Request, res: Response) => {
   const trx = await transaction.start(Order.knex());
   try {
-    const { prescriptionIds, shipping, payment, observations } = req.body;
+    const { prescriptionIds, shipping, payment, observations, couponCode } = req.body;
     // @ts-ignore
     const physiotherapistId = req.user.id;
 
@@ -95,16 +97,43 @@ export const createCheckout = async (req: Request, res: Response) => {
 
     const orderValue = prescriptions.reduce((sum, p) => sum + (p.insoleModel?.sell_value || 0), 0);
     const freightValue = shipping.price || 0;
-    const totalValue = orderValue + freightValue;
+    
+    let discountValue = 0;
+    let couponId = null;
+
+    if (couponCode) {
+      const coupon = await Coupon.query(trx).where('code', couponCode).first();
+      if (!coupon) {
+        await trx.rollback();
+        return res.status(400).json({ message: 'Invalid coupon code provided.' });
+      }
+      // Re-validate coupon on the server
+      if (!coupon.active) {
+        await trx.rollback();
+        return res.status(400).json({ message: 'This coupon is inactive.' });
+      }
+      const today = dayjs().startOf('day');
+      if (today.isBefore(dayjs(coupon.start_date)) || today.isAfter(dayjs(coupon.finish_date))) {
+        await trx.rollback();
+        return res.status(400).json({ message: 'This coupon is expired or not yet valid.' });
+      }
+      
+      discountValue = orderValue * (coupon.value / 100);
+      couponId = coupon.id;
+    }
+
+    const totalValue = orderValue + freightValue - discountValue;
 
     const newOrder = await Order.query(trx).insert({
       physiotherapist_id: physiotherapistId,
       order_value: orderValue,
       freight_value: freightValue,
+      discount_value: discountValue,
       total_value: totalValue,
       payment_method: payment.method,
       status: 'PENDING_PAYMENT',
       observations,
+      coupon_id: couponId,
     });
 
     for (const prescription of prescriptions) {
@@ -141,7 +170,7 @@ export const getPhysioOrderDetails = async (req: Request, res: Response) => {
     const order = await Order.query()
       .findById(id)
       .where('physiotherapist_id', physiotherapistId)
-      .withGraphFetched('[prescriptions.[patient, insoleModel, palmilogram], physiotherapist]');
+      .withGraphFetched('[prescriptions.[patient, insoleModel], physiotherapist, coupon]');
     
     if (!order) {
       return res.status(404).json({ message: 'Order not found or you do not have permission to view it.' });
@@ -212,7 +241,7 @@ export const updatePhysioOrderStatus = async (req: Request, res: Response) => {
 export const listAllOrders = async (req: Request, res: Response) => {
   try {
     const orders = await Order.query()
-      .withGraphFetched('[physiotherapist(selectName), prescriptions]')
+      .withGraphFetched('[physiotherapist(selectName), prescriptions, coupon]')
       .modifiers({
         selectName(builder) { builder.select('name'); }
       })
@@ -229,7 +258,7 @@ export const getAdminOrderDetails = async (req: Request, res: Response) => {
     const { id } = req.params;
     const order = await Order.query()
       .findById(id)
-      .withGraphFetched('[prescriptions.[patient, insoleModel, palmilogram], physiotherapist]');
+      .withGraphFetched('[prescriptions.[patient, insoleModel], physiotherapist, coupon]');
     
     if (!order) {
       return res.status(404).json({ message: 'Order not found.' });

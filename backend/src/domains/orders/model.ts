@@ -1,6 +1,7 @@
-import { Model, RelationMappings, RelationMappingsThunk } from 'objection';
+import { Model } from 'objection';
 import { User } from '../users/model';
 import { InsolePrescription } from '../prescriptions/model';
+import { Coupon } from '../coupons/model';
 
 export class Order extends Model {
   id!: number;
@@ -11,39 +12,50 @@ export class Order extends Model {
   payment_method?: string;
   order_value!: number;
   freight_value!: number;
+  discount_value!: number;
   total_value!: number;
   gateway_id?: string;
   transaction_date?: string;
-  created_at!: string;
-  updated_at!: string;
+  coupon_id?: number;
 
   physiotherapist?: User;
   prescriptions?: InsolePrescription[];
+  coupon?: Coupon;
 
   static get tableName() {
     return 'orders';
   }
 
-  static relationMappings: RelationMappings | RelationMappingsThunk = {
-    physiotherapist: {
-      relation: Model.BelongsToOneRelation,
-      modelClass: User,
-      join: {
-        from: 'orders.physiotherapist_id',
-        to: 'users.id',
-      },
-    },
-    prescriptions: {
-      relation: Model.ManyToManyRelation,
-      modelClass: InsolePrescription,
-      join: {
-        from: 'orders.id',
-        through: {
-          from: 'order_prescriptions.order_id',
-          to: 'order_prescriptions.insole_prescription_id',
+  static get relationMappings() {
+    return {
+      physiotherapist: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: User,
+        join: {
+          from: 'orders.physiotherapist_id',
+          to: 'users.id',
         },
-        to: 'insole_prescriptions.id',
       },
-    },
-  };
+      prescriptions: {
+        relation: Model.ManyToManyRelation,
+        modelClass: InsolePrescription,
+        join: {
+          from: 'orders.id',
+          through: {
+            from: 'order_prescriptions.order_id',
+            to: 'order_prescriptions.insole_prescription_id',
+          },
+          to: 'insole_prescriptions.id',
+        },
+      },
+      coupon: {
+        relation: Model.BelongsToOneRelation,
+        modelClass: Coupon,
+        join: {
+          from: 'orders.coupon_id',
+          to: 'coupons.id',
+        },
+      },
+    };
+  }
 }
