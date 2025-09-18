@@ -1,4 +1,4 @@
-import { api } from './api';
+import api from './axios';
 import { Prescription } from '@/@types/prescription';
 
 export const getPrescriptions = async (): Promise<Prescription[]> => {

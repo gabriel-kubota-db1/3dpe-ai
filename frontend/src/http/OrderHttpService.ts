@@ -1,4 +1,4 @@
-import { api } from './api';
+import api from './axios';
 import { Order } from '@/@types/order';
 
 const getAdminOrders = async (filters?: { status?: string; search?: string }): Promise<Order[]> => {
