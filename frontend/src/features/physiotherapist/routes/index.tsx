@@ -17,6 +17,7 @@ import PrescriptionDetailsPage from '../pages/PrescriptionManagement/Prescriptio
 import ListOrdersPage from '../pages/OrderManagement/ListOrders';
 import CheckoutPage from '../pages/OrderManagement/Checkout';
 import OrderDetailsPage from '../pages/OrderManagement/OrderDetails';
+import SelectPrescriptionsPage from '../pages/OrderManagement/SelectPrescriptions';
 
 const physiotherapistRoutes = (
   <Route path="physiotherapist">
@@ -36,6 +37,7 @@ const physiotherapistRoutes = (
 
     {/* Order Routes */}
     <Route path="orders" element={<ListOrdersPage />} />
+    <Route path="orders/new" element={<SelectPrescriptionsPage />} />
     <Route path="orders/checkout" element={<CheckoutPage />} />
     <Route path="orders/:id" element={<OrderDetailsPage />} />
   </Route>

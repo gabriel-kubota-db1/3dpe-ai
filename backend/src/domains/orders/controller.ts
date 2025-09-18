@@ -3,6 +3,7 @@ import { Order } from './model';
 import { transaction } from 'objection';
 import { InsolePrescription } from '../prescriptions/model';
 import axios from 'axios';
+import { getCurrentMySQLDateTime } from '../../utils/datetime';
 
 // --- Melhor Envio Integration ---
 const calculateShippingWithMelhorEnvio = async (cep: string, items: any[]) => {
@@ -172,7 +173,7 @@ export const processMockPayment = async (req: Request, res: Response) => {
 
     const updatedOrder = await order.$query(trx).patchAndFetch({
       status: 'PROCESSING',
-      transaction_date: new Date().toISOString(),
+      transaction_date: getCurrentMySQLDateTime(),
       gateway_id: `mock_txn_${Date.now()}`
     });
 

@@ -8,6 +8,7 @@ import * as OrderService from '@/http/OrderHttpService';
 import { Prescription } from '@/@types/prescription';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { formatCEP } from '@/utils/formatter';
 
 const { Title, Text } = Typography;
 
@@ -110,14 +111,13 @@ const CheckoutPage = () => {
                   <Alert message="Please register a CEP in your profile to calculate shipping." type="warning" showIcon />
                 ) : (
                   <Row gutter={16} align="middle">
-                    <Col><Text>Shipping to CEP: <strong>{user.cep}</strong></Text></Col>
-                    <Col><Button onClick={handleGetShipping} loading={isShippingLoading}>Recalculate Shipping</Button></Col>
+                    <Col><Text>Shipping to CEP: <strong>{formatCEP(user.cep)}</strong></Text></Col>
                   </Row>
                 )}
                 {shippingOptions && (
                   <Field name="shipping.carrier" required>
                     {({ input }) => (
-                      <Radio.Group {...input} style={{ marginTop: 16 }}>
+                      <Radio.Group {...input} style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8   }}>
                         {Object.entries(shippingOptions).map(([key, opt]: [string, any]) => (
                           <Radio key={key} value={key}>
                             {`${opt.company} (${opt.carrier}) - R$ ${opt.price.toFixed(2)} (Up to ${opt.deadline} days)`}

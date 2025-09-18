@@ -1,10 +1,12 @@
 import { useParams } from 'react-router-dom';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, Typography, Spin, Descriptions, Tag, Divider, Button, App, Row, Col, Input, Tooltip } from 'antd';
 import { FaCreditCard, FaPix } from 'react-icons/fa6';
 import { CopyOutlined } from '@ant-design/icons';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import * as OrderService from '@/http/OrderHttpService';
+import { maskCardNumber, maskExpiry, maskCVV } from '@/utils/inputFormatters';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -18,16 +20,50 @@ const statusColors: { [key: string]: string } = {
   CANCELED: 'red',
 };
 
-const MockCreditCardForm = () => (
-  <div>
-    <Row gutter={[16, 16]}>
-      <Col span={24}><Input placeholder="Card Number (e.g., 4242 4242 4242 4242)" /></Col>
-      <Col span={24}><Input placeholder="Name on Card" /></Col>
-      <Col span={12}><Input placeholder="Expiry (MM/YY)" /></Col>
-      <Col span={12}><Input placeholder="CVV" /></Col>
-    </Row>
-  </div>
-);
+const MockCreditCardForm = () => {
+  const [expiryValue, setExpiryValue] = useState('');
+
+  return (
+    <div>
+      <Row gutter={[16, 16]}>
+        <Col span={24}>
+          <Input 
+            placeholder="Card Number (e.g., 4242 4242 4242 4242)" 
+            maxLength={19}
+            onInput={(e) => {
+              const target = e.target as HTMLInputElement;
+              target.value = maskCardNumber(target.value);
+            }}
+          />
+        </Col>
+        <Col span={24}>
+          <Input placeholder="Name on Card" />
+        </Col>
+        <Col span={12}>
+          <Input 
+            placeholder="MM/YY" 
+            maxLength={5}
+            value={expiryValue}
+            onChange={(e) => {
+              const newValue = maskExpiry(e.target.value, expiryValue);
+              setExpiryValue(newValue);
+            }}
+          />
+        </Col>
+        <Col span={12}>
+          <Input 
+            placeholder="CVV" 
+            maxLength={3}
+            onInput={(e) => {
+              const target = e.target as HTMLInputElement;
+              target.value = maskCVV(target.value);
+            }}
+          />
+        </Col>
+      </Row>
+    </div>
+  );
+};
 
 const MockPixPayment = ({ totalValue }: { totalValue: number }) => {
   const { message } = App.useApp();
@@ -40,9 +76,11 @@ const MockPixPayment = ({ totalValue }: { totalValue: number }) => {
 
   return (
     <div style={{ textAlign: 'center' }}>
+      <Text>Total: R$ {totalValue.toFixed(2)}</Text>
+      <br />
       <Text>Scan the QR code or copy the code below to pay.</Text>
       <div style={{ margin: '24px 0' }}>
-        <QRCode value={pixCode} size={180} />
+        <QRCodeSVG value={pixCode} size={180} />
       </div>
       <Input.Group compact>
         <Input style={{ width: 'calc(100% - 32px)' }} defaultValue={pixCode} readOnly />
@@ -59,14 +97,17 @@ const OrderDetailsPage = () => {
   const { message } = App.useApp();
   const queryClient = useQueryClient();
 
+  // Validate that id exists and is a valid number
+  const isValidId = id && !isNaN(Number(id)) && Number(id) > 0;
+
   const { data: order, isLoading, isError } = useQuery({
     queryKey: ['physioOrder', id],
-    queryFn: () => OrderService.getPhysioOrder(Number(id)),
-    enabled: !!id,
+    queryFn: () => OrderService.getPhysioOrder(Number(id!)),
+    enabled: !!isValidId,
   });
 
   const { mutate: confirmPayment, isPending: isConfirmingPayment } = useMutation({
-    mutationFn: () => OrderService.confirmPayment(Number(id)),
+    mutationFn: () => OrderService.confirmPayment(Number(id!)),
     onSuccess: () => {
       message.success('Payment confirmed successfully!');
       queryClient.invalidateQueries({ queryKey: ['physioOrder', id] });
@@ -76,6 +117,11 @@ const OrderDetailsPage = () => {
       message.error(error.response?.data?.message || 'Failed to confirm payment.');
     },
   });
+
+  // Handle invalid ID
+  if (!isValidId) {
+    return <Title level={4}>Invalid order ID.</Title>;
+  }
 
   if (isLoading) return <Spin size="large" />;
   if (isError || !order) return <Title level={4}>Order not found.</Title>;
