@@ -6,8 +6,8 @@ import authRoutes from '@/features/auth/routes';
 import commonRoutes from '@/features/common/routes';
 import adminRoutes from '@/features/admin/routes';
 import physiotherapistRoutes from '@/features/physiotherapist/routes';
-import industryRoutes from '@/features/industry/routes';
 import PrivateRoute from './PrivateRoute';
+import industryRoutes from '@/features/industry/routes';
 
 const AppRoutes = () => {
   const { isLoading, user } = useAuth();
@@ -43,7 +43,7 @@ const AppRoutes = () => {
         </Route>
       )}
 
-      {/* Industry Routes */}
+      {/* Indsutry Routes */}
       {user?.role === 'industry' && (
         <Route element={<PrivateRoute allowedRoles={['industry']} />}>
           {industryRoutes}

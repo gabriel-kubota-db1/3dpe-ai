@@ -1,11 +1,9 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Table, Card, Typography, Tag, Button, Space } from 'antd';
+import { Table, Card, Typography, Tag, Button } from 'antd';
 import { Link } from 'react-router-dom';
 import * as OrderService from '@/http/OrderHttpService';
 import { Order } from '@/@types/order';
 import dayjs from 'dayjs';
-import { EditOrderStatusModal } from '../../../components/EditOrderStatusModal';
 
 const { Title } = Typography;
 
@@ -19,23 +17,10 @@ const statusColors: { [key: string]: string } = {
 };
 
 const ListOrdersPage = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-
   const { data: orders, isLoading } = useQuery<Order[], Error>({
     queryKey: ['physioOrders'],
     queryFn: OrderService.getPhysioOrders,
   });
-
-  const handleOpenModal = (order: Order) => {
-    setSelectedOrder(order);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedOrder(null);
-    setIsModalOpen(false);
-  };
 
   const columns = [
     {
@@ -71,37 +56,23 @@ const ListOrdersPage = () => {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: Order) => (
-        <Space size="middle">
-          <Link to={`/physiotherapist/orders/${record.id}`}>
-            <Button type="link">Details</Button>
-          </Link>
-          <Button type="link" onClick={() => handleOpenModal(record)}>
-            Edit Status
-          </Button>
-        </Space>
+        <Link to={`/physiotherapist/orders/${record.id}`}>
+          <Button type="link">View Details</Button>
+        </Link>
       ),
     },
   ];
 
   return (
-    <>
-      <Card>
-        <Title level={3}>My Orders</Title>
-        <Table
-          columns={columns}
-          dataSource={orders}
-          loading={isLoading}
-          rowKey="id"
-        />
-      </Card>
-      {selectedOrder && (
-        <EditOrderStatusModal
-          order={selectedOrder}
-          visible={isModalOpen}
-          onClose={handleCloseModal}
-        />
-      )}
-    </>
+    <Card>
+      <Title level={3}>My Orders</Title>
+      <Table
+        columns={columns}
+        dataSource={orders}
+        loading={isLoading}
+        rowKey="id"
+      />
+    </Card>
   );
 };
 

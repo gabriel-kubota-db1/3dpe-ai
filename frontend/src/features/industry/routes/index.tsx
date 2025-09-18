@@ -1,21 +1,12 @@
-import { RouteObject } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import ListOrdersPage from '../pages/OrderManagement/ListOrders';
 import OrderDetailsPage from '../pages/OrderManagement/OrderDetails';
 
-const industryRoutes: RouteObject[] = [
-  {
-    path: 'orders',
-    children: [
-      {
-        index: true,
-        element: <ListOrdersPage />,
-      },
-      {
-        path: ':id',
-        element: <OrderDetailsPage />,
-      },
-    ],
-  },
-];
+const industryRoutes = (
+  <Route path="industry">
+    <Route path="orders" element={<ListOrdersPage />} />
+    <Route path="orders/:id" element={<OrderDetailsPage />} />
+  </Route>
+);
 
 export default industryRoutes;
