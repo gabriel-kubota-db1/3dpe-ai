@@ -240,13 +240,30 @@ export const updatePhysioOrderStatus = async (req: Request, res: Response) => {
 // Industry/Admin Controller
 export const listAllOrders = async (req: Request, res: Response) => {
   try {
-    const orders = await Order.query()
+    const { status, search } = req.query;
+
+    const query = Order.query()
       .withGraphFetched('[physiotherapist(selectName), prescriptions, coupon]')
       .modifiers({
         selectName(builder) { builder.select('name'); }
       })
       .orderBy('orders.order_date', 'desc');
+
+    if (status && status !== 'ALL') {
+      query.where('orders.status', status as string);
+    }
+
+    if (search) {
+      const searchTerm = String(search);
+      query.joinRelated('physiotherapist').where(builder => {
+        builder.where('physiotherapist.name', 'like', `%${searchTerm}%`);
+        if (searchTerm.match(/^\d+$/)) {
+          builder.orWhere('orders.id', '=', Number(searchTerm));
+        }
+      });
+    }
     
+    const orders = await query;
     res.json(orders);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching all orders', error: error.message });
