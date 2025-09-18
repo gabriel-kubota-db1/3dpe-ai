@@ -64,11 +64,6 @@ export const getIndustryOrderDetails = async (id: number): Promise<Order> => {
   return data;
 };
 
-export const batchUpdateStatusByIndustry = async (orderIds: number[], status: string): Promise<{ message: string }> => {
-  const { data } = await api.post('/orders/industry/batch-status', { orderIds, status });
-  return data;
-};
-
 export const exportOrdersToCsv = async (): Promise<Blob> => {
   const { data } = await api.get('/orders/industry/export/csv', { responseType: 'blob' });
   return data;

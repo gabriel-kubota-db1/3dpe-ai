@@ -40,7 +40,7 @@ const ListOrdersPage = () => {
   });
 
   const { mutate: batchUpdate } = useMutation({
-    mutationFn: ({ orderIds, status }: { orderIds: number[], status: string }) => OrderService.batchUpdateStatusByIndustry(orderIds, status),
+    mutationFn: ({ orderIds, status }: { orderIds: number[], status: string }) => OrderService.batchUpdateStatusByAdmin(orderIds, status),
     onSuccess: () => {
       message.success('Orders updated successfully!');
       queryClient.invalidateQueries({ queryKey: ['industryOrders'] });

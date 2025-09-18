@@ -13,9 +13,19 @@ const PrivateRoute = ({ allowedRoles }: PrivateRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
+  // If allowedRoles is specified and user doesn't have the required role
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    // Redirect to a 'not authorized' page or home page
-    return <Navigate to="/" replace />;
+    // Redirect based on user role
+    switch (user.role) {
+      case 'admin':
+        return <Navigate to="/admin" replace />;
+      case 'physiotherapist':
+        return <Navigate to="/physiotherapist" replace />;
+      case 'industry':
+        return <Navigate to="/industry" replace />;
+      default:
+        return <Navigate to="/login" replace />;
+    }
   }
 
   return (

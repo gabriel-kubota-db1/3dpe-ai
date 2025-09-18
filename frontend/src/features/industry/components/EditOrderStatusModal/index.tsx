@@ -25,7 +25,7 @@ export const EditOrderStatusModal = ({ order, visible, onClose }: EditOrderStatu
 
   const { mutate: updateStatus, isPending } = useMutation({
     mutationFn: ({ id, status }: { id: number; status: string }) => 
-      OrderService.updateOrderStatusByIndustry(id, status),
+      OrderService.updateOrderStatusByAdmin({id, status}),
     onSuccess: () => {
       message.success('Order status updated successfully!');
       queryClient.invalidateQueries({ queryKey: ['industryOrders'] });

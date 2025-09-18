@@ -212,12 +212,16 @@ export const updatePhysioOrderStatus = async (req: Request, res: Response) => {
 export const listAllOrders = async (req: Request, res: Response) => {
   try {
     const orders = await Order.query()
-      .withGraphFetched('[physiotherapist(selectName), prescriptions(count)]')
+      .select('orders.*')
+      .leftJoin('order_prescriptions', 'orders.id', 'order_prescriptions.order_id')
+      .groupBy('orders.id')
+      .count('order_prescriptions.insole_prescription_id as prescriptionCount')
+      .withGraphFetched('[physiotherapist(selectName)]')
       .modifiers({
-        selectName(builder) { builder.select('name'); },
-        count(builder) { builder.count(); }
+        selectName(builder) { builder.select('name'); }
       })
-      .orderBy('order_date', 'desc');
+      .orderBy('orders.order_date', 'desc');
+    
     res.json(orders);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching all orders', error: error.message });

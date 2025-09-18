@@ -10,7 +10,7 @@ import industryRoutes from '@/features/industry/routes';
 import PrivateRoute from './PrivateRoute';
 
 const AppRoutes = () => {
-  const { isLoading, user } = useAuth();
+  const { isLoading, user, isAuthenticated } = useAuth();
 
   if (isLoading) {
     return (
@@ -22,34 +22,36 @@ const AppRoutes = () => {
 
   return (
     <Routes>
+      {/* Auth routes - public */}
       {authRoutes}
       
-      {/* Common Routes for all authenticated users */}
+      {/* Root redirect */}
+      <Route path="/" element={
+        <Navigate to={
+          !isAuthenticated ? "/login" :
+          user?.role === 'admin' ? "/admin" :
+          user?.role === 'physiotherapist' ? "/physiotherapist" :
+          user?.role === 'industry' ? "/industry" :
+          "/login"
+        } replace />
+      } />
+      
+      {/* Protected routes */}
       <Route element={<PrivateRoute />}>
+        {/* Common Routes for all authenticated users */}
         {commonRoutes}
+        
+        {/* Admin Routes */}
+        {user?.role === 'admin' && adminRoutes}
+        
+        {/* Physiotherapist Routes */}
+        {user?.role === 'physiotherapist' && physiotherapistRoutes}
+        
+        {/* Industry Routes */}
+        {user?.role === 'industry' && industryRoutes}
       </Route>
 
-      {/* Admin Routes */}
-      {user?.role === 'admin' && (
-        <Route element={<PrivateRoute allowedRoles={['admin']} />}>
-          {adminRoutes}
-        </Route>
-      )}
-
-      {/* Physiotherapist Routes */}
-      {user?.role === 'physiotherapist' && (
-        <Route element={<PrivateRoute allowedRoles={['physiotherapist']} />}>
-          {physiotherapistRoutes}
-        </Route>
-      )}
-
-      {/* Industry Routes */}
-      {user?.role === 'industry' && (
-        <Route element={<PrivateRoute allowedRoles={['industry']} />}>
-          {industryRoutes}
-        </Route>
-      )}
-
+      {/* Fallback route */}
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );
