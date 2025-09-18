@@ -11,6 +11,7 @@ import prescriptionRoutes from './domains/prescriptions/routes';
 import couponRoutes from './domains/coupons/routes';
 import authRoutes from './domains/auth/routes';
 import coatingsRoutes from './domains/coatings/routes';
+import orderRoutes from './domains/orders/routes';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -31,6 +32,7 @@ app.use('/api/patients', patientRoutes);
 app.use('/api/prescriptions', prescriptionRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/coatings', coatingsRoutes);
+app.use('/api/orders', orderRoutes);
 
 
 app.get('/', (req, res) => {

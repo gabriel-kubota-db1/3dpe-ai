@@ -10,6 +10,8 @@ import {
   LogoutOutlined,
   TeamOutlined,
   FileTextOutlined,
+  ShoppingCartOutlined,
+  BuildOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '@/context/AuthContext';
 
@@ -60,6 +62,21 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
             icon: <FileTextOutlined />,
             label: <Link to="/physiotherapist/prescriptions">Prescriptions</Link>,
           },
+          {
+            key: '/physiotherapist/orders',
+            icon: <ShoppingCartOutlined />,
+            label: 'Orders',
+            children: [
+              {
+                key: '/physiotherapist/orders/new',
+                label: <Link to="/physiotherapist/orders/new">New Order</Link>,
+              },
+              {
+                key: '/physiotherapist/orders',
+                label: <Link to="/physiotherapist/orders">My Orders</Link>,
+              },
+            ]
+          },
         ],
       }
     );
@@ -69,15 +86,14 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
     menuItems.push(
       { type: 'divider' },
       {
-        key: 'industry-info',
-        icon: <AppstoreOutlined />,
+        key: 'industry-management',
+        icon: <BuildOutlined />,
         label: 'Industry Portal',
         children: [
           {
-            key: '/coming-soon',
-            icon: <TagOutlined />,
-            label: 'Coming Soon',
-            disabled: true,
+            key: '/industry/orders',
+            icon: <ShoppingCartOutlined />,
+            label: <Link to="/industry/orders">Order Management</Link>,
           },
         ],
       }
@@ -112,6 +128,11 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
             icon: <GiftOutlined />,
             label: <Link to="/admin/coupons">Coupons</Link>,
           },
+          {
+            key: '/admin/orders',
+            icon: <ShoppingCartOutlined />,
+            label: <Link to="/admin/orders">Orders</Link>,
+          },
         ],
       }
     );
@@ -126,7 +147,7 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
-          defaultOpenKeys={['admin-management', 'physiotherapist-management', 'industry-info']}
+          defaultOpenKeys={['admin-management', 'physiotherapist-management', 'industry-management']}
           style={{ height: '100%', borderRight: 0 }}
           items={menuItems}
         />

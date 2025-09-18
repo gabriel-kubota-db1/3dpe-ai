@@ -6,6 +6,7 @@ import authRoutes from '@/features/auth/routes';
 import commonRoutes from '@/features/common/routes';
 import adminRoutes from '@/features/admin/routes';
 import physiotherapistRoutes from '@/features/physiotherapist/routes';
+import industryRoutes from '@/features/industry/routes';
 import PrivateRoute from './PrivateRoute';
 
 const AppRoutes = () => {
@@ -39,6 +40,13 @@ const AppRoutes = () => {
       {user?.role === 'physiotherapist' && (
         <Route element={<PrivateRoute allowedRoles={['physiotherapist']} />}>
           {physiotherapistRoutes}
+        </Route>
+      )}
+
+      {/* Industry Routes */}
+      {user?.role === 'industry' && (
+        <Route element={<PrivateRoute allowedRoles={['industry']} />}>
+          {industryRoutes}
         </Route>
       )}
 

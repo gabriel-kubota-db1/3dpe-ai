@@ -2,6 +2,7 @@ import { Route } from 'react-router-dom';
 import CoatingPage from '../pages/CoatingManagement';
 import InsoleModelPage from '../pages/InsoleModelManagement';
 import CouponPage from '../pages/CouponManagement';
+import ListOrdersPage from '../pages/OrderManagement/ListOrders';
 
 // Import User Management pages
 import UserListPage from '../pages/UserManagement/ListUsers';
@@ -15,6 +16,7 @@ const adminRoutes = (
     <Route path="/admin/coatings" element={<CoatingPage />} />
     <Route path="/admin/insole-models" element={<InsoleModelPage />} />
     <Route path="/admin/coupons" element={<CouponPage />} />
+    <Route path="/admin/orders" element={<ListOrdersPage />} />
   </>
 );
 
