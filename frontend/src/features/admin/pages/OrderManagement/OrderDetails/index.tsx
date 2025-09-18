@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import './print.css';
 import { formatCPF } from '@/utils/formatter';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const statusColors: { [key: string]: string } = {
   PENDING_PAYMENT: 'gold',
@@ -75,6 +75,11 @@ const OrderDetailsPage = () => {
                   <Descriptions bordered column={1} size="small">
                     <Descriptions.Item label="Order Date">{dayjs(order.order_date).format('DD/MM/YYYY HH:mm')}</Descriptions.Item>
                     <Descriptions.Item label="Order Value">R$ {order.order_value.toFixed(2)}</Descriptions.Item>
+                    {order.discount_value > 0 && (
+                      <Descriptions.Item label="Discount">
+                        <Text style={{ color: '#52c41a' }}>-R$ {order.discount_value.toFixed(2)}</Text>
+                      </Descriptions.Item>
+                    )}
                     <Descriptions.Item label="Freight Value">R$ {order.freight_value.toFixed(2)}</Descriptions.Item>
                     <Descriptions.Item label="Total Value"><strong>R$ {order.total_value.toFixed(2)}</strong></Descriptions.Item>
                     <Descriptions.Item label="Payment Method">{order.payment_method?.replace(/_/g, ' ')}</Descriptions.Item>

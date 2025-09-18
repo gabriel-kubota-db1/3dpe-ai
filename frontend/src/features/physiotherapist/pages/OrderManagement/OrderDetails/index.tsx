@@ -137,6 +137,11 @@ const OrderDetailsPage = () => {
             </Descriptions.Item>
             <Descriptions.Item label="Order Date">{dayjs(order.order_date).format('DD/MM/YYYY HH:mm')}</Descriptions.Item>
             <Descriptions.Item label="Subtotal">{`R$ ${order.order_value.toFixed(2)}`}</Descriptions.Item>
+            {order.discount_value > 0 && (
+              <Descriptions.Item label="Discount">
+                <Text style={{ color: '#52c41a' }}>-R$ {order.discount_value.toFixed(2)}</Text>
+              </Descriptions.Item>
+            )}
             <Descriptions.Item label="Shipping">{`R$ ${order.freight_value.toFixed(2)}`}</Descriptions.Item>
             <Descriptions.Item label="Total Value">
               <Text strong>{`R$ ${order.total_value.toFixed(2)}`}</Text>
