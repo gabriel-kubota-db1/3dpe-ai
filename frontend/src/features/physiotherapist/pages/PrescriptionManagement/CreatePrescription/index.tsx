@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, Field } from 'react-final-form';
 import { Input, Button, App, Form as AntdForm, Typography, Card, Spin, Row, Col, Select, Steps } from 'antd';
@@ -15,10 +15,22 @@ const { Title } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 
-// Adapter to connect PalmilhogramaConfigurator with React Final Form's Field component
-const PalmilhogramaAdapter = ({ input: { value, onChange } }: any) => (
-    <PalmilhogramaConfigurator data={value || {}} onChange={onChange} />
-);
+const PalmilhogramaAdapter = ({ input, meta, ...rest }: any) => {
+  const handleChange = (newValue: any) => {
+    console.log('PalmilhogramaAdapter received:', newValue);
+    console.log('Type of received value:', typeof newValue);
+    console.log('Stringified received value:', JSON.stringify(newValue, null, 2));
+    input.onChange(newValue);
+  };
+
+  return (
+    <PalmilhogramaConfigurator
+      {...rest}
+      data={input.value || {}}
+      onChange={handleChange}
+    />
+  );
+};
 
 const PrescriptionForm = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,79 +56,68 @@ const PrescriptionForm = () => {
     enabled: isEditMode,
   });
 
-  const initialValues = useMemo(() => (isEditMode && prescription ? {
-    ...prescription,
-    palmilhogram: prescription.palmilogram || {},
-  } : {
-    status: 'DRAFT',
-    palmilhogram: {},
-  }), [isEditMode, prescription]);
-
-  const [formData, setFormData] = useState(initialValues);
-
-  useEffect(() => {
-    // When initialValues are loaded (e.g., for edit mode), update formData
-    setFormData(initialValues);
-  }, [initialValues]);
-
-
-  const mutationOptions = {
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
-      if (isEditMode) {
-        queryClient.invalidateQueries({ queryKey: ['prescription', id] });
-        message.success('Prescription updated successfully!');
-      } else {
-        message.success('Prescription created successfully!');
-      }
-      navigate('/physiotherapist/prescriptions');
-    },
-    onError: (error: Error) => {
-      message.error(error.message || `Failed to ${isEditMode ? 'update' : 'create'} prescription.`);
-    },
-  };
-
   const { mutate: createPrescription, isPending: isCreating } = useMutation({
     mutationFn: (values: any) => PrescriptionService.createPrescription(values),
-    ...mutationOptions,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
+      message.success('Prescription created successfully!');
+      navigate('/physiotherapist/prescriptions');
+    },
+    onError: (error) => {
+      message.error(error.message || 'Failed to create prescription.');
+    },
   });
 
   const { mutate: updatePrescription, isPending: isUpdating } = useMutation({
     mutationFn: (values: any) => PrescriptionService.updatePrescription(Number(id), values),
-    ...mutationOptions,
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
+        queryClient.invalidateQueries({ queryKey: ['prescription', id] });
+        message.success('Prescription updated successfully!');
+        navigate('/physiotherapist/prescriptions');
+    },
+    onError: (error) => {
+        message.error(error.message || 'Failed to update prescription.');
+    },
   });
 
   const onSubmit = (values: any) => {
-    // Filter out null values from palmilhogram before submitting
-    const cleanedPalmilhogram = { ...values.palmilhogram };
-    Object.keys(cleanedPalmilhogram).forEach(key => {
-        if (cleanedPalmilhogram[key] === null) {
-            delete cleanedPalmilhogram[key];
-        }
-    });
-
-    const submissionValues = { ...values, palmilhogram: cleanedPalmilhogram };
-
+    console.log('Form values before submission:', values);
+    console.log('Palmilogram data:', values.palmilogram);
+    
+    // Let's explicitly ensure null values are preserved and fix the field name
+    const processedValues = {
+      ...values,
+      palmilhogram: { ...values.palmilogram } // Note: backend expects 'palmilhogram' (with h)
+    };
+    
+    // Remove the incorrectly named field
+    delete processedValues.palmilogram;
+    
+    console.log('Processed values:', processedValues);
+    console.log('Processed palmilhogram:', processedValues.palmilhogram);
+    
     if (isEditMode) {
-        updatePrescription(submissionValues);
+        updatePrescription(processedValues);
     } else {
-        createPrescription(submissionValues);
+        createPrescription(processedValues);
     }
   };
 
-  const next = (values: any) => {
-    setFormData(values);
-    setCurrentStep(s => s + 1);
-  };
+  const nextStep = () => setCurrentStep(s => s + 1);
+  const prevStep = () => setCurrentStep(s => s - 1);
 
-  const prev = (values: any) => {
-    setFormData(values);
-    setCurrentStep(s => s - 1);
-  };
-
-  if (isLoadingPatients || isLoadingModels || (isEditMode && isLoadingPrescription)) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}><Spin tip="Loading data..." /></div>;
+  if (isLoadingPatients || isLoadingModels || isLoadingPrescription) {
+    return <Spin tip="Loading data..." />;
   }
+
+  const initialValues = isEditMode && prescription ? {
+    ...prescription,
+    palmilogram: prescription.palmilogram || {},
+  } : {
+    status: 'DRAFT',
+    palmilogram: {},
+  };
 
   return (
     <Card>
@@ -127,48 +128,78 @@ const PrescriptionForm = () => {
       </Steps>
       <Form
         onSubmit={onSubmit}
-        initialValues={formData}
-        render={({ handleSubmit, values }) => (
+        initialValues={initialValues}
+        render={({ handleSubmit }) => (
           <form onSubmit={handleSubmit}>
-            <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
-              <Row gutter={24}>
-                <Col xs={24} md={12}>
-                  <Field name="patient_id" render={({ input, meta }) => <AntdForm.Item label="Patient" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}><Select {...input} placeholder="Select a patient">{patients?.map(p => <Option key={p.id} value={p.id}>{p.name}</Option>)}</Select></AntdForm.Item>} />
-                </Col>
-                <Col xs={24} md={12}>
-                  <Field name="insole_model_id" render={({ input, meta }) => <AntdForm.Item label="Insole Model" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}><Select {...input} placeholder="Select a model">{insoleModels?.map(m => <Option key={m.id} value={m.id}>{m.description}</Option>)}</Select></AntdForm.Item>} />
-                </Col>
-              </Row>
-              <Row gutter={24}>
+            {currentStep === 0 && (
+              <div>
+                <Row gutter={24}>
                   <Col xs={24} md={12}>
-                      <Field name="numeration" render={({ input, meta }) => <AntdForm.Item label="Numeration (Shoe Size)" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}><Input {...input} /></AntdForm.Item>} />
+                    <Field name="patient_id" render={({ input, meta }) => (
+                      <AntdForm.Item label="Patient" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
+                        <Select {...input} showSearch optionFilterProp="children" placeholder="Select a patient">
+                          {patients?.map(p => <Option key={p.id} value={p.id}>{p.name}</Option>)}
+                        </Select>
+                      </AntdForm.Item>
+                    )} />
                   </Col>
                   <Col xs={24} md={12}>
-                      <Field name="status" render={({ input, meta }) => <AntdForm.Item label="Status" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}><Select {...input}><Option value="DRAFT">Draft</Option><Option value="ACTIVE">Active</Option><Option value="CANCELED">Canceled</Option><Option value="COMPLETED">Completed</Option></Select></AntdForm.Item>} />
+                    <Field name="insole_model_id" render={({ input, meta }) => (
+                      <AntdForm.Item label="Insole Model" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
+                        <Select {...input} showSearch optionFilterProp="children" placeholder="Select an insole model">
+                          {insoleModels?.map(m => <Option key={m.id} value={m.id}>{m.description}</Option>)}
+                        </Select>
+                      </AntdForm.Item>
+                    )} />
                   </Col>
-              </Row>
-              <Row>
+                </Row>
+                <Row gutter={24}>
+                  <Col xs={24} md={12}>
+                    <Field name="numeration" render={({ input, meta }) => (
+                      <AntdForm.Item label="Numeration" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
+                        <Input {...input} placeholder="e.g., 38/39" />
+                      </AntdForm.Item>
+                    )} />
+                  </Col>
+                  <Col xs={24} md={12}>
+                    <Field name="status" render={({ input, meta }) => (
+                      <AntdForm.Item label="Status" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
+                        <Select {...input}>
+                          <Option value="DRAFT">Draft</Option>
+                          <Option value="ACTIVE">Active</Option>
+                          <Option value="CANCELED">Canceled</Option>
+                          <Option value="COMPLETED">Completed</Option>
+                        </Select>
+                      </AntdForm.Item>
+                    )} />
+                  </Col>
+                </Row>
+                <Row>
                   <Col span={24}>
-                      <Field name="observations" render={({ input, meta }) => <AntdForm.Item label="Observations" validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}><TextArea {...input} rows={4} /></AntdForm.Item>} />
+                    <Field name="observations" render={({ input }) => (
+                      <AntdForm.Item label="Observations">
+                        <TextArea {...input} rows={4} />
+                      </AntdForm.Item>
+                    )} />
                   </Col>
-              </Row>
-            </div>
+                </Row>
+              </div>
+            )}
 
-            <div style={{ display: currentStep === 1 ? 'block' : 'none' }}>
-                <Field name="palmilhogram" component={PalmilhogramaAdapter} />
-            </div>
+            {currentStep === 1 && (
+              <div>
+                <Field name="palmilogram" component={PalmilhogramaAdapter} />
+              </div>
+            )}
 
-            <div style={{ textAlign: 'right', marginTop: 24 }}>
-              <Button onClick={() => navigate('/physiotherapist/prescriptions')} style={{ marginRight: 8 }}>
-                Cancel
-              </Button>
+            <div style={{ marginTop: 24, textAlign: 'right' }}>
               {currentStep > 0 && (
-                <Button onClick={() => prev(values)} style={{ marginRight: 8 }}>
+                <Button style={{ marginRight: 8 }} onClick={prevStep}>
                   Previous
                 </Button>
               )}
               {currentStep < 1 && (
-                <Button type="primary" onClick={() => next(values)}>
+                <Button type="primary" onClick={nextStep}>
                   Next
                 </Button>
               )}

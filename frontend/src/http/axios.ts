@@ -13,6 +13,18 @@ api.interceptors.request.use(
       // Use bracket notation for header for maximum compatibility
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+    
+    // Debug logging for prescription requests
+    if (config.url?.includes('/prescriptions') && config.method !== 'get') {
+      console.log('=== AXIOS REQUEST DEBUG ===');
+      console.log('URL:', config.url);
+      console.log('Method:', config.method);
+      console.log('Data being sent:', config.data);
+      console.log('Palmilhogram in request data:', config.data?.palmilhogram);
+      console.log('Stringified request data:', JSON.stringify(config.data, null, 2));
+      console.log('=== END AXIOS REQUEST DEBUG ===');
+    }
+    
     return config;
   },
   (error) => {

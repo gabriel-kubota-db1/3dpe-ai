@@ -206,26 +206,43 @@ export const PalmilhogramaConfigurator: React.FC<
   const [enabledParamsRight, setEnabledParamsRight] = useState<
     Record<string, boolean>
   >({});
-  const [values, setValues] = useState<Record<string, number>>({});
+  const [values, setValues] = useState<Record<string, number | null>>({});
 
   useEffect(() => {
-    const vals: Record<string, number> = {};
+    const vals: Record<string, number | null> = {};
     const enabledLeft: Record<string, boolean> = {};
     const enabledRight: Record<string, boolean> = {};
     parameters.forEach((param) => {
       if (data[param.leftKey] !== undefined && data[param.leftKey] !== null) {
-        vals[param.leftKey] = data[param.leftKey];
+        // Ensure all numeric values are converted to floats
+        vals[param.leftKey] = parseFloat(data[param.leftKey].toString());
         enabledLeft[param.key] = true;
       }
       if (data[param.rightKey] !== undefined && data[param.rightKey] !== null) {
-        vals[param.rightKey] = data[param.rightKey];
+        // Ensure all numeric values are converted to floats
+        vals[param.rightKey] = parseFloat(data[param.rightKey].toString());
         enabledRight[param.key] = true;
       }
     });
     setValues(vals);
     setEnabledParamsLeft((prev) => ({ ...prev, ...enabledLeft }));
     setEnabledParamsRight((prev) => ({ ...prev, ...enabledRight }));
-  }, [data]);
+    
+    // Update parent form with float-converted values only if there were conversions
+    const hasConversions = Object.keys(vals).some(key => {
+      const originalValue = data[key];
+      const convertedValue = vals[key];
+      return originalValue !== convertedValue && originalValue !== null && originalValue !== undefined;
+    });
+    
+    if (hasConversions) {
+      const updatedData = { ...data };
+      Object.keys(vals).forEach(key => {
+        updatedData[key] = vals[key];
+      });
+      onChange(updatedData);
+    }
+  }, [data, onChange]);
 
   const handleParameterToggleLeft = (paramKey: string, checked: boolean) => {
     if (readOnly) return;
@@ -234,10 +251,9 @@ export const PalmilhogramaConfigurator: React.FC<
     if (!param) return;
     if (!checked) {
       const newValues = { ...values };
-      delete newValues[param.leftKey];
+      newValues[param.leftKey] = null;
       setValues(newValues);
-      const newData = { ...data };
-      delete newData[param.leftKey];
+      const newData = { ...data, [param.leftKey]: null };
       onChange(newData);
     }
   };
@@ -249,30 +265,25 @@ export const PalmilhogramaConfigurator: React.FC<
     if (!param) return;
     if (!checked) {
       const newValues = { ...values };
-      delete newValues[param.rightKey];
+      newValues[param.rightKey] = null;
       setValues(newValues);
-      const newData = { ...data };
-      delete newData[param.rightKey];
+      const newData = { ...data, [param.rightKey]: null };
       onChange(newData);
     }
   };
 
   const handleValueChange = (key: string, value: number | null) => {
     if (readOnly) return;
+    
+    // Ensure value is a float if not null
+    const floatValue = value !== null ? parseFloat(value.toString()) : null;
+    
     const newValues = { ...values };
-    if (value !== null) {
-      newValues[key] = value;
-    } else {
-      delete newValues[key];
-    }
+    newValues[key] = floatValue;
     setValues(newValues);
 
     const newData = { ...data };
-    if (value !== null) {
-      newData[key] = value;
-    } else {
-      delete newData[key];
-    }
+    newData[key] = floatValue;
     onChange(newData);
   };
 
