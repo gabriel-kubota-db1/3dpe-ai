@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Modal, Form, Select, Button, message } from 'antd';
+import { Modal, Form, Select, Button, App } from 'antd';
 import * as OrderService from '@/http/OrderHttpService';
 import { Order } from '@/@types/order';
 
@@ -21,13 +21,14 @@ const ORDER_STATUSES: Order['status'][] = [
 export const EditOrderStatusModal = ({ order, visible, onClose }: EditOrderStatusModalProps) => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
+  const { message } = App.useApp();
 
   const { mutate: updateStatus, isPending } = useMutation({
-    mutationFn: OrderService.updatePhysioOrderStatus,
+    mutationFn: ({ id, status }: { id: number; status: string }) => 
+      OrderService.updateOrderStatusByIndustry(id, status),
     onSuccess: () => {
       message.success('Order status updated successfully!');
-      queryClient.invalidateQueries({ queryKey: ['physioOrders'] });
-      queryClient.invalidateQueries({ queryKey: ['physioOrder', order.id] });
+      queryClient.invalidateQueries({ queryKey: ['industryOrders'] });
       onClose();
     },
     onError: (error: any) => {
@@ -76,3 +77,5 @@ export const EditOrderStatusModal = ({ order, visible, onClose }: EditOrderStatu
     </Modal>
   );
 };
+
+export default EditOrderStatusModal;

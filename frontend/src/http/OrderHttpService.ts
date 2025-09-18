@@ -1,6 +1,7 @@
 import api from './axios';
 import { Order } from '@/@types/order';
 
+// --- Physiotherapist Functions ---
 export const getPhysioOrders = async (): Promise<Order[]> => {
   const { data } = await api.get('/orders/physiotherapist');
   return data;
@@ -26,8 +27,29 @@ export const confirmPayment = async (id: number): Promise<Order> => {
   return data;
 };
 
-export const updatePhysioOrderStatus = async (payload: { id: number; status: string }): Promise<Order> => {
-  const { id, status } = payload;
-  const { data } = await api.patch(`/orders/physiotherapist/${id}/status`, { status });
+// --- Admin/Industry Functions ---
+export const getAdminOrders = async (): Promise<Order[]> => {
+  const { data } = await api.get('/orders/industry');
   return data;
 };
+
+export const updateOrderStatusByAdmin = async (id: number, status: string): Promise<Order> => {
+  const { data } = await api.patch(`/orders/industry/${id}/status`, { status });
+  return data;
+};
+
+export const batchUpdateStatusByAdmin = async (orderIds: number[], status: string): Promise<void> => {
+  await api.post('/orders/industry/batch-status', { orderIds, status });
+};
+
+export const exportOrdersToCsv = async (): Promise<Blob> => {
+  const response = await api.get('/orders/industry/export/csv', {
+    responseType: 'blob',
+  });
+  return response.data;
+};
+
+// --- Industry Functions (aliases for admin functions since they use same endpoints) ---
+export const getIndustryOrders = getAdminOrders;
+export const updateOrderStatusByIndustry = updateOrderStatusByAdmin;
+export const batchUpdateStatusByIndustry = batchUpdateStatusByAdmin;

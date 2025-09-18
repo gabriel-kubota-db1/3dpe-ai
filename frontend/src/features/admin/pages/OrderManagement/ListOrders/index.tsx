@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, Card, Typography, Tag, Button, Space, Select, App, Popconfirm } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
+import { Table, Card, Typography, Tag, Button, Space, Select, App } from 'antd';
+import { DownloadOutlined, EditOutlined } from '@ant-design/icons';
 import * as OrderService from '@/http/OrderHttpService';
 import { Order } from '@/@types/order';
+import EditOrderStatusModal from '../../../components/EditOrderStatusModal';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -29,13 +30,15 @@ const ListOrdersPage = () => {
   const queryClient = useQueryClient();
   const { message } = App.useApp();
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const { data: orders, isLoading } = useQuery<Order[], Error>({
     queryKey: ['adminOrders'],
     queryFn: OrderService.getAdminOrders,
   });
 
-  const { mutate: batchUpdate, isPending: isBatchUpdating } = useMutation({
+  const { mutate: batchUpdate } = useMutation({
     mutationFn: ({ orderIds, status }: { orderIds: number[], status: string }) => OrderService.batchUpdateStatusByAdmin(orderIds, status),
     onSuccess: () => {
       message.success('Orders updated successfully!');
@@ -44,6 +47,16 @@ const ListOrdersPage = () => {
     },
     onError: (error: any) => message.error(error.message || 'Failed to update orders.'),
   });
+
+  const handleEditOrder = (order: Order) => {
+    setSelectedOrder(order);
+    setEditModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setEditModalVisible(false);
+    setSelectedOrder(null);
+  };
 
   const handleBatchUpdate = (status: string) => {
     batchUpdate({ orderIds: selectedRowKeys as number[], status });
@@ -70,6 +83,19 @@ const ListOrdersPage = () => {
     { title: 'Physiotherapist', dataIndex: ['physiotherapist', 'name'], key: 'physiotherapist' },
     { title: 'Status', dataIndex: 'status', key: 'status', render: (s: string) => <Tag color={statusColors[s]}>{s.replace('_', ' ')}</Tag> },
     { title: 'Total', dataIndex: 'total_value', key: 'total_value', render: (v: number) => `R$ ${v.toFixed(2)}` },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_: any, record: Order) => (
+        <Button
+          type="link"
+          icon={<EditOutlined />}
+          onClick={() => handleEditOrder(record)}
+        >
+          Edit Status
+        </Button>
+      ),
+    },
   ];
 
   const rowSelection = {
@@ -100,6 +126,14 @@ const ListOrdersPage = () => {
         loading={isLoading}
         rowKey="id"
       />
+      
+      {selectedOrder && (
+        <EditOrderStatusModal
+          order={selectedOrder}
+          visible={editModalVisible}
+          onClose={handleCloseModal}
+        />
+      )}
     </Card>
   );
 };
