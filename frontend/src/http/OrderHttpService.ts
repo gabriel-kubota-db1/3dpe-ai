@@ -25,3 +25,9 @@ export const confirmPayment = async (id: number): Promise<Order> => {
   const { data } = await api.post(`/orders/physiotherapist/${id}/pay`);
   return data;
 };
+
+export const updatePhysioOrderStatus = async (payload: { id: number; status: string }): Promise<Order> => {
+  const { id, status } = payload;
+  const { data } = await api.patch(`/orders/physiotherapist/${id}/status`, { status });
+  return data;
+};

@@ -125,7 +125,7 @@ export const listPhysioOrders = async (req: Request, res: Response) => {
     const physiotherapistId = req.user.id;
     const orders = await Order.query()
       .where('physiotherapist_id', physiotherapistId)
-      .withGraphFetched('prescriptions.patient')
+      .withGraphFetched('prescriptions') // FIX: Simplified graph fetch
       .orderBy('order_date', 'desc');
     res.json(orders);
   } catch (error: any) {
@@ -182,6 +182,28 @@ export const processMockPayment = async (req: Request, res: Response) => {
   } catch (error: any) {
     await trx.rollback();
     res.status(500).json({ message: 'Error processing payment', error: error.message });
+  }
+};
+
+export const updatePhysioOrderStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    // @ts-ignore
+    const physiotherapistId = req.user.id;
+
+    const order = await Order.query().findById(id).where('physiotherapist_id', physiotherapistId);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found or you do not have permission to modify it.' });
+    }
+
+    // TODO: Add business logic for status transitions here (e.g., a physio can only cancel)
+
+    const updatedOrder = await order.$query().patchAndFetch({ status });
+    res.json(updatedOrder);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error updating order status', error: error.message });
   }
 };
 

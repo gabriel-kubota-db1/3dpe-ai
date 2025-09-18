@@ -1,36 +1,44 @@
 import { Router } from 'express';
-import { isAuthenticated } from '../../middlewares/isAuthenticated';
-import { isPhysiotherapist } from '../../middlewares/isPhysiotherapist';
-import { isAdmin } from '../../middlewares/isAdmin';
-import { isIndustry } from '../../middlewares/isIndustry';
-import { validateRequest } from '../../middlewares/validateRequest';
-import { checkoutSchema, statusUpdateSchema, batchStatusUpdateSchema, shippingSchema } from './validators';
 import * as controller from './controller';
+import { isAuthenticated } from '../../middlewares/isAuthenticated';
+// import { checkPermissions } from '../../middlewares/checkPermissions'; // Example for RBAC
 
 const router = Router();
 
 // --- Physiotherapist Routes ---
 const physioRouter = Router();
+physioRouter.use(isAuthenticated); // All physio routes require authentication
+
 physioRouter.get('/', controller.listPhysioOrders);
-physioRouter.post('/shipping', validateRequest({ body: shippingSchema }), controller.getShippingOptions);
-physioRouter.post('/checkout', validateRequest({ body: checkoutSchema }), controller.createCheckout);
 physioRouter.get('/:id', controller.getPhysioOrderDetails);
+physioRouter.post('/shipping', controller.getShippingOptions);
+physioRouter.post('/checkout', controller.createCheckout);
 physioRouter.post('/:id/pay', controller.processMockPayment);
+physioRouter.patch('/:id/status', controller.updatePhysioOrderStatus);
 
-// --- Industry Routes ---
+router.use('/physiotherapist', physioRouter);
+
+
+// --- Industry/Admin Routes ---
 const industryRouter = Router();
+industryRouter.use(isAuthenticated); // All industry routes require authentication
+// industryRouter.use(checkPermissions(['admin', 'industry'])); // Example for RBAC
+
 industryRouter.get('/', controller.listAllOrders);
-industryRouter.put('/:id/status', validateRequest({ body: statusUpdateSchema }), controller.updateOrderStatus);
+industryRouter.patch('/:id/status', controller.updateOrderStatus);
+industryRouter.post('/batch-status', controller.batchUpdateStatus);
+industryRouter.get('/export/csv', controller.exportOrdersToCsv);
 
-// --- Admin Routes ---
-const adminRouter = Router();
-adminRouter.get('/', controller.listAllOrders);
-adminRouter.put('/status', validateRequest({ body: batchStatusUpdateSchema }), controller.batchUpdateStatus);
-adminRouter.get('/export/csv', controller.exportOrdersToCsv);
+router.use('/industry', industryRouter);
 
-// Mount role-specific routers
-router.use('/physiotherapist', isAuthenticated, isPhysiotherapist, physioRouter);
-router.use('/industry', isAuthenticated, isIndustry, industryRouter);
-router.use('/admin', isAuthenticated, isAdmin, adminRouter);
 
 export default router;
+
+/**
+ * To use these routes, import this file in your main application file (e.g., src/index.ts)
+ * and use it with your Express app instance:
+ *
+ * import ordersRouter from './domains/orders/routes';
+ *
+ * app.use('/api/v1/orders', ordersRouter);
+ */
