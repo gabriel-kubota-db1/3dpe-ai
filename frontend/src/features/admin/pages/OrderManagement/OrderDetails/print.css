@@ -1,4 +1,9 @@
 @media print {
+  @page {
+    size: A4;
+    margin: 20mm;
+  }
+
   body * {
     visibility: hidden;
   }
@@ -18,13 +23,14 @@
     display: none !important;
   }
 
-  .ant-card {
+  .page-container {
     border: none !important;
     box-shadow: none !important;
+    margin-top: 0 !important;
   }
 
-  .ant-divider {
-    border-top: 1px solid #000 !important;
+  .prescription-section {
+    break-before: page; /* Each prescription starts on a new page */
   }
 
   /* Ensure SVGs are rendered correctly */

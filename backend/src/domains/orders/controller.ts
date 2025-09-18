@@ -212,11 +212,7 @@ export const updatePhysioOrderStatus = async (req: Request, res: Response) => {
 export const listAllOrders = async (req: Request, res: Response) => {
   try {
     const orders = await Order.query()
-      .select('orders.*')
-      .leftJoin('order_prescriptions', 'orders.id', 'order_prescriptions.order_id')
-      .groupBy('orders.id')
-      .count('order_prescriptions.insole_prescription_id as prescriptionCount')
-      .withGraphFetched('[physiotherapist(selectName)]')
+      .withGraphFetched('[physiotherapist(selectName), prescriptions]')
       .modifiers({
         selectName(builder) { builder.select('name'); }
       })

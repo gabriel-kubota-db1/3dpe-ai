@@ -50,46 +50,53 @@ const OrderDetailsPage = () => {
         </Button>
       </Row>
       <div id="printable-area">
-        <Card style={{ marginTop: 24 }}>
-          <Row gutter={[16, 16]}>
-            <Col span={24}>
-              <Title level={4}>Order #{order.id}</Title>
-              <Tag color={statusColors[order.status]}>{order.status.replace(/_/g, ' ')}</Tag>
-            </Col>
-          </Row>
-          <Divider />
-          <Row gutter={[32, 32]}>
-            <Col xs={24} md={12}>
-              <Title level={5}>Physiotherapist Details</Title>
-              <Descriptions bordered column={1} size="small">
-                <Descriptions.Item label="Name">{order.physiotherapist?.name}</Descriptions.Item>
-                <Descriptions.Item label="Email">{order.physiotherapist?.email}</Descriptions.Item>
-                <Descriptions.Item label="Document">{order.physiotherapist?.document}</Descriptions.Item>
-              </Descriptions>
-            </Col>
-            <Col xs={24} md={12}>
-              <Title level={5}>Order Summary</Title>
-              <Descriptions bordered column={1} size="small">
-                <Descriptions.Item label="Order Date">{dayjs(order.order_date).format('DD/MM/YYYY HH:mm')}</Descriptions.Item>
-                <Descriptions.Item label="Order Value">R$ {order.order_value.toFixed(2)}</Descriptions.Item>
-                <Descriptions.Item label="Freight Value">R$ {order.freight_value.toFixed(2)}</Descriptions.Item>
-                <Descriptions.Item label="Total Value"><strong>R$ {order.total_value.toFixed(2)}</strong></Descriptions.Item>
-                <Descriptions.Item label="Payment Method">{order.payment_method?.replace(/_/g, ' ')}</Descriptions.Item>
-              </Descriptions>
-            </Col>
-          </Row>
-          <Divider />
-          <Title level={4}>Prescriptions</Title>
-          {order.prescriptions?.map((prescription: InsolePrescription, index: number) => (
-            <Card key={prescription.id} type="inner" title={`Prescription for ${prescription.patient?.name}`} style={{ marginTop: index > 0 ? 16 : 0 }}>
+        <div className="print-page">
+          <Card style={{ marginTop: 24 }} className="page-container">
+            <div className="order-details-section">
+              <Row gutter={[16, 16]}>
+                <Col span={24}>
+                  <Title level={4}>Order #{order.id}</Title>
+                  <Tag color={statusColors[order.status]}>{order.status.replace(/_/g, ' ')}</Tag>
+                </Col>
+              </Row>
+              <Divider />
+              <Row gutter={[32, 32]}>
+                <Col xs={24} md={12}>
+                  <Title level={5}>Physiotherapist Details</Title>
+                  <Descriptions bordered column={1} size="small">
+                    <Descriptions.Item label="Name">{order.physiotherapist?.name}</Descriptions.Item>
+                    <Descriptions.Item label="Email">{order.physiotherapist?.email}</Descriptions.Item>
+                    <Descriptions.Item label="Document">{order.physiotherapist?.document}</Descriptions.Item>
+                  </Descriptions>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Title level={5}>Order Summary</Title>
+                  <Descriptions bordered column={1} size="small">
+                    <Descriptions.Item label="Order Date">{dayjs(order.order_date).format('DD/MM/YYYY HH:mm')}</Descriptions.Item>
+                    <Descriptions.Item label="Order Value">R$ {order.order_value.toFixed(2)}</Descriptions.Item>
+                    <Descriptions.Item label="Freight Value">R$ {order.freight_value.toFixed(2)}</Descriptions.Item>
+                    <Descriptions.Item label="Total Value"><strong>R$ {order.total_value.toFixed(2)}</strong></Descriptions.Item>
+                    <Descriptions.Item label="Payment Method">{order.payment_method?.replace(/_/g, ' ')}</Descriptions.Item>
+                  </Descriptions>
+                </Col>
+              </Row>
+            </div>
+          </Card>
+        </div>
+        
+        <Title level={4} style={{ marginTop: 24 }} className="no-print">Prescriptions</Title>
+        
+        {order.prescriptions?.map((prescription: InsolePrescription) => (
+          <div className="print-page prescription-section" key={prescription.id}>
+            <Card type="inner" title={`Prescription for ${prescription.patient?.name}`} style={{ marginTop: 16 }} className="page-container">
               <Descriptions bordered column={1} size="small" style={{ marginBottom: 24 }}>
                 <Descriptions.Item label="Insole Model">{prescription.insoleModel?.name}</Descriptions.Item>
                 <Descriptions.Item label="Model Price">R$ {prescription.insoleModel?.sell_value.toFixed(2)}</Descriptions.Item>
               </Descriptions>
-              <PalmilhogramaConfigurator data={prescription} onChange={() => {}} readOnly />
+              <PalmilhogramaConfigurator data={prescription} onChange={() => {}} readOnly showTitle={false} />
             </Card>
-          ))}
-        </Card>
+          </div>
+        ))}
       </div>
     </div>
   );
