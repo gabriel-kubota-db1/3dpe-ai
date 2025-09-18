@@ -2,16 +2,77 @@ import { Request, Response } from 'express';
 import { Order } from './model';
 import { transaction } from 'objection';
 import { InsolePrescription } from '../prescriptions/model';
-import { InsoleModel } from '../insole-models/model';
+import axios from 'axios';
 
-// Mock external service calls
-const calculateShipping = async (cep: string, items: any[]) => {
-  console.log('Mocking shipping calculation for CEP:', cep, 'with items:', items.length);
-  return {
-    sedex: { carrier: 'SEDEX', price: 35.50, deadline: 3 },
-    pac: { carrier: 'PAC', price: 22.90, deadline: 7 },
+// --- Melhor Envio Integration ---
+const calculateShippingWithMelhorEnvio = async (cep: string, items: any[]) => {
+  // It's recommended to use environment variables for sensitive data
+  const MELHOR_ENVIO_API_URL = process.env.MELHOR_ENVIO_API_URL || 'https://www.melhorenvio.com.br/api/v2/me';
+  const MELHOR_ENVIO_API_TOKEN = process.env.MELHOR_ENVIO_API_TOKEN;
+
+  if (!MELHOR_ENVIO_API_TOKEN) {
+    console.error('Melhor Envio API token is not configured.');
+    // Fallback to mock data if token is missing, to prevent crashing development
+    return {
+      sedex: { carrier: 'SEDEX (Mock)', price: 35.50, deadline: 3 },
+      pac: { carrier: 'PAC (Mock)', price: 22.90, deadline: 7 },
+    };
+  }
+
+  // Sender information (should be configured for the company)
+  const from = {
+    postal_code: process.env.SENDER_CEP || '01001000', // 3DPé's CEP
   };
+
+  const to = {
+    postal_code: cep.replace(/\D/g, ''),
+  };
+
+  // Map prescription items to Melhor Envio product format
+  const products = items.map((item, index) => ({
+    id: `${index + 1}`,
+    width: 15, // Default width in cm
+    height: 10, // Default height in cm
+    length: 30, // Default length in cm
+    weight: (item.weight || 200) / 1000, // Convert grams to kg
+    insurance_value: item.insurance_value || 100.0, // Value for insurance
+    quantity: 1,
+  }));
+
+  const payload = { from, to, products };
+
+  try {
+    const response = await axios.post(`${MELHOR_ENVIO_API_URL}/shipment/calculate`, payload, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${MELHOR_ENVIO_API_TOKEN}`,
+        'User-Agent': '3DPe App (contato@3dpe.com.br)',
+      },
+    });
+
+    // Filter out options with errors and format the response
+    const validOptions = response.data.filter((opt: any) => !opt.error);
+
+    const formattedOptions: { [key: string]: any } = {};
+    validOptions.forEach((opt: any) => {
+      const carrierKey = opt.name.toLowerCase().replace(/\s+/g, '_');
+      formattedOptions[carrierKey] = {
+        id: opt.id,
+        carrier: opt.name,
+        price: parseFloat(opt.price),
+        deadline: parseInt(opt.delivery_time, 10),
+        company: opt.company.name,
+      };
+    });
+
+    return formattedOptions;
+  } catch (error: any) {
+    console.error('Melhor Envio API Error:', error.response?.data || error.message);
+    throw new Error('Failed to calculate shipping with Melhor Envio.');
+  }
 };
+
 
 const processPayment = async (paymentData: any, totalValue: number) => {
   console.log('Mocking payment processing for total:', totalValue, 'with data:', paymentData);
@@ -26,31 +87,25 @@ const processPayment = async (paymentData: any, totalValue: number) => {
 export const getShippingOptions = async (req: Request, res: Response) => {
   try {
     const { cep, prescriptionIds } = req.body;
-    // @ts-ignore
-    const physiotherapistId = req.user.id;
 
     if (!cep || !prescriptionIds || !Array.isArray(prescriptionIds) || prescriptionIds.length === 0) {
       return res.status(400).json({ message: 'CEP and at least one prescription ID are required.' });
     }
 
-    // In a real scenario, you'd fetch prescription details to get weight/dimensions
     const prescriptions = await InsolePrescription.query()
       .whereIn('id', prescriptionIds)
       .withGraphFetched('insoleModel');
       
-    // Basic validation to ensure all prescriptions belong to the physio
-    const patientIds = prescriptions.map(p => p.patient_id);
-    // This is a simplified check. A more robust check would join through patients table.
     if (prescriptions.length !== prescriptionIds.length) {
         return res.status(404).json({ message: 'One or more prescriptions not found.' });
     }
 
     const items = prescriptions.map(p => ({
         weight: p.insoleModel?.weight || 200, // default weight in grams
-        // other dimensions if needed by the shipping API
+        insurance_value: p.insoleModel?.sell_value || 100,
     }));
 
-    const shippingOptions = await calculateShipping(cep, items);
+    const shippingOptions = await calculateShippingWithMelhorEnvio(cep, items);
     res.json(shippingOptions);
   } catch (error: any) {
     res.status(500).json({ message: 'Error calculating shipping', error: error.message });

@@ -61,10 +61,7 @@ const CheckoutPage = () => {
     const selectedShipping = shippingOptions[values.shipping.carrier];
     const payload = {
       prescriptionIds,
-      shipping: {
-        ...selectedShipping,
-        carrier: values.shipping.carrier,
-      },
+      shipping: selectedShipping,
       payment: {
         method: 'Credit Card', // Mocked
       },
@@ -123,8 +120,8 @@ const CheckoutPage = () => {
                   <Field name="shipping.carrier">
                     {({ input }) => (
                       <Radio.Group {...input} style={{ marginTop: 16 }}>
-                        {Object.values(shippingOptions).map((opt: any) => (
-                          <Radio key={opt.carrier} value={opt.carrier}>
+                        {Object.entries(shippingOptions).map(([key, opt]: [string, any]) => (
+                          <Radio key={key} value={key}>
                             {`${opt.carrier} - R$ ${opt.price.toFixed(2)} (Up to ${opt.deadline} days)`}
                           </Radio>
                         ))}
@@ -140,7 +137,7 @@ const CheckoutPage = () => {
                 <Title level={4}>Final Review</Title>
                 <Descriptions bordered column={1}>
                   <Descriptions.Item label="Subtotal">{`R$ ${orderValue.toFixed(2)}`}</Descriptions.Item>
-                  <Descriptions.Item label="Shipping">{`R$ ${shippingOptions[values.shipping.carrier].price.toFixed(2)} (${values.shipping.carrier})`}</Descriptions.Item>
+                  <Descriptions.Item label="Shipping">{`R$ ${shippingOptions[values.shipping.carrier].price.toFixed(2)} (${shippingOptions[values.shipping.carrier].carrier})`}</Descriptions.Item>
                   <Descriptions.Item label="Total">
                     <Text strong>{`R$ ${(orderValue + shippingOptions[values.shipping.carrier].price).toFixed(2)}`}</Text>
                   </Descriptions.Item>
