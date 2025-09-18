@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as controller from './controller';
 import { validateRequest } from '../../middlewares/validateRequest';
 import {
+  userCreateSchema,
   userUpdateSchema,
   physiotherapistRegisterSchema,
   industryRegisterSchema,
@@ -36,7 +37,6 @@ router.post(
 
 // User profile
 router.get('/profile', isAuthenticated, controller.getProfile);
-router.put('/profile', isAuthenticated, validateRequest({ body: userUpdateSchema }), controller.updateProfile);
 
 // Admin User Management
 router.get('/', isAuthenticated, isAdmin, controller.getAllUsers);

@@ -396,6 +396,7 @@ export const PalmilhogramaConfigurator: React.FC<
               <Checkbox
                 checked={isEnabled}
                 onChange={(e) => toggleHandler(param.key, e.target.checked)}
+                disabled={readOnly}
               />
               <span style={{ flex: 1, fontSize: 12 }}>{param.label}</span>
               {isEnabled && (

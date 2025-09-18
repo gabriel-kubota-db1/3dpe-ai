@@ -1,7 +1,7 @@
 @media print {
   @page {
     size: A4;
-    margin: 15mm;
+    margin: 20mm;
   }
 
   body * {
@@ -29,92 +29,13 @@
     margin-top: 0 !important;
   }
 
-  /* First prescription starts on a new page after order details */
-  .prescription-section:first-of-type {
-    break-before: page; /* Only first prescription starts on new page */
-    break-inside: avoid; /* Avoid breaking a prescription across pages */
-    page-break-inside: avoid; /* Fallback for older browsers */
-    margin-bottom: 20px;
+  .prescription-section {
+    break-before: page; /* Each prescription starts on a new page */
   }
 
-  /* Subsequent prescriptions continue on new pages if needed */
-  .prescription-section:not(:first-of-type) {
-    break-before: page; /* Each additional prescription starts on new page */
-    break-inside: avoid; /* Avoid breaking a prescription across pages */
-    page-break-inside: avoid; /* Fallback for older browsers */
-    margin-bottom: 20px;
-  }
-
-  /* Ensure the palmilogram (both feet) stays together */
-  .ant-card {
-    break-inside: avoid !important;
-  }
-
-  /* Force both feet to display side by side in print */
-  .palmilogram-container .ant-row .ant-col {
-    width: 50% !important;
-    max-width: 50% !important;
-    flex: 0 0 50% !important;
-  }
-
-  /* Ensure feet SVGs are displayed side by side */
-  .palmilogram-container .ant-row {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-  }
-
-  /* Ensure SVGs are rendered correctly and fit properly */
+  /* Ensure SVGs are rendered correctly */
   svg {
-    max-width: 90% !important;
+    max-width: 100% !important;
     height: auto !important;
-    max-height: 250px !important;
-  }
-
-  /* Optimize text sizes for readability */
-  .ant-descriptions-item-label {
-    font-size: 10px !important;
-    padding: 4px 6px !important;
-  }
-  
-  .ant-descriptions-item-content {
-    font-size: 10px !important;
-    padding: 4px 6px !important;
-  }
-
-  /* Compact the prescription card */
-  .prescription-section .ant-card-head {
-    padding: 10px 16px !important;
-    min-height: auto !important;
-  }
-
-  .prescription-section .ant-card-head-title {
-    font-size: 14px !important;
-    font-weight: bold !important;
-  }
-
-  .prescription-section .ant-card-body {
-    padding: 16px !important;
-  }
-
-  /* Ensure prescription descriptions are compact but readable */
-  .prescription-section .ant-descriptions {
-    margin-bottom: 16px !important;
-  }
-
-  /* Control palmilogram container to prevent overflow */
-  .palmilogram-container {
-    max-height: none !important; /* Remove height restriction */
-    overflow: visible !important;
-  }
-
-  /* Ensure the palmilogram card fits properly */
-  .palmilogram-container .ant-card {
-    margin: 0 !important;
-    border: 1px solid #d9d9d9 !important;
-  }
-
-  .palmilogram-container .ant-card-body {
-    padding: 12px !important;
   }
 }

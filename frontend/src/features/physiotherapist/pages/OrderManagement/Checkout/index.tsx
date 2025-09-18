@@ -11,7 +11,6 @@ import { Coupon } from '@/@types/coupon';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { formatCEP } from '@/utils/formatter';
-import api from '@/http/axios';
 
 const { Title, Text } = Typography;
 
@@ -34,29 +33,11 @@ const CheckoutPage = () => {
     enabled: prescriptionIds.length > 0,
   });
 
-  // Fetch the current user profile to ensure we have the latest CEP information
-  const { data: userProfile } = useQuery({
-    queryKey: ['userProfile'],
-    queryFn: async () => {
-      const response = await api.get('/users/profile');
-      return response.data;
-    },
-    enabled: !!user?.id,
-  });
-
-  // Use userProfile if available, otherwise fallback to user from AuthContext
-  const currentUser = userProfile || user;
-
   useEffect(() => {
-    console.log('Debug - User from AuthContext:', user);
-    console.log('Debug - User Profile from API:', userProfile);
-    console.log('Debug - Current User (merged):', currentUser);
-    console.log('Debug - Current User CEP:', currentUser?.cep);
-    
-    if (currentUser?.cep && prescriptionIds.length > 0) {
+    if (user?.cep) {
       handleGetShipping();
     }
-  }, [currentUser?.cep, prescriptionIds]);
+  }, [user?.cep, prescriptionIds]);
 
   const { mutate: createOrder, isPending: isCreatingOrder } = useMutation({
     mutationFn: (values: any) => OrderService.createCheckout(values),
@@ -88,13 +69,13 @@ const CheckoutPage = () => {
   };
 
   const handleGetShipping = async () => {
-    if (!currentUser?.cep) {
+    if (!user?.cep) {
       message.error('You must have a CEP registered in your profile to calculate shipping.');
       return;
     }
     setIsShippingLoading(true);
     try {
-      const options = await OrderService.getShippingOptions({ cep: currentUser.cep, prescriptionIds });
+      const options = await OrderService.getShippingOptions({ cep: user.cep, prescriptionIds });
       setShippingOptions(options);
     } catch (error: any) {
       message.error(error.response?.data?.message || 'Failed to get shipping options.');
@@ -154,20 +135,11 @@ const CheckoutPage = () => {
                   </Descriptions>
                   <Divider />
                   <Title level={4}>Shipping</Title>
-                  {!currentUser?.cep ? (
+                  {!user?.cep ? (
                     <Alert message="Please register a CEP in your profile to calculate shipping." type="warning" showIcon />
                   ) : (
                     <Row gutter={16} align="middle">
-                      <Col><Text>Shipping to CEP: <strong>{formatCEP(currentUser.cep)}</strong></Text></Col>
-                      <Col>
-                        <Button 
-                          size="small" 
-                          onClick={handleGetShipping} 
-                          loading={isShippingLoading}
-                        >
-                          Recalculate Shipping
-                        </Button>
-                      </Col>
+                      <Col><Text>Shipping to CEP: <strong>{formatCEP(user.cep)}</strong></Text></Col>
                     </Row>
                   )}
                   {isShippingLoading && <Spin />}

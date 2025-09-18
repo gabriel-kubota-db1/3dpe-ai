@@ -1,5 +1,8 @@
 import { Route } from 'react-router-dom';
 
+// Dashboard
+import PhysiotherapistDashboard from '../pages/Dashboard';
+
 // Patient Management
 import ListPatientsPage from '../pages/PatientManagement/ListPatients';
 import PatientFormPage from '../pages/PatientManagement/PatientForm';
@@ -14,10 +17,11 @@ import PrescriptionDetailsPage from '../pages/PrescriptionManagement/Prescriptio
 import ListOrdersPage from '../pages/OrderManagement/ListOrders';
 import CheckoutPage from '../pages/OrderManagement/Checkout';
 import OrderDetailsPage from '../pages/OrderManagement/OrderDetails';
-import SelectPrescriptionsPage from '../pages/OrderManagement/SelectPrescriptions';
 
 const physiotherapistRoutes = (
   <Route path="physiotherapist">
+    <Route index element={<PhysiotherapistDashboard />} />
+
     {/* Patient Routes */}
     <Route path="patients" element={<ListPatientsPage />} />
     <Route path="patients/new" element={<PatientFormPage />} />
@@ -32,7 +36,6 @@ const physiotherapistRoutes = (
 
     {/* Order Routes */}
     <Route path="orders" element={<ListOrdersPage />} />
-    <Route path="orders/new" element={<SelectPrescriptionsPage />} />
     <Route path="orders/checkout" element={<CheckoutPage />} />
     <Route path="orders/:id" element={<OrderDetailsPage />} />
   </Route>

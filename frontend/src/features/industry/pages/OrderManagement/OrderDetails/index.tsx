@@ -4,13 +4,12 @@ import { Card, Typography, Spin, Button, Row, Col, Divider, Tag, Descriptions, E
 import { PrinterOutlined } from '@ant-design/icons';
 import * as OrderService from '@/http/OrderHttpService';
 import { Order } from '@/@types/order';
-import { Prescription } from '@/@types/prescription';
+import { InsolePrescription } from '@/@types/prescription';
 import { PalmilhogramaConfigurator } from '@/features/physiotherapist/components/PalmilhogramaConfigurator';
 import dayjs from 'dayjs';
 import './print.css';
-import { formatCPF } from '@/utils/formatter';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const statusColors: { [key: string]: string } = {
   PENDING_PAYMENT: 'gold',
@@ -67,7 +66,7 @@ const OrderDetailsPage = () => {
                   <Descriptions bordered column={1} size="small">
                     <Descriptions.Item label="Name">{order.physiotherapist?.name}</Descriptions.Item>
                     <Descriptions.Item label="Email">{order.physiotherapist?.email}</Descriptions.Item>
-                    <Descriptions.Item label="Document">{formatCPF(order.physiotherapist?.document)}</Descriptions.Item>
+                    <Descriptions.Item label="Document">{order.physiotherapist?.document}</Descriptions.Item>
                   </Descriptions>
                 </Col>
                 <Col xs={24} md={12}>
@@ -75,11 +74,6 @@ const OrderDetailsPage = () => {
                   <Descriptions bordered column={1} size="small">
                     <Descriptions.Item label="Order Date">{dayjs(order.order_date).format('DD/MM/YYYY HH:mm')}</Descriptions.Item>
                     <Descriptions.Item label="Order Value">R$ {order.order_value.toFixed(2)}</Descriptions.Item>
-                    {order.discount_value > 0 && (
-                      <Descriptions.Item label="Discount">
-                        <Text style={{ color: '#52c41a' }}>-R$ {order.discount_value.toFixed(2)}</Text>
-                      </Descriptions.Item>
-                    )}
                     <Descriptions.Item label="Freight Value">R$ {order.freight_value.toFixed(2)}</Descriptions.Item>
                     <Descriptions.Item label="Total Value"><strong>R$ {order.total_value.toFixed(2)}</strong></Descriptions.Item>
                     <Descriptions.Item label="Payment Method">{order.payment_method?.replace(/_/g, ' ')}</Descriptions.Item>
@@ -92,20 +86,14 @@ const OrderDetailsPage = () => {
         
         <Title level={4} style={{ marginTop: 24 }} className="no-print">Prescriptions</Title>
         
-        {order.prescriptions?.map((prescription: Prescription) => (
+        {order.prescriptions?.map((prescription: InsolePrescription) => (
           <div className="print-page prescription-section" key={prescription.id}>
             <Card type="inner" title={`Prescription for ${prescription.patient?.name}`} style={{ marginTop: 16 }} className="page-container">
               <Descriptions bordered column={1} size="small" style={{ marginBottom: 24 }}>
-                <Descriptions.Item label="Insole Model">{prescription.insoleModel?.description}</Descriptions.Item>
+                <Descriptions.Item label="Insole Model">{prescription.insoleModel?.name}</Descriptions.Item>
                 <Descriptions.Item label="Model Price">R$ {prescription.insoleModel?.sell_value.toFixed(2)}</Descriptions.Item>
-                <Descriptions.Item label="Numeration">{prescription.numeration}</Descriptions.Item>
-                {prescription.observations && (
-                  <Descriptions.Item label="Observations">{prescription.observations}</Descriptions.Item>
-                )}
               </Descriptions>
-              <div className="palmilogram-container">
-                <PalmilhogramaConfigurator data={prescription.palmilogram || {}} onChange={() => {}} readOnly showTitle={false} />
-              </div>
+              <PalmilhogramaConfigurator data={prescription} onChange={() => {}} readOnly showTitle={false} />
             </Card>
           </div>
         ))}

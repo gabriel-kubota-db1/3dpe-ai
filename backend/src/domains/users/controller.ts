@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import { User } from './model';
 import { generateToken } from '../../utils/jwt';
 
@@ -8,7 +9,7 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     const user = await User.query().findOne({ email });
 
-    if (user && (await user.verifyPassword(password))) {
+    if (user && (await bcrypt.compare(password, user.password))) {
       const token = generateToken({ id: user.id, role: user.role });
       res.json({
         token,
@@ -30,7 +31,7 @@ export const login = async (req: Request, res: Response) => {
 export const getProfile = async (req: Request, res: Response) => {
   try {
     // The user object is attached to the request by the isAuthenticated middleware
-    const user = await User.query().findById((req as any).user.id).select('id', 'name', 'email', 'role', 'document', 'phone', 'cep', 'state', 'city', 'street', 'number', 'complement', 'date_of_birth', 'active');
+    const user = await User.query().findById((req as any).user.id).select('id', 'name', 'email', 'role', 'cpf', 'crefito', 'cnpj', 'phone', 'address');
     if (user) {
       res.json(user);
     } else {
@@ -41,50 +42,29 @@ export const getProfile = async (req: Request, res: Response) => {
   }
 };
 
-export const updateProfile = async (req: Request, res: Response) => {
-  try {
-    const { password, id, document, role, created_at, updated_at, active, ...updateData } = req.body;
-    
-    if (password && password.trim() !== '') {
-      // Pass the plain password to be hashed by the model's hook
-      (updateData as any).password_hash = password;
-    }
-    
-    const user = await User.query().patchAndFetchById((req as any).user.id, updateData);
-    if (user) {
-      res.json(user);
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error: any) {
-    res.status(500).json({ message: 'Error updating profile', error: error.message });
-  }
-};
-
 
 // For Admin User Registration
-const registerUser = async (req: Request, res: Response, role: 'physiotherapist' | 'industry') => {
+const registerUser = async (userData: Partial<User>, res: Response) => {
   try {
-    const { password, ...userData } = req.body;
-
-    if (!password) {
-      return res.status(400).json({ message: 'Password is required for new users.' });
-    }
+    // In a real app, you'd send an email with a password setup link
+    // For this implementation, we'll set a temporary password
+    const temporaryPassword = 'Password123!'; // Should be randomly generated
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
 
     const user = await User.query().insert({
       ...userData,
-      role,
-      password_hash: password, // Pass plain password to be hashed by the model's hook
+      password: hashedPassword,
     });
 
     // Omit password from the response
-    const { password_hash, ...newUser } = user;
+    const { password, ...newUser } = user;
 
     console.log(`
       ===============================================
       USER CREATED
       Email: ${user.email}
-      Password was set during creation.
+      Temporary Password: ${temporaryPassword}
+      Please change this password upon first login.
       ===============================================
     `);
 
@@ -98,18 +78,18 @@ const registerUser = async (req: Request, res: Response, role: 'physiotherapist'
 };
 
 export const registerPhysiotherapist = (req: Request, res: Response) => {
-  registerUser(req, res, 'physiotherapist');
+  registerUser({ ...req.body, role: 'physiotherapist' }, res);
 };
 
 export const registerIndustry = (req: Request, res: Response) => {
-  registerUser(req, res, 'industry');
+  registerUser({ ...req.body, role: 'industry' }, res);
 };
 
 
 // For Admin User Management
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await User.query().select('id', 'name', 'email', 'role', 'active').where('role', '!=', 'admin');
+    const users = await User.query().select('id', 'name', 'email', 'role', 'active');
     res.json(users);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching users', error: error.message });
@@ -118,7 +98,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const user = await User.query().findById(req.params.id).select('id', 'name', 'email', 'role', 'active', 'document', 'phone', 'cep', 'state', 'city', 'street', 'number', 'complement', 'date_of_birth', 'active');
+    const user = await User.query().findById(req.params.id).select('id', 'name', 'email', 'role', 'active', 'cpf', 'crefito', 'cnpj', 'phone', 'address');
     if (user) {
       res.json(user);
     } else {
@@ -131,12 +111,8 @@ export const getUserById = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const { password, id, document, role, created_at, updated_at, ...updateData } = req.body;
-
-    if (password && password.trim() !== '') {
-      // Pass the plain password to be hashed by the model's hook
-      (updateData as any).password_hash = password;
-    }
+    // Ensure password is not updated through this endpoint
+    const { password, ...updateData } = req.body;
     
     const user = await User.query().patchAndFetchById(req.params.id, updateData);
     if (user) {
