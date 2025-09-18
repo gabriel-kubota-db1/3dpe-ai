@@ -5,30 +5,30 @@ export interface Palmilhogram {
   id?: number;
   
   // Left Foot
-  cic_left?: number;
-  cavr_left?: number;
-  cavr_total_left?: number;
-  cavr_prolonged_left?: number;
-  cavl_left?: number;
-  cavl_total_left?: number;
-  cavl_prolonged_left?: number;
-  brc_left?: number;
-  boton_left?: number;
-  bic_left?: number;
-  longitudinal_arch_left?: number;
+  cic_left?: number | null;
+  cavr_left?: number | null;
+  cavr_total_left?: number | null;
+  cavr_prolonged_left?: number | null;
+  cavl_left?: number | null;
+  cavl_total_left?: number | null;
+  cavl_prolonged_left?: number | null;
+  brc_left?: number | null;
+  boton_left?: number | null;
+  bic_left?: number | null;
+  longitudinal_arch_left?: number | null;
 
   // Right Foot
-  cic_right?: number;
-  cavr_right?: number;
-  cavr_total_right?: number;
-  cavr_prolonged_right?: number;
-  cavl_right?: number;
-  cavl_total_right?: number;
-  cavl_prolonged_right?: number;
-  brc_right?: number;
-  boton_right?: number;
-  bic_right?: number;
-  longitudinal_arch_right?: number;
+  cic_right?: number | null;
+  cavr_right?: number | null;
+  cavr_total_right?: number | null;
+  cavr_prolonged_right?: number | null;
+  cavl_right?: number | null;
+  cavl_total_right?: number | null;
+  cavl_prolonged_right?: number | null;
+  brc_right?: number | null;
+  boton_right?: number | null;
+  bic_right?: number | null;
+  longitudinal_arch_right?: number | null;
 }
 
 export interface Prescription {

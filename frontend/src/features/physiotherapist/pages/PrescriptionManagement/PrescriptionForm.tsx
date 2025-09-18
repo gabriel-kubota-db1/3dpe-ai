@@ -85,10 +85,10 @@ const PrescriptionForm = () => {
 
   const initialValues = isEditMode && prescription ? {
     ...prescription,
-    palmilhogram: prescription.palmilogram || {},
+    palmilogram: prescription.palmilogram || {},
   } : {
     status: 'DRAFT',
-    palmilhogram: {},
+    palmilogram: {},
   };
 
   return (
@@ -107,4 +107,85 @@ const PrescriptionForm = () => {
               <div>
                 <Row gutter={24}>
                   <Col xs={24} md={12}>
-                    <Field name="patient_id" render={({ input })
+                    <Field name="patient_id" render={({ input, meta }) => (
+                      <AntdForm.Item label="Patient" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
+                        <Select {...input} showSearch optionFilterProp="children" placeholder="Select a patient">
+                          {patients?.map(p => <Option key={p.id} value={p.id}>{p.name}</Option>)}
+                        </Select>
+                      </AntdForm.Item>
+                    )} />
+                  </Col>
+                  <Col xs={24} md={12}>
+                    <Field name="insole_model_id" render={({ input, meta }) => (
+                      <AntdForm.Item label="Insole Model" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
+                        <Select {...input} showSearch optionFilterProp="children" placeholder="Select an insole model">
+                          {insoleModels?.map(m => <Option key={m.id} value={m.id}>{m.name}</Option>)}
+                        </Select>
+                      </AntdForm.Item>
+                    )} />
+                  </Col>
+                </Row>
+                <Row gutter={24}>
+                  <Col xs={24} md={12}>
+                    <Field name="numeration" render={({ input, meta }) => (
+                      <AntdForm.Item label="Numeration" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
+                        <Input {...input} placeholder="e.g., 38/39" />
+                      </AntdForm.Item>
+                    )} />
+                  </Col>
+                  <Col xs={24} md={12}>
+                    <Field name="status" render={({ input, meta }) => (
+                      <AntdForm.Item label="Status" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
+                        <Select {...input}>
+                          <Option value="DRAFT">Draft</Option>
+                          <Option value="ACTIVE">Active</Option>
+                          <Option value="CANCELED">Canceled</Option>
+                          <Option value="COMPLETED">Completed</Option>
+                        </Select>
+                      </AntdForm.Item>
+                    )} />
+                  </Col>
+                </Row>
+                <Row>
+                  <Col span={24}>
+                    <Field name="observations" render={({ input }) => (
+                      <AntdForm.Item label="Observations">
+                        <TextArea {...input} rows={4} />
+                      </AntdForm.Item>
+                    )} />
+                  </Col>
+                </Row>
+              </div>
+            )}
+
+            {currentStep === 1 && (
+              <div>
+                <Field name="palmilogram" component={PalmilhogramaAdapter} />
+              </div>
+            )}
+
+            <div style={{ marginTop: 24, textAlign: 'right' }}>
+              {currentStep > 0 && (
+                <Button style={{ marginRight: 8 }} onClick={prevStep}>
+                  Previous
+                </Button>
+              )}
+              {currentStep < 1 && (
+                <Button type="primary" onClick={nextStep}>
+                  Next
+                </Button>
+              )}
+              {currentStep === 1 && (
+                <Button type="primary" htmlType="submit" loading={isCreating || isUpdating}>
+                  {isEditMode ? 'Update Prescription' : 'Create Prescription'}
+                </Button>
+              )}
+            </div>
+          </form>
+        )}
+      />
+    </Card>
+  );
+};
+
+export default PrescriptionForm;
