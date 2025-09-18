@@ -1,0 +1,35 @@
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #printable-area, #printable-area * {
+    visibility: visible;
+  }
+
+  #printable-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .ant-card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .ant-divider {
+    border-top: 1px solid #000 !important;
+  }
+
+  /* Ensure SVGs are rendered correctly */
+  svg {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}

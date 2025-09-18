@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Table, Card, Typography, Tag, Select, App, Button, Space } from 'antd';
-import { EditOutlined, DownloadOutlined } from '@ant-design/icons';
+import { EditOutlined, DownloadOutlined, EyeOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 import * as OrderService from '@/http/OrderHttpService';
 import { Order } from '@/@types/order';
 import EditOrderStatusModal from '../../../components/EditOrderStatusModal';
@@ -81,19 +82,27 @@ const ListOrdersPage = () => {
     { title: 'ID', dataIndex: 'id', key: 'id' },
     { title: 'Date', dataIndex: 'order_date', key: 'order_date', render: (d: string) => dayjs(d).format('DD/MM/YYYY') },
     { title: 'Physiotherapist', dataIndex: ['physiotherapist', 'name'], key: 'physiotherapist' },
+    { title: '# Prescriptions', dataIndex: 'prescriptions', key: 'prescriptions', render: (p: any[]) => p?.length || 0 },
     { title: 'Status', dataIndex: 'status', key: 'status', render: (s: string) => <Tag color={statusColors[s]}>{s.replace('_', ' ')}</Tag> },
     { title: 'Total', dataIndex: 'total_value', key: 'total_value', render: (v: number) => `R$ ${v.toFixed(2)}` },
     {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: Order) => (
-        <Button
-          type="link"
-          icon={<EditOutlined />}
-          onClick={() => handleEditOrder(record)}
-        >
-          Edit Status
-        </Button>
+        <Space>
+          <Link to={`/industry/orders/${record.id}`}>
+            <Button type="primary" icon={<EyeOutlined />}>
+              Details
+            </Button>
+          </Link>
+          <Button
+            type="default"
+            icon={<EditOutlined />}
+            onClick={() => handleEditOrder(record)}
+          >
+            Edit Status
+          </Button>
+        </Space>
       ),
     },
   ];

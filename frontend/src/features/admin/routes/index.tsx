@@ -1,23 +1,21 @@
-import { Route } from 'react-router-dom';
-import CoatingPage from '../pages/CoatingManagement';
-import InsoleModelPage from '../pages/InsoleModelManagement';
-import CouponPage from '../pages/CouponManagement';
+import { RouteObject } from 'react-router-dom';
 import ListOrdersPage from '../pages/OrderManagement/ListOrders';
+import OrderDetailsPage from '../pages/OrderManagement/OrderDetails';
 
-// Import User Management pages
-import UserListPage from '../pages/UserManagement/ListUsers';
-import UserFormPage from '../pages/UserManagement/UseForm';
-
-const adminRoutes = (
-  <>
-    <Route path="/admin/users" element={<UserListPage />} />
-    <Route path="/admin/users/new" element={<UserFormPage />} />
-    <Route path="/admin/users/edit/:id" element={<UserFormPage />} />
-    <Route path="/admin/coatings" element={<CoatingPage />} />
-    <Route path="/admin/insole-models" element={<InsoleModelPage />} />
-    <Route path="/admin/coupons" element={<CouponPage />} />
-    <Route path="/admin/orders" element={<ListOrdersPage />} />
-  </>
-);
+const adminRoutes: RouteObject[] = [
+  {
+    path: 'orders',
+    children: [
+      {
+        index: true,
+        element: <ListOrdersPage />,
+      },
+      {
+        path: ':id',
+        element: <OrderDetailsPage />,
+      },
+    ],
+  },
+];
 
 export default adminRoutes;

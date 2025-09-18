@@ -212,12 +212,31 @@ export const updatePhysioOrderStatus = async (req: Request, res: Response) => {
 export const listAllOrders = async (req: Request, res: Response) => {
   try {
     const orders = await Order.query()
-      .withGraphFetched('[physiotherapist(selectName), prescriptions.patient(selectName)]')
-      .modifiers({ selectName(builder) { builder.select('name'); } })
+      .withGraphFetched('[physiotherapist(selectName), prescriptions(count)]')
+      .modifiers({
+        selectName(builder) { builder.select('name'); },
+        count(builder) { builder.count(); }
+      })
       .orderBy('order_date', 'desc');
     res.json(orders);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching all orders', error: error.message });
+  }
+};
+
+export const getAdminOrderDetails = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const order = await Order.query()
+      .findById(id)
+      .withGraphFetched('[prescriptions.[patient, insoleModel], physiotherapist]');
+    
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found.' });
+    }
+    res.json(order);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error fetching order details', error: error.message });
   }
 };
 

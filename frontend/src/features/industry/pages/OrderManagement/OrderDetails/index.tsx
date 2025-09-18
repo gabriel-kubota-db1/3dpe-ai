@@ -1,0 +1,98 @@
+import { useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { Card, Typography, Spin, Button, Row, Col, Divider, Tag, Descriptions, Empty } from 'antd';
+import { PrinterOutlined } from '@ant-design/icons';
+import * as OrderService from '@/http/OrderHttpService';
+import { Order } from '@/@types/order';
+import { InsolePrescription } from '@/@types/prescription';
+import { PalmilhogramaConfigurator } from '@/features/physiotherapist/components/PalmilhogramaConfigurator';
+import dayjs from 'dayjs';
+import './print.css';
+
+const { Title } = Typography;
+
+const statusColors: { [key: string]: string } = {
+  PENDING_PAYMENT: 'gold',
+  PROCESSING: 'blue',
+  IN_PRODUCTION: 'purple',
+  SHIPPED: 'cyan',
+  COMPLETED: 'green',
+  CANCELED: 'red',
+};
+
+const OrderDetailsPage = () => {
+  const { id } = useParams<{ id: string }>();
+
+  const { data: order, isLoading, isError } = useQuery<Order, Error>({
+    queryKey: ['industryOrderDetails', id],
+    queryFn: () => OrderService.getIndustryOrderDetails(Number(id)),
+    enabled: !!id,
+  });
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  if (isLoading) {
+    return <Spin size="large" style={{ display: 'block', marginTop: 50 }} />;
+  }
+
+  if (isError || !order) {
+    return <Empty description="Order not found or failed to load." />;
+  }
+
+  return (
+    <div>
+      <Row justify="space-between" align="middle" className="no-print">
+        <Title level={3}>Order Details #{order.id}</Title>
+        <Button type="primary" icon={<PrinterOutlined />} onClick={handlePrint}>
+          Print Order
+        </Button>
+      </Row>
+      <div id="printable-area">
+        <Card style={{ marginTop: 24 }}>
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <Title level={4}>Order #{order.id}</Title>
+              <Tag color={statusColors[order.status]}>{order.status.replace(/_/g, ' ')}</Tag>
+            </Col>
+          </Row>
+          <Divider />
+          <Row gutter={[32, 32]}>
+            <Col xs={24} md={12}>
+              <Title level={5}>Physiotherapist Details</Title>
+              <Descriptions bordered column={1} size="small">
+                <Descriptions.Item label="Name">{order.physiotherapist?.name}</Descriptions.Item>
+                <Descriptions.Item label="Email">{order.physiotherapist?.email}</Descriptions.Item>
+                <Descriptions.Item label="Document">{order.physiotherapist?.document}</Descriptions.Item>
+              </Descriptions>
+            </Col>
+            <Col xs={24} md={12}>
+              <Title level={5}>Order Summary</Title>
+              <Descriptions bordered column={1} size="small">
+                <Descriptions.Item label="Order Date">{dayjs(order.order_date).format('DD/MM/YYYY HH:mm')}</Descriptions.Item>
+                <Descriptions.Item label="Order Value">R$ {order.order_value.toFixed(2)}</Descriptions.Item>
+                <Descriptions.Item label="Freight Value">R$ {order.freight_value.toFixed(2)}</Descriptions.Item>
+                <Descriptions.Item label="Total Value"><strong>R$ {order.total_value.toFixed(2)}</strong></Descriptions.Item>
+                <Descriptions.Item label="Payment Method">{order.payment_method?.replace(/_/g, ' ')}</Descriptions.Item>
+              </Descriptions>
+            </Col>
+          </Row>
+          <Divider />
+          <Title level={4}>Prescriptions</Title>
+          {order.prescriptions?.map((prescription: InsolePrescription, index: number) => (
+            <Card key={prescription.id} type="inner" title={`Prescription for ${prescription.patient?.name}`} style={{ marginTop: index > 0 ? 16 : 0 }}>
+              <Descriptions bordered column={1} size="small" style={{ marginBottom: 24 }}>
+                <Descriptions.Item label="Insole Model">{prescription.insoleModel?.name}</Descriptions.Item>
+                <Descriptions.Item label="Model Price">R$ {prescription.insoleModel?.sell_value.toFixed(2)}</Descriptions.Item>
+              </Descriptions>
+              <PalmilhogramaConfigurator data={prescription} onChange={() => {}} readOnly />
+            </Card>
+          ))}
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default OrderDetailsPage;

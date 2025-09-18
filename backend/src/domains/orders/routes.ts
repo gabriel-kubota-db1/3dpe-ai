@@ -25,6 +25,7 @@ industryRouter.use(isAuthenticated); // All industry routes require authenticati
 // industryRouter.use(checkPermissions(['admin', 'industry'])); // Example for RBAC
 
 industryRouter.get('/', controller.listAllOrders);
+industryRouter.get('/:id', controller.getAdminOrderDetails);
 industryRouter.patch('/:id/status', controller.updateOrderStatus);
 industryRouter.post('/batch-status', controller.batchUpdateStatus);
 industryRouter.get('/export/csv', controller.exportOrdersToCsv);
