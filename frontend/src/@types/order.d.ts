@@ -10,9 +10,11 @@ export interface Order {
   payment_method?: string;
   order_value: number;
   freight_value: number;
+  discount_value: number;
   total_value: number;
   gateway_id?: string;
   transaction_date?: string;
+  coupon_id?: number;
   created_at: string;
   updated_at: string;
   physiotherapist?: Partial<User>;

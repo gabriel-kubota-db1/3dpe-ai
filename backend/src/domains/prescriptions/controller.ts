@@ -149,29 +149,3 @@ export const updatePrescription = async (req: Request, res: Response) => {
       res.status(500).json({ message: 'Error updating prescription', error: error.message });
     }
 };
-
-// Get all prescriptions for an admin with filters
-export const listAllPrescriptions = async (req: Request, res: Response) => {
-  try {
-    const { status, patientName } = req.query;
-
-    const query = InsolePrescription.query()
-      .withGraphFetched('[patient, insoleModel]')
-      .orderBy('created_at', 'desc');
-
-    if (status && status !== 'ALL') {
-      query.where('status', status as string);
-    }
-
-    if (patientName) {
-      query.whereExists(
-        InsolePrescription.relatedQuery('patient').where('name', 'like', `%${patientName}%`)
-      );
-    }
-
-    const prescriptions = await query;
-    res.json(prescriptions);
-  } catch (error: any) {
-    res.status(500).json({ message: 'Error fetching prescriptions', error: error.message });
-  }
-};
