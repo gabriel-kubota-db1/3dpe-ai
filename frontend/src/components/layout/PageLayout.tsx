@@ -63,7 +63,7 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
             label: <Link to="/physiotherapist/prescriptions">Prescriptions</Link>,
           },
           {
-            key: '/physiotherapist',
+            key: '/physiotherapist/orders',
             icon: <ShoppingCartOutlined />,
             label: 'Orders',
             children: [
