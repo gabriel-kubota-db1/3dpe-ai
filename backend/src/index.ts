@@ -15,13 +15,12 @@ import dashboardRoutes from './domains/dashboard/routes';
 import physiotherapistsRoutes from './domains/physiotherapists/routes';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 // Middlewares
 app.use(cors());
 app.use(helmet());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // API Routes
 app.use('/api/auth', authRoutes);
