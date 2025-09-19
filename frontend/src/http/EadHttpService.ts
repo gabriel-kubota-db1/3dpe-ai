@@ -1,4 +1,4 @@
-import api from './axios';
+import { api } from './api';
 import { Course, Category, Module, Lesson } from '@/@types/ead';
 
 // --- Course Management ---
@@ -48,7 +48,7 @@ export const deleteCategory = async (id: number): Promise<void> => {
 
 
 // --- Module Management ---
-export const createModule = async (courseId: number, module: Omit<Module, 'id' | 'ead_course_id'>): Promise<Module> => {
+export const createModule = async (courseId: number, module: Omit<Module, 'id' | 'ead_course_id' | 'lessons'>): Promise<Module> => {
   const { data } = await api.post(`/ead/courses/${courseId}/modules`, module);
   return data;
 };
@@ -61,6 +61,11 @@ export const updateModule = async (id: number, module: Partial<Module>): Promise
 export const deleteModule = async (id: number): Promise<void> => {
   await api.delete(`/ead/modules/${id}`);
 };
+
+export const reorderModules = async (courseId: number, orderedIds: number[]): Promise<void> => {
+  await api.put(`/ead/courses/${courseId}/modules/reorder`, { orderedIds });
+};
+
 
 // --- Lesson Management ---
 export const createLesson = async (moduleId: number, lesson: Omit<Lesson, 'id' | 'ead_module_id'>): Promise<Lesson> => {
@@ -75,4 +80,8 @@ export const updateLesson = async (id: number, lesson: Partial<Lesson>): Promise
 
 export const deleteLesson = async (id: number): Promise<void> => {
   await api.delete(`/ead/lessons/${id}`);
+};
+
+export const reorderLessons = async (moduleId: number, orderedIds: number[]): Promise<void> => {
+  await api.put(`/ead/modules/${moduleId}/lessons/reorder`, { orderedIds });
 };

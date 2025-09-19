@@ -4,8 +4,8 @@ import { isAuthenticated } from '../../middlewares/isAuthenticated';
 import { checkRole } from '../../middlewares/checkRole';
 
 const router = Router();
-const isAdmin = checkRole(['admin']);
-const isPhysio = checkRole(['physiotherapist']);
+const isAdmin = checkRole(['ADMIN']);
+const isPhysio = checkRole(['PHYSIOTHERAPIST']);
 
 // --- Admin (Category Management) ---
 router.get('/categories', isAuthenticated, isAdmin, controller.getAllCategories);
@@ -21,10 +21,13 @@ router.delete('/courses/:id', isAuthenticated, isAdmin, controller.deleteCourse)
 router.post('/courses/:courseId/modules', isAuthenticated, isAdmin, controller.createModule);
 router.put('/modules/:id', isAuthenticated, isAdmin, controller.updateModule);
 router.delete('/modules/:id', isAuthenticated, isAdmin, controller.deleteModule);
+router.put('/courses/:courseId/modules/reorder', isAuthenticated, isAdmin, controller.reorderModules);
+
 
 router.post('/modules/:moduleId/lessons', isAuthenticated, isAdmin, controller.createLesson);
 router.put('/lessons/:id', isAuthenticated, isAdmin, controller.updateLesson);
 router.delete('/lessons/:id', isAuthenticated, isAdmin, controller.deleteLesson);
+router.put('/modules/:moduleId/lessons/reorder', isAuthenticated, isAdmin, controller.reorderLessons);
 
 // --- Shared (Admin/Physiotherapist) ---
 router.get('/courses', isAuthenticated, controller.getAllCourses);

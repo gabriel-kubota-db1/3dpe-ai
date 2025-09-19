@@ -28,10 +28,7 @@ export const getAllCategories = async (req: Request, res: Response) => {
 
 export const updateCategory = async (req: Request, res: Response) => {
   try {
-    // Remove read-only fields that shouldn't be updated
-    const { id, created_at, updated_at, ...updateData } = req.body;
-    
-    const category = await Category.query().patchAndFetchById(req.params.id, updateData);
+    const category = await Category.query().patchAndFetchById(req.params.id, req.body);
     if (!category) return res.status(404).json({ message: 'Category not found' });
     res.json(category);
   } catch (error: any) {
@@ -63,10 +60,7 @@ export const createCourse = async (req: Request, res: Response) => {
 
 export const updateCourse = async (req: Request, res: Response) => {
   try {
-    // Remove read-only fields that shouldn't be updated
-    const { id, created_at, updated_at, ...updateData } = req.body;
-    
-    const course = await Course.query().patchAndFetchById(req.params.id, updateData);
+    const course = await Course.query().patchAndFetchById(req.params.id, req.body);
     if (!course) return res.status(404).json({ message: 'Course not found' });
     res.json(course);
   } catch (error: any) {
@@ -97,10 +91,7 @@ export const createModule = async (req: Request, res: Response) => {
 
 export const updateModule = async (req: Request, res: Response) => {
   try {
-    // Remove read-only fields that shouldn't be updated
-    const { id, created_at, updated_at, ...updateData } = req.body;
-    
-    const updatedModule = await Module.query().patchAndFetchById(req.params.id, updateData);
+    const updatedModule = await Module.query().patchAndFetchById(req.params.id, req.body);
     if (!updatedModule) return res.status(404).json({ message: 'Module not found' });
     res.json(updatedModule);
   } catch (error: any) {
@@ -131,10 +122,7 @@ export const createLesson = async (req: Request, res: Response) => {
 
 export const updateLesson = async (req: Request, res: Response) => {
   try {
-    // Remove read-only fields that shouldn't be updated
-    const { id, created_at, updated_at, ...updateData } = req.body;
-    
-    const updatedLesson = await Lesson.query().patchAndFetchById(req.params.id, updateData);
+    const updatedLesson = await Lesson.query().patchAndFetchById(req.params.id, req.body);
     if (!updatedLesson) return res.status(404).json({ message: 'Lesson not found' });
     res.json(updatedLesson);
   } catch (error: any) {
@@ -152,6 +140,47 @@ export const deleteLesson = async (req: Request, res: Response) => {
   }
 };
 
+export const reorderModules = async (req: Request, res: Response) => {
+  const { orderedIds } = req.body;
+  if (!Array.isArray(orderedIds)) {
+    return res.status(400).json({ message: 'orderedIds must be an array.' });
+  }
+
+  const trx = await transaction.start(Module.knex());
+  try {
+    const updates = orderedIds.map((id, index) =>
+      Module.query(trx).findById(id).patch({ order: index })
+    );
+    await Promise.all(updates);
+    await trx.commit();
+    res.status(200).json({ message: 'Modules reordered successfully.' });
+  } catch (error: any) {
+    await trx.rollback();
+    res.status(500).json({ message: 'Error reordering modules', error: error.message });
+  }
+};
+
+export const reorderLessons = async (req: Request, res: Response) => {
+  const { orderedIds } = req.body;
+  if (!Array.isArray(orderedIds)) {
+    return res.status(400).json({ message: 'orderedIds must be an array.' });
+  }
+
+  const trx = await transaction.start(Lesson.knex());
+  try {
+    const updates = orderedIds.map((id, index) =>
+      Lesson.query(trx).findById(id).patch({ order: index })
+    );
+    await Promise.all(updates);
+    await trx.commit();
+    res.status(200).json({ message: 'Lessons reordered successfully.' });
+  } catch (error: any) {
+    await trx.rollback();
+    res.status(500).json({ message: 'Error reordering lessons', error: error.message });
+  }
+};
+
+
 // --- Shared Controllers ---
 
 export const getAllCourses = async (req: Request, res: Response) => {
@@ -167,7 +196,7 @@ export const getCourseDetails = async (req: Request, res: Response) => {
   try {
     const course = await Course.query()
       .findById(req.params.id)
-      .withGraphFetched('[modules.lessons(orderByOrder), category]')
+      .withGraphFetched('[modules(orderByOrder).lessons(orderByOrder), category]')
       .modifiers({
         orderByOrder(builder) {
           builder.orderBy('order');

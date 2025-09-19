@@ -1,9 +1,10 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Typography, Spin, Alert } from 'antd';
+import { Typography, Spin, Alert, Breadcrumb } from 'antd';
+import { HomeOutlined, BookOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 import * as EadService from '@/http/EadHttpService';
-// We will create this component next
-// import CourseStructureManager from './CourseStructureManager'; 
+import CourseStructureManager from './CourseStructureManager';
 
 const { Title } = Typography;
 
@@ -11,7 +12,7 @@ const EADCourseDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const courseId = parseInt(id!, 10);
 
-  const { data: course, isLoading, error } = useQuery({
+  const { data: course, isLoading, error, refetch } = useQuery({
     queryKey: ['eadCourseDetails', courseId],
     queryFn: () => EadService.getCourseDetails(courseId),
     enabled: !!courseId,
@@ -27,10 +28,18 @@ const EADCourseDetailsPage = () => {
 
   return (
     <div>
+      <Breadcrumb
+        items={[
+          { href: '/admin/dashboard', title: <HomeOutlined /> },
+          { title: <Link to="/admin/ead/courses"><BookOutlined /><span> Courses</span></Link> },
+          { title: course?.name },
+        ]}
+        style={{ marginBottom: '16px' }}
+      />
       <Title level={3}>Manage Course: {course?.name}</Title>
       <p>{course?.description}</p>
-      {/* The drag-and-drop component will go here */}
-      <p>Drag and drop functionality for modules and lessons will be implemented here.</p>
+      
+      {course && <CourseStructureManager course={course} onStructureUpdate={refetch} />}
     </div>
   );
 };

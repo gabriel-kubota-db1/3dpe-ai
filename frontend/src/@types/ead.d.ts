@@ -9,6 +9,7 @@ export interface Lesson {
   content: string;
   video_url?: string;
   order: number;
+  duration?: number; // in seconds
   ead_module_id: number;
 }
 
@@ -26,6 +27,7 @@ export interface Course {
   description?: string;
   cover_url?: string;
   category_id?: number;
+  status: 'active' | 'inactive';
   category?: Category;
   modules?: Module[];
 }
