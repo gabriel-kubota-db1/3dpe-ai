@@ -4,6 +4,48 @@ import { Course } from './course.model';
 import { Module } from './module.model';
 import { Lesson } from './lesson.model';
 import { Progress } from './progress.model';
+import { Category } from './category.model';
+
+// --- Category Controllers ---
+
+export const createCategory = async (req: Request, res: Response) => {
+  try {
+    const category = await Category.query().insert(req.body);
+    res.status(201).json(category);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error creating category', error: error.message });
+  }
+};
+
+export const getAllCategories = async (req: Request, res: Response) => {
+  try {
+    const categories = await Category.query().orderBy('name');
+    res.json(categories);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error fetching categories', error: error.message });
+  }
+};
+
+export const updateCategory = async (req: Request, res: Response) => {
+  try {
+    const category = await Category.query().patchAndFetchById(req.params.id, req.body);
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+    res.json(category);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error updating category', error: error.message });
+  }
+};
+
+export const deleteCategory = async (req: Request, res: Response) => {
+  try {
+    const numDeleted = await Category.query().deleteById(req.params.id);
+    if (numDeleted === 0) return res.status(404).json({ message: 'Category not found' });
+    res.status(204).send();
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error deleting category', error: error.message });
+  }
+};
+
 
 // --- Admin Controllers ---
 
@@ -102,7 +144,7 @@ export const deleteLesson = async (req: Request, res: Response) => {
 
 export const getAllCourses = async (req: Request, res: Response) => {
   try {
-    const courses = await Course.query().orderBy('name');
+    const courses = await Course.query().withGraphFetched('category').orderBy('name');
     res.json(courses);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching courses', error: error.message });
@@ -113,7 +155,7 @@ export const getCourseDetails = async (req: Request, res: Response) => {
   try {
     const course = await Course.query()
       .findById(req.params.id)
-      .withGraphFetched('modules.lessons(orderByOrder)')
+      .withGraphFetched('[modules.lessons(orderByOrder), category]')
       .modifiers({
         orderByOrder(builder) {
           builder.orderBy('order');

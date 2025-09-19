@@ -7,6 +7,12 @@ const router = Router();
 const isAdmin = checkRole(['ADMIN']);
 const isPhysio = checkRole(['PHYSIOTHERAPIST']);
 
+// --- Admin (Category Management) ---
+router.get('/categories', isAuthenticated, isAdmin, controller.getAllCategories);
+router.post('/categories', isAuthenticated, isAdmin, controller.createCategory);
+router.put('/categories/:id', isAuthenticated, isAdmin, controller.updateCategory);
+router.delete('/categories/:id', isAuthenticated, isAdmin, controller.deleteCategory);
+
 // --- Admin (Content Management) ---
 router.post('/courses', isAuthenticated, isAdmin, controller.createCourse);
 router.put('/courses/:id', isAuthenticated, isAdmin, controller.updateCourse);

@@ -1,152 +1,149 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Modal, message, Space, Tag, Statistic } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
-import { getCategories, getAllCourses } from '@/http/EadHttpService';
-import { Course } from '@/@types/ead';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button, Modal, Input, Form as AntdForm, App, Card, Typography, Popconfirm, Space, Table, Tooltip } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Form, Field } from 'react-final-form';
+import * as EadService from '@/http/EadHttpService';
+import { Category } from '@/@types/ead';
 
-interface CategoryInfo {
-  name: string;
-  courseCount: number;
-  courses: Course[];
-}
+const { Title } = Typography;
 
-const CategoryManagement: React.FC = () => {
-  const [categories, setCategories] = useState<CategoryInfo[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryInfo | null>(null);
+const CategoryManagement = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const queryClient = useQueryClient();
+  const { message } = App.useApp();
 
-  useEffect(() => {
-    loadCategoriesAndCourses();
-  }, []);
+  const { data: categories, isLoading } = useQuery<Category[], Error>({
+    queryKey: ['eadCategories'],
+    queryFn: EadService.getCategories,
+  });
 
-  const loadCategoriesAndCourses = async () => {
-    setLoading(true);
-    try {
-      const [, coursesData] = await Promise.all([
-        getCategories(),
-        getAllCourses()
-      ]);
-      
-      // Group courses by category
-      const categoryMap = new Map<string, Course[]>();
-      
-      coursesData.forEach(course => {
-        if (course.category) {
-          if (!categoryMap.has(course.category)) {
-            categoryMap.set(course.category, []);
-          }
-          categoryMap.get(course.category)!.push(course);
-        }
-      });
-      
-      const categoryInfos: CategoryInfo[] = Array.from(categoryMap.entries()).map(([name, coursesInCategory]) => ({
-        name,
-        courseCount: coursesInCategory.length,
-        courses: coursesInCategory
-      }));
-      
-      setCategories(categoryInfos);
-    } catch (error) {
-      message.error('Failed to load categories and courses');
-    } finally {
-      setLoading(false);
-    }
+  const { mutate: saveCategory, isPending: isSaving } = useMutation({
+    mutationFn: (values: Category | Omit<Category, 'id'>) => {
+      if ('id' in values) {
+        return EadService.updateCategory(values.id, values);
+      }
+      return EadService.createCategory(values);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eadCategories'] });
+      message.success(`Category ${editingCategory ? 'updated' : 'created'} successfully!`);
+      closeModal();
+    },
+    onError: (error) => {
+      message.error(error.message || 'Failed to save category.');
+    },
+  });
+
+  const { mutate: deleteCategory } = useMutation({
+    mutationFn: (id: number) => EadService.deleteCategory(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eadCategories'] });
+      message.success('Category deleted successfully!');
+    },
+    onError: (error) => {
+      message.error(error.message || 'Failed to delete category.');
+    },
+  });
+
+  const showModal = (category: Category | null = null) => {
+    setEditingCategory(category);
+    setIsModalOpen(true);
   };
 
-  const handleViewCourses = (category: CategoryInfo) => {
-    setSelectedCategory(category);
-    setModalVisible(true);
+  const closeModal = () => {
+    setEditingCategory(null);
+    setIsModalOpen(false);
+  };
+
+  const onSubmit = (values: { name: string }) => {
+    saveCategory(editingCategory ? { ...values, id: editingCategory.id } : values);
   };
 
   const columns = [
     {
-      title: 'Category Name',
+      title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      render: (name: string) => <Tag color="blue">{name}</Tag>,
-    },
-    {
-      title: 'Course Count',
-      dataIndex: 'courseCount',
-      key: 'courseCount',
-      render: (count: number) => (
-        <Statistic value={count} suffix="courses" />
-      ),
     },
     {
       title: 'Actions',
       key: 'actions',
-      render: (_: any, record: CategoryInfo) => (
-        <Space>
-          <Button
-            type="link"
-            icon={<EyeOutlined />}
-            onClick={() => handleViewCourses(record)}
+      width: 120,
+      render: (_: any, record: Category) => (
+        <Space size="middle">
+          <Tooltip title="Edit Category">
+            <Button icon={<EditOutlined />} onClick={() => showModal(record)} />
+          </Tooltip>
+          <Popconfirm
+            title="Delete this category?"
+            description="This action is irreversible."
+            onConfirm={() => deleteCategory(record.id)}
+            okText="Yes"
+            cancelText="No"
           >
-            View Courses
-          </Button>
+            <Tooltip title="Delete Category">
+              <Button icon={<DeleteOutlined />} danger />
+            </Tooltip>
+          </Popconfirm>
         </Space>
       ),
     },
   ];
 
   return (
-    <div>
-      <Card
-        title="Course Categories"
-        extra={
-          <Button
-            type="primary"
-            onClick={loadCategoriesAndCourses}
-            loading={loading}
-          >
-            Refresh
-          </Button>
-        }
-      >
-        <Table
-          columns={columns}
-          dataSource={categories}
-          rowKey="name"
-          loading={loading}
-          pagination={{ pageSize: 10 }}
-        />
-      </Card>
+    <Card>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <Title level={3}>Category Management</Title>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
+          New Category
+        </Button>
+      </div>
+
+      <Table
+        columns={columns}
+        dataSource={categories}
+        loading={isLoading}
+        rowKey="id"
+      />
 
       <Modal
-        title={`Courses in "${selectedCategory?.name}" Category`}
-        open={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        footer={[
-          <Button key="close" onClick={() => setModalVisible(false)}>
-            Close
-          </Button>
-        ]}
-        width={800}
+        title={editingCategory ? 'Edit Category' : 'New Category'}
+        open={isModalOpen}
+        onCancel={closeModal}
+        footer={null}
+        destroyOnClose
       >
-        {selectedCategory && (
-          <Table
-            dataSource={selectedCategory.courses}
-            rowKey="id"
-            pagination={false}
-            columns={[
-              {
-                title: 'Course Name',
-                dataIndex: 'name',
-                key: 'name',
-              },
-              {
-                title: 'Description',
-                dataIndex: 'description',
-                key: 'description',
-                render: (text: string) => text || '-',
-              },
-            ]}
-          />
-        )}
+        <Form
+          onSubmit={onSubmit}
+          initialValues={editingCategory || {}}
+          render={({ handleSubmit }) => (
+            <form onSubmit={handleSubmit}>
+              <Field
+                name="name"
+                validate={value => (value ? undefined : 'Name is required')}
+              >
+                {({ input, meta }) => (
+                  <AntdForm.Item
+                    label="Name"
+                    required
+                    validateStatus={meta.touched && meta.error ? 'error' : ''}
+                    help={meta.touched && meta.error}
+                  >
+                    <Input {...input} />
+                  </AntdForm.Item>
+                )}
+              </Field>
+              <div style={{ textAlign: 'right' }}>
+                <Button onClick={closeModal} style={{ marginRight: 8 }}>Cancel</Button>
+                <Button type="primary" htmlType="submit" loading={isSaving}>Save</Button>
+              </div>
+            </form>
+          )}
+        />
       </Modal>
-    </div>
+    </Card>
   );
 };
 
