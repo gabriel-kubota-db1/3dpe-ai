@@ -16,6 +16,10 @@ import CheckoutPage from '../pages/OrderManagement/Checkout';
 import OrderDetailsPage from '../pages/OrderManagement/OrderDetails';
 import SelectPrescriptionsPage from '../pages/OrderManagement/SelectPrescriptions';
 
+// EAD Management
+import CourseListPage from '../pages/EAD/CourseList';
+import CourseDetailsPage from '../pages/EAD/CourseDetails';
+
 const physiotherapistRoutes = (
   <Route path="physiotherapist">
     {/* Patient Routes */}
@@ -35,6 +39,10 @@ const physiotherapistRoutes = (
     <Route path="orders/new" element={<SelectPrescriptionsPage />} />
     <Route path="orders/checkout" element={<CheckoutPage />} />
     <Route path="orders/:id" element={<OrderDetailsPage />} />
+
+    {/* EAD Routes */}
+    <Route path="courses" element={<CourseListPage />} />
+    <Route path="courses/:id" element={<CourseDetailsPage />} />
   </Route>
 );
 

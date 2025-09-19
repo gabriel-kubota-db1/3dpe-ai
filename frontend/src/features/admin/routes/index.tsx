@@ -10,6 +10,11 @@ import ListOrdersPage from '../pages/OrderManagement/ListOrders';
 import OrderDetailsPage from '../pages/OrderManagement/OrderDetails';
 import DashboardPage from '../pages/Dashboard';
 import ProductionReportPage from '../pages/ProductionReport';
+import ListAdminPrescriptionsPage from '../pages/PrescriptionManagement/ListPrescriptions';
+
+// Import EAD Management pages
+import EADCourseListPage from '../pages/EADManagement/ListCourses';
+import EADCourseDetailsPage from '../pages/EADManagement/CourseDetails';
 
 const adminRoutes = (
   <>
@@ -23,6 +28,11 @@ const adminRoutes = (
     <Route path="/admin/coupons" element={<CouponPage />} />
     <Route path="/admin/orders" element={<ListOrdersPage />} />
     <Route path="/admin/orders/:id" element={<OrderDetailsPage />} />
+    <Route path="/admin/prescriptions" element={<ListAdminPrescriptionsPage />} />
+
+    {/* EAD Routes */}
+    <Route path="/admin/courses" element={<EADCourseListPage />} />
+    <Route path="/admin/courses/:id" element={<EADCourseDetailsPage />} />
   </>
 );
 

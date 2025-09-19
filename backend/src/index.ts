@@ -4,6 +4,9 @@ import helmet from 'helmet';
 
 // Import domain routers
 import authRoutes from './domains/auth/routes';
+import { setupDatabase } from './config/database';
+
+// Import domain routers
 import usersRoutes from './domains/users/routes';
 import patientsRoutes from './domains/patients/routes';
 import coatingsRoutes from './domains/coatings/routes';
@@ -16,6 +19,9 @@ import physiotherapistsRoutes from './domains/physiotherapists/routes';
 
 const app = express();
 const port = process.env.PORT || 3001;
+
+// Setup Database
+setupDatabase();
 
 // Middlewares
 app.use(cors());

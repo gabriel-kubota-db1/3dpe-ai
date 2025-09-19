@@ -14,6 +14,8 @@ import {
   BuildOutlined,
   DashboardOutlined,
   BarChartOutlined,
+  BookOutlined,
+  PlayCircleOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '@/context/AuthContext';
 
@@ -78,6 +80,19 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
                 label: <Link to="/physiotherapist/orders">My Orders</Link>,
               },
             ]
+          },
+        ],
+      },
+      { type: 'divider' },
+      {
+        key: 'education',
+        icon: <BookOutlined />,
+        label: 'Education',
+        children: [
+          {
+            key: '/physiotherapist/courses',
+            icon: <PlayCircleOutlined />,
+            label: <Link to="/physiotherapist/courses">My Courses</Link>,
           },
         ],
       }
@@ -146,6 +161,19 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
             label: <Link to="/admin/orders">Orders</Link>,
           },
         ],
+      },
+      { type: 'divider' },
+      {
+        key: 'ead-management',
+        icon: <BookOutlined />,
+        label: 'Education',
+        children: [
+          {
+            key: '/admin/courses',
+            icon: <PlayCircleOutlined />,
+            label: <Link to="/admin/courses">Course Management</Link>,
+          },
+        ],
       }
     );
   }
@@ -159,7 +187,7 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
-          defaultOpenKeys={['admin-management', 'physiotherapist-management', 'industry-management']}
+          defaultOpenKeys={['admin-management', 'physiotherapist-management', 'industry-management', 'education', 'ead-management']}
           style={{ height: '100%', borderRight: 0 }}
           items={menuItems}
         />
