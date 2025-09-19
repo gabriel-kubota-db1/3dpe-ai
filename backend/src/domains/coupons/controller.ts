@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Coupon } from './model';
+import dayjs from 'dayjs';
 
 export const getAllCoupons = async (req: Request, res: Response) => {
   try {
@@ -53,5 +54,36 @@ export const deleteCoupon = async (req: Request, res: Response) => {
     }
   } catch (error: any) {
     res.status(500).json({ message: 'Error deleting coupon', error: error.message });
+  }
+};
+
+export const validateCoupon = async (req: Request, res: Response) => {
+  try {
+    const { code } = req.body;
+    if (!code) {
+      return res.status(400).json({ message: 'Coupon code is required.' });
+    }
+
+    const coupon = await Coupon.query().where('code', code).first();
+
+    if (!coupon) {
+      return res.status(404).json({ message: 'Coupon not found.' });
+    }
+
+    if (!coupon.active) {
+      return res.status(400).json({ message: 'This coupon is inactive.' });
+    }
+
+    const today = dayjs().startOf('day');
+    const startDate = dayjs(coupon.start_date);
+    const finishDate = dayjs(coupon.finish_date);
+
+    if (today.isBefore(startDate) || today.isAfter(finishDate)) {
+      return res.status(400).json({ message: 'This coupon is expired or not yet valid.' });
+    }
+
+    res.json(coupon);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error validating coupon', error: error.message });
   }
 };

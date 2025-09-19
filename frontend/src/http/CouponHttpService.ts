@@ -1,4 +1,4 @@
-import { api } from './api';
+import api from './axios';
 import { Coupon } from '@/@types/coupon';
 
 export const getCoupons = async (filters?: { active?: string; code?: string }): Promise<Coupon[]> => {
