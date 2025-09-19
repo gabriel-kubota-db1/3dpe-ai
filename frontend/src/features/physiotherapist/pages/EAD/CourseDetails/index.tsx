@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Row, Col, Typography, Spin, Alert, Collapse, List, Button, Progress, Rate, Form as AntdForm, Input, App } from 'antd';
+import { Row, Col, Typography, Spin, Alert, Collapse, List, Button, Progress, App } from 'antd';
 import { CheckCircleFilled, PlayCircleOutlined } from '@ant-design/icons';
 import * as EadService from '@/http/EadHttpService';
 import { Course, Lesson, CourseProgress } from '@/@types/ead';
-import { Form, Field } from 'react-final-form';
+import { getVimeoEmbedUrl } from '@/utils/url';
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
@@ -41,21 +41,10 @@ const CourseDetailsPage = () => {
     mutationFn: (lessonId: number) => EadService.updateMyProgress(courseId, lessonId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myEadProgress'] });
+      queryClient.invalidateQueries({ queryKey: ['eadCourseDetails', courseId] });
       message.success('Progress updated!');
     },
   });
-
-  const { mutate: submitEvaluation } = useMutation({
-    mutationFn: (values: { rating: number; comment: string }) => EadService.evaluateCourse(courseId, values.rating, values.comment),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myEadProgress'] });
-      message.success('Thank you for your feedback!');
-    },
-  });
-
-  const handleEvaluationSubmit = (values: any) => {
-    submitEvaluation({ rating: values.evaluation, comment: values.evaluation_comment });
-  };
 
   if (isLoadingCourse || isLoadingProgress) {
     return <Spin tip="Loading course..." />;
@@ -72,7 +61,7 @@ const CourseDetailsPage = () => {
   return (
     <div>
       <Title level={3}>{course.name}</Title>
-      <Progress percent={courseProgress?.progress || 0} style={{ marginBottom: 24 }} />
+      <Progress percent={Math.round(courseProgress?.progress || 0)} style={{ marginBottom: 24 }} />
       <Row gutter={[24, 24]}>
         <Col xs={24} md={8}>
           <Title level={5}>Course Content</Title>
@@ -101,9 +90,10 @@ const CourseDetailsPage = () => {
               <Title level={4}>{activeLesson.title}</Title>
               <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, marginBottom: 16 }}>
                 <iframe
-                  src={activeLesson.url}
+                  src={getVimeoEmbedUrl(activeLesson.url)}
                   frameBorder="0"
                   allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
                   style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
                   title={activeLesson.title}
                 ></iframe>
@@ -116,27 +106,6 @@ const CourseDetailsPage = () => {
             </div>
           ) : (
             <Text>Select a lesson to begin.</Text>
-          )}
-
-          {courseProgress?.status === 'COMPLETED' && (
-            <div style={{ marginTop: 32 }}>
-              <Title level={5}>Evaluate this course</Title>
-              <Form
-                onSubmit={handleEvaluationSubmit}
-                initialValues={{ evaluation: courseProgress.evaluation, evaluation_comment: courseProgress.evaluation_comment }}
-                render={({ handleSubmit }) => (
-                  <form onSubmit={handleSubmit}>
-                    <Field name="evaluation">
-                      {({ input }) => <AntdForm.Item label="Your Rating"><Rate {...input} /></AntdForm.Item>}
-                    </Field>
-                    <Field name="evaluation_comment">
-                      {({ input }) => <AntdForm.Item label="Comments"><Input.TextArea {...input} rows={3} /></AntdForm.Item>}
-                    </Field>
-                    <Button type="primary" htmlType="submit">Submit Feedback</Button>
-                  </form>
-                )}
-              />
-            </div>
           )}
         </Col>
       </Row>

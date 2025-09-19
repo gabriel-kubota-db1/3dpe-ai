@@ -1,26 +1,35 @@
 import { useQuery } from '@tanstack/react-query';
-import { Card, Row, Col, Typography, Spin, Empty, Tag } from 'antd';
+import { Card, Row, Col, Typography, Spin, Empty, Tag, Progress } from 'antd';
 import { Link } from 'react-router-dom';
 import * as EadService from '@/http/EadHttpService';
-import { Course } from '@/@types/ead';
+import { Course, CourseProgress } from '@/@types/ead';
 
 const { Title, Paragraph } = Typography;
 const { Meta } = Card;
 
 const CourseListPage = () => {
-  const { data: courses, isLoading, error } = useQuery<Course[], Error>({
+  const { data: courses, isLoading: isLoadingCourses, error: coursesError } = useQuery<Course[], Error>({
     queryKey: ['physioCourses'],
-    // Fetch only active courses for physiotherapists
     queryFn: () => EadService.getAllCourses().then(allCourses => allCourses.filter(c => c.status)),
   });
 
-  if (isLoading) {
+  const { data: progressData, isLoading: isLoadingProgress } = useQuery<CourseProgress[], Error>({
+    queryKey: ['myEadProgress'],
+    queryFn: EadService.getMyCoursesProgress,
+  });
+
+  if (isLoadingCourses || isLoadingProgress) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}><Spin size="large" /></div>;
   }
 
-  if (error) {
-    return <Paragraph type="danger">Error fetching courses: {error.message}</Paragraph>;
+  if (coursesError) {
+    return <Paragraph type="danger">Error fetching courses: {coursesError.message}</Paragraph>;
   }
+
+  const getCourseProgress = (courseId: number) => {
+    const progress = progressData?.find(p => p.ead_course_id === courseId);
+    return progress ? Math.round(progress.progress) : 0;
+  };
 
   return (
     <div>
@@ -28,7 +37,7 @@ const CourseListPage = () => {
       {!courses || courses.length === 0 ? (
         <Empty description="No courses are available at the moment." />
       ) : (
-        <Row gutter={[16, 16]}>
+        <Row gutter={[16, 24]}>
           {courses.map(course => (
             <Col xs={24} sm={12} md={8} lg={6} key={course.id}>
               <Link to={`/physiotherapist/courses/${course.id}`}>
@@ -47,12 +56,13 @@ const CourseListPage = () => {
                     description={
                       <>
                         {course.category && <Tag color="blue">{course.category.name}</Tag>}
-                        <Paragraph ellipsis={{ rows: 2, expandable: false }} style={{ marginTop: 8 }}>
+                        <Paragraph ellipsis={{ rows: 2, expandable: false }} style={{ marginTop: 8, minHeight: 44 }}>
                           {course.description}
                         </Paragraph>
                       </>
                     }
                   />
+                  <Progress percent={getCourseProgress(course.id)} size="small" />
                 </Card>
               </Link>
             </Col>

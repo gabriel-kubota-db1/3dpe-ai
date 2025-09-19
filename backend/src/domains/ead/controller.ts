@@ -285,7 +285,6 @@ export const updateProgress = async (req: Request, res: Response) => {
       const completed = new Set(progress.completed_lessons);
       completed.add(lessonId);
       progress.completed_lessons = Array.from(completed);
-      progress.status = 'IN_PROGRESS';
     }
 
     const course = await Course.query(trx).findById(courseId).withGraphFetched('modules.lessons');
@@ -297,17 +296,20 @@ export const updateProgress = async (req: Request, res: Response) => {
     const totalLessons = course.modules?.reduce((acc, mod) => acc + (mod.lessons?.length || 0), 0) || 0;
     const completedCount = progress.completed_lessons.length;
     
+    let newProgressPercentage = 0;
     if (totalLessons > 0) {
-      progress.progress = (completedCount / totalLessons) * 100;
+      newProgressPercentage = Math.round((completedCount / totalLessons) * 100);
     }
-    if (progress.progress >= 100) {
-      progress.status = 'COMPLETED';
+
+    let newStatus = 'IN_PROGRESS';
+    if (newProgressPercentage >= 100) {
+      newStatus = 'COMPLETED';
     }
 
     const updatedProgress = await Progress.query(trx).patchAndFetchById(progress.id, {
       completed_lessons: progress.completed_lessons,
-      progress: progress.progress,
-      status: progress.status,
+      progress: newProgressPercentage,
+      status: newStatus,
     });
 
     await trx.commit();
