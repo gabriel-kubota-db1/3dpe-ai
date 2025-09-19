@@ -21,17 +21,12 @@ const LessonFormModal = ({ open, onCancel, onFinish, initialValues }: LessonForm
       <Form
         onSubmit={onFinish}
         initialValues={initialValues || {}}
-        render={({ handleSubmit, form }) => (
-          <form
-            onSubmit={async (event) => {
-              await handleSubmit(event);
-              form.reset();
-            }}
-          >
-            <Field name="name" validate={value => (value ? undefined : 'Name is required')}>
+        render={({ handleSubmit }) => (
+          <form onSubmit={handleSubmit}>
+            <Field name="title" validate={value => (value ? undefined : 'Title is required')}>
               {({ input, meta }) => (
                 <AntdForm.Item
-                  label="Lesson Name"
+                  label="Lesson Title"
                   required
                   validateStatus={meta.touched && meta.error ? 'error' : ''}
                   help={meta.touched && meta.error}
@@ -40,19 +35,7 @@ const LessonFormModal = ({ open, onCancel, onFinish, initialValues }: LessonForm
                 </AntdForm.Item>
               )}
             </Field>
-            <Field name="content" validate={value => (value ? undefined : 'Content is required')}>
-              {({ input, meta }) => (
-                <AntdForm.Item
-                  label="Content / Description"
-                  required
-                  validateStatus={meta.touched && meta.error ? 'error' : ''}
-                  help={meta.touched && meta.error}
-                >
-                  <Input.TextArea {...input} rows={4} />
-                </AntdForm.Item>
-              )}
-            </Field>
-            <Field name="video_url">
+            <Field name="url">
               {({ input }) => (
                 <AntdForm.Item label="Video URL">
                   <Input {...input} placeholder="https://youtube.com/watch?v=..." />

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, List, Typography, Popconfirm, Tooltip, App, Card, Collapse, Space, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, DragOutlined, VideoCameraOutlined } from '@ant-design/icons';
@@ -64,7 +64,7 @@ const SortableLessonItem = ({ lesson, onEdit, onDelete }: { lesson: Lesson, onEd
           <DragOutlined {...listeners} style={{ cursor: 'grab' }} />
         </Tooltip>
         <VideoCameraOutlined />
-        <Text>{lesson.name}</Text>
+        <Text>{lesson.title}</Text>
         {lesson.duration && <Tag>{Math.floor(lesson.duration / 60)}m {lesson.duration % 60}s</Tag>}
       </Space>
       <Space>
@@ -112,7 +112,7 @@ const SortableModuleItem = ({ module, onEdit, onDelete, onAddLesson, onEditLesso
         <Tooltip title="Drag to reorder">
           <DragOutlined {...listeners} style={{ cursor: 'grab' }} />
         </Tooltip>
-        <Text strong>{module.name}</Text>
+        <Text strong>{module.title}</Text>
       </Space>
       <Space onClick={(e) => e.stopPropagation()}>
         <Tooltip title="Add Lesson">
@@ -162,6 +162,11 @@ const CourseStructureManager = ({ course, onStructureUpdate }: CourseStructureMa
   const queryClient = useQueryClient();
   const { message } = App.useApp();
 
+  // Sync local modules state when course data changes
+  useEffect(() => {
+    setModules(course.modules || []);
+  }, [course.modules]);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -183,8 +188,18 @@ const CourseStructureManager = ({ course, onStructureUpdate }: CourseStructureMa
       editingModule
         ? EadService.updateModule(editingModule.id, values)
         : EadService.createModule(course.id, { ...values, order: modules.length }),
-    ...mutationOptions,
-    onSettled: () => setIsModuleModalOpen(false),
+    onSuccess: () => {
+      onStructureUpdate();
+      queryClient.invalidateQueries({ queryKey: ['eadCourseDetails', course.id] });
+      message.success({
+        content: editingModule 
+          ? 'Module updated successfully! The module list has been refreshed.' 
+          : 'Module created successfully! The module list has been refreshed.',
+        duration: 4
+      });
+      setIsModuleModalOpen(false);
+    },
+    onError: (error: Error) => message.error(error.message || 'An error occurred'),
   });
 
   const { mutate: deleteModule } = useMutation({
@@ -197,8 +212,13 @@ const CourseStructureManager = ({ course, onStructureUpdate }: CourseStructureMa
       editingLesson
         ? EadService.updateLesson(editingLesson.id, values)
         : EadService.createLesson(parentModule!.id, { ...values, order: parentModule?.lessons?.length || 0 }),
-    ...mutationOptions,
-    onSettled: () => setIsLessonModalOpen(false),
+    onSuccess: () => {
+      onStructureUpdate();
+      queryClient.invalidateQueries({ queryKey: ['eadCourseDetails', course.id] });
+      message.success(editingLesson ? 'Lesson updated successfully!' : 'Lesson created successfully! The course structure has been updated.');
+      setIsLessonModalOpen(false);
+    },
+    onError: (error: Error) => message.error(error.message || 'An error occurred'),
   });
 
   const { mutate: deleteLesson } = useMutation({

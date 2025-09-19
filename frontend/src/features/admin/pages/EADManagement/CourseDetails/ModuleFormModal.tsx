@@ -21,17 +21,12 @@ const ModuleFormModal = ({ open, onCancel, onFinish, initialValues }: ModuleForm
       <Form
         onSubmit={onFinish}
         initialValues={initialValues || {}}
-        render={({ handleSubmit, form }) => (
-          <form
-            onSubmit={async (event) => {
-              await handleSubmit(event);
-              form.reset();
-            }}
-          >
-            <Field name="name" validate={value => (value ? undefined : 'Name is required')}>
+        render={({ handleSubmit }) => (
+          <form onSubmit={handleSubmit}>
+            <Field name="title" validate={value => (value ? undefined : 'Title is required')}>
               {({ input, meta }) => (
                 <AntdForm.Item
-                  label="Module Name"
+                  label="Module Title"
                   required
                   validateStatus={meta.touched && meta.error ? 'error' : ''}
                   help={meta.touched && meta.error}

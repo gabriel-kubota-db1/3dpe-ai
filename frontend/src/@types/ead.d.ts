@@ -5,9 +5,8 @@ export interface Category {
 
 export interface Lesson {
   id: number;
-  name: string;
-  content: string;
-  video_url?: string;
+  title: string;
+  url: string;
   order: number;
   duration?: number; // in seconds
   ead_module_id: number;
@@ -15,7 +14,7 @@ export interface Lesson {
 
 export interface Module {
   id: number;
-  name: string;
+  title: string;
   order: number;
   ead_course_id: number;
   lessons?: Lesson[];
