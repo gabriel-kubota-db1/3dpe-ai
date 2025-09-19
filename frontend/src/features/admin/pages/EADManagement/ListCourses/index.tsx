@@ -107,13 +107,13 @@ const EADCourseListPage = () => {
 
       <Form form={form} layout="vertical" onValuesChange={handleValuesChange} style={{ marginBottom: 24 }}>
         <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item name="search" label="Filter by Name/Description">
+          <Col span={20}>
+            <Form.Item name="search">
               <Input placeholder="Enter name or description" allowClear />
             </Form.Item>
           </Col>
-          <Col span={8}>
-            <Form.Item name="categoryId" label="Filter by Category">
+          <Col span={4}>
+            <Form.Item name="categoryId">
               <Select placeholder="Select a category" loading={isLoadingCategories} allowClear>
                 {categories?.map(cat => (
                   <Option key={cat.id} value={cat.id}>{cat.name}</Option>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, List, Typography, Popconfirm, Tooltip, App, Card, Collapse, Space, Tag } from 'antd';
+import { Button, Typography, Popconfirm, Tooltip, App, Card, Collapse, Space, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, DragOutlined, VideoCameraOutlined } from '@ant-design/icons';
 import {
   DndContext,

@@ -121,8 +121,8 @@ const CategoryManagement = () => {
 
       <Form form={form} layout="vertical" onValuesChange={handleValuesChange} style={{ marginBottom: 24 }}>
         <Row gutter={16}>
-          <Col span={8}>
-            <Form.Item name="name" label="Filter by Name">
+          <Col span={24}>
+            <Form.Item name="name">
               <Input placeholder="Enter category name" allowClear />
             </Form.Item>
           </Col>
