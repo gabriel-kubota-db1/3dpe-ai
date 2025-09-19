@@ -25,7 +25,7 @@ const AppHeader = () => {
   const { logout } = useAuth();
   return (
     <Header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 24px', background: '#fff' }}>
-      <h1 style={{ color: '#1B4B71', margin: 0 }}>3DPé Admin</h1>
+      <h1 style={{ color: '#1B4B71', margin: 0 }}>3DPé</h1>
       <Menu mode="horizontal" selectable={false}>
         <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={logout}>
           Logout

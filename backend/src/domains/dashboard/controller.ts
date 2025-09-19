@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { User } from '../users/model';
+import { Patient } from '../patients/model';
 import { Order } from '../orders/model';
 import { raw } from 'objection';
 import dayjs from 'dayjs';
@@ -7,7 +8,7 @@ import dayjs from 'dayjs';
 export const getDashboardMetrics = async (req: Request, res: Response) => {
   try {
     // 1. Total Patients
-    const totalPatients = await User.query().where('role', 'patient').resultSize();
+    const totalPatients = await Patient.query().where('active', true).resultSize();
 
     // 2. Total Revenue (Current Month)
     const startOfMonth = dayjs().startOf('month').format('YYYY-MM-DD');
