@@ -246,12 +246,71 @@ export const getCourseDetails = async (req: Request, res: Response) => {
 // --- Physiotherapist Controllers ---
 
 export const getMyCourses = async (req: Request, res: Response) => {
+  // @ts-ignore
+  const physiotherapistId = req.user.id;
+  const trx = await transaction.start(Progress.knex());
+
   try {
-    // @ts-ignore
-    const physiotherapistId = req.user.id;
-    const progress = await Progress.query().where('physiotherapist_id', physiotherapistId);
-    res.json(progress);
+    // 1. Fetch all progress records for the user
+    const userProgressList = await Progress.query(trx).where('physiotherapist_id', physiotherapistId);
+
+    if (userProgressList.length === 0) {
+      await trx.commit();
+      return res.json([]);
+    }
+
+    // 2. Get course IDs
+    const courseIds = userProgressList.map(p => p.ead_course_id);
+
+    // 3. Fetch all relevant courses and their lesson counts
+    const courses = await Course.query(trx)
+      .whereIn('id', courseIds)
+      .withGraphFetched('modules.lessons');
+
+    // 4. Create a map of courseId -> totalLessons
+    const lessonCounts = courses.reduce((acc, course) => {
+      const totalLessons = course.modules?.reduce((sum, module) => sum + (module.lessons?.length || 0), 0) || 0;
+      acc[course.id] = totalLessons;
+      return acc;
+    }, {} as Record<number, number>);
+
+    // 5. Recalculate progress for each record and update if necessary
+    const updatedProgressList = await Promise.all(userProgressList.map(async (progress) => {
+      const totalLessons = lessonCounts[progress.ead_course_id] || 0;
+      const completedCount = progress.completed_lessons.length;
+      
+      let newProgressPercentage = 0;
+      if (totalLessons > 0) {
+        newProgressPercentage = Math.round((completedCount / totalLessons) * 100);
+      }
+
+      let newStatus = progress.status;
+      if (newProgressPercentage >= 100) {
+        newStatus = 'COMPLETED';
+      } else if (completedCount > 0) {
+        newStatus = 'IN_PROGRESS';
+      } else {
+        newStatus = 'NOT_STARTED';
+      }
+
+      // If the calculated progress or status is different from the stored one, update it.
+      if (progress.progress !== newProgressPercentage || progress.status !== newStatus) {
+        await Progress.query(trx).findById(progress.id).patch({ 
+          progress: newProgressPercentage,
+          status: newStatus,
+        });
+        progress.progress = newProgressPercentage; // update in-memory object
+        progress.status = newStatus;
+      }
+
+      return progress;
+    }));
+    
+    await trx.commit();
+    res.json(updatedProgressList);
+
   } catch (error: any) {
+    await trx.rollback();
     res.status(500).json({ message: 'Error fetching your courses', error: error.message });
   }
 };
@@ -301,7 +360,7 @@ export const updateProgress = async (req: Request, res: Response) => {
       newProgressPercentage = Math.round((completedCount / totalLessons) * 100);
     }
 
-    let newStatus = 'IN_PROGRESS';
+    let newStatus: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' = 'IN_PROGRESS';
     if (newProgressPercentage >= 100) {
       newStatus = 'COMPLETED';
     }
