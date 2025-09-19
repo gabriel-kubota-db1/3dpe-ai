@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { setupDatabase } from './config/database';
 
 // Import domain routers
+import authRoutes from './domains/auth/routes';
 import usersRoutes from './domains/users/routes';
 import patientsRoutes from './domains/patients/routes';
 import coatingsRoutes from './domains/coatings/routes';
@@ -26,6 +27,7 @@ app.use(helmet());
 app.use(express.json());
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/patients', patientsRoutes);
 app.use('/api/coatings', coatingsRoutes);
