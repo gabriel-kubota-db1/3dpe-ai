@@ -17,7 +17,7 @@ export const getDashboardMetrics = async (req: Request, res: Response) => {
       .andWhere('status', '!=', 'CANCELED')
       .sum('total_value as total')
       .first();
-    const monthlyRevenue = monthlyRevenueResult?.$get('total') || 0;
+    const monthlyRevenue = (monthlyRevenueResult as any)?.total || 0;
 
     // 3. New Orders (Current Month)
     const newOrdersCount = await Order.query()
@@ -55,7 +55,7 @@ export const getDashboardMetrics = async (req: Request, res: Response) => {
       const dataPoint = revenueByMonth.find((r: any) => r.month === monthKey);
       return {
         name: monthName,
-        revenue: dataPoint ? parseFloat(dataPoint.revenue) : 0,
+        revenue: dataPoint ? parseFloat((dataPoint as any).revenue) : 0,
       };
     });
 
