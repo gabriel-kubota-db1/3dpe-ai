@@ -6,7 +6,6 @@ import { setupDatabase } from './config/database';
 // Import domain routers
 import usersRoutes from './domains/users/routes';
 import patientsRoutes from './domains/patients/routes';
-import addressesRoutes from './domains/addresses/routes';
 import coatingsRoutes from './domains/coatings/routes';
 import insoleModelsRoutes from './domains/insole-models/routes';
 import prescriptionsRoutes from './domains/prescriptions/routes';
@@ -29,7 +28,6 @@ app.use(express.json());
 // API Routes
 app.use('/api/users', usersRoutes);
 app.use('/api/patients', patientsRoutes);
-app.use('/api/addresses', addressesRoutes);
 app.use('/api/coatings', coatingsRoutes);
 app.use('/api/insole-models', insoleModelsRoutes);
 app.use('/api/prescriptions', prescriptionsRoutes);
