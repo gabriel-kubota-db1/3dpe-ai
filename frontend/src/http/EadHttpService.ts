@@ -1,4 +1,4 @@
-import { api } from './api';
+import api from './axios';
 import { Category, Course, Module, Lesson, CourseProgress } from '@/@types/ead';
 
 // --- Category ---
@@ -47,7 +47,7 @@ export const deleteCourse = async (id: number): Promise<void> => {
 };
 
 // --- Module ---
-export const createModule = async (courseId: number, module: Omit<Module, 'id'>): Promise<Module> => {
+export const createModule = async (courseId: number, module: Omit<Module, 'id' | 'ead_course_id' | 'lessons'>): Promise<Module> => {
   const { data } = await api.post(`/ead/courses/${courseId}/modules`, module);
   return data;
 };
@@ -66,7 +66,7 @@ export const reorderModules = async (courseId: number, orderedIds: number[]): Pr
 };
 
 // --- Lesson ---
-export const createLesson = async (moduleId: number, lesson: Omit<Lesson, 'id'>): Promise<Lesson> => {
+export const createLesson = async (moduleId: number, lesson: Omit<Lesson, 'id' | 'ead_module_id'>): Promise<Lesson> => {
   const { data } = await api.post(`/ead/modules/${moduleId}/lessons`, lesson);
   return data;
 };
