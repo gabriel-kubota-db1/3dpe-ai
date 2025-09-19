@@ -19,7 +19,7 @@ const CourseListPage = () => {
 
   const filteredCourses = courses?.filter(course =>
     course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    course.category.toLowerCase().includes(searchTerm.toLowerCase())
+    course.category?.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (isLoading) {
@@ -48,7 +48,7 @@ const CourseListPage = () => {
                 hoverable
                 cover={<img alt={course.name} src={course.cover_url || 'https://via.placeholder.com/300x200?text=No+Image'} style={{ height: 200, objectFit: 'cover' }} />}
               >
-                <Meta title={course.name} description={course.category} />
+                <Meta title={course.name} description={course.category?.name || 'Uncategorized'} />
               </Card>
             </Link>
           </Col>

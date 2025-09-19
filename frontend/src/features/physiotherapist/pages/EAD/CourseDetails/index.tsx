@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Row, Col, Typography, Spin, Alert, Collapse, List, Button, Progress, Rate, Form as AntdForm, Input, App } from 'antd';
@@ -21,17 +21,19 @@ const CourseDetailsPage = () => {
     queryKey: ['eadCourseDetails', courseId],
     queryFn: () => EadService.getCourseDetails(courseId),
     enabled: !!courseId,
-    onSuccess: (data) => {
-      if (!activeLesson && data.modules?.[0]?.lessons?.[0]) {
-        setActiveLesson(data.modules[0].lessons[0]);
-      }
-    }
   });
 
   const { data: progressData, isLoading: isLoadingProgress } = useQuery<CourseProgress[], Error>({
     queryKey: ['myEadProgress'],
     queryFn: EadService.getMyCoursesProgress,
   });
+
+  // Set initial active lesson when course data is loaded
+  useEffect(() => {
+    if (course && !activeLesson && course.modules?.[0]?.lessons?.[0]) {
+      setActiveLesson(course.modules[0].lessons[0]);
+    }
+  }, [course, activeLesson]);
 
   const courseProgress = progressData?.find(p => p.ead_course_id === courseId);
 
@@ -79,7 +81,7 @@ const CourseDetailsPage = () => {
               <Panel header={module.title} key={module.id}>
                 <List
                   dataSource={module.lessons}
-                  renderItem={lesson => (
+                  renderItem={(lesson: Lesson) => (
                     <List.Item
                       onClick={() => setActiveLesson(lesson)}
                       style={{ cursor: 'pointer', background: activeLesson?.id === lesson.id ? '#e6f7ff' : 'transparent' }}

@@ -1,5 +1,5 @@
 import api from './axios';
-import { Course, Category, Module, Lesson } from '@/@types/ead';
+import { Course, Category, Module, Lesson, CourseProgress } from '@/@types/ead';
 
 // --- Course Management ---
 export const getAllCourses = async (): Promise<Course[]> => {
@@ -84,4 +84,20 @@ export const deleteLesson = async (id: number): Promise<void> => {
 
 export const reorderLessons = async (moduleId: number, orderedIds: number[]): Promise<void> => {
   await api.put(`/ead/modules/${moduleId}/lessons/reorder`, { orderedIds });
+};
+
+// --- Progress Management (Physiotherapist) ---
+export const getMyCoursesProgress = async (): Promise<CourseProgress[]> => {
+  const { data } = await api.get('/ead/my-courses');
+  return data;
+};
+
+export const updateMyProgress = async (courseId: number, lessonId: number): Promise<CourseProgress> => {
+  const { data } = await api.put(`/ead/my-courses/${courseId}/progress`, { lessonId });
+  return data;
+};
+
+export const evaluateCourse = async (courseId: number, evaluation: number, evaluation_comment: string): Promise<CourseProgress> => {
+  const { data } = await api.post(`/ead/my-courses/${courseId}/evaluate`, { evaluation, evaluation_comment });
+  return data;
 };

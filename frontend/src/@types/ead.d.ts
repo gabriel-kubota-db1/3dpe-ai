@@ -30,3 +30,16 @@ export interface Course {
   category?: Category;
   modules?: Module[];
 }
+
+export interface CourseProgress {
+  id: number;
+  physiotherapist_id: number;
+  ead_course_id: number;
+  completed_lessons: number[];
+  progress: number;
+  status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+  evaluation?: number;
+  evaluation_comment?: string;
+  created_at: string;
+  updated_at: string;
+}
