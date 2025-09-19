@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Modal, Input, Form as AntdForm, App, Card, Typography, Popconfirm, Space, Table, Tooltip } from 'antd';
+import { Button, Modal, Input, Form as AntdForm, App, Card, Typography, Popconfirm, Space, Table, Tooltip, Form, Row, Col } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { Form, Field } from 'react-final-form';
+import { Form as FinalForm, Field } from 'react-final-form';
 import * as EadService from '@/http/EadHttpService';
 import { Category } from '@/@types/ead';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const { Title } = Typography;
 
@@ -13,10 +14,21 @@ const CategoryManagement = () => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const queryClient = useQueryClient();
   const { message } = App.useApp();
+  const [form] = Form.useForm();
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const [filters, setFilters] = useState<{ name?: string }>({
+    name: undefined,
+  });
+
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, name: debouncedSearchTerm || undefined }));
+  }, [debouncedSearchTerm]);
 
   const { data: categories, isLoading } = useQuery<Category[], Error>({
-    queryKey: ['eadCategories'],
-    queryFn: EadService.getCategories,
+    queryKey: ['eadCategories', filters],
+    queryFn: () => EadService.getCategories(filters),
   });
 
   const { mutate: saveCategory, isPending: isSaving } = useMutation({
@@ -61,6 +73,12 @@ const CategoryManagement = () => {
     saveCategory(editingCategory ? { ...values, id: editingCategory.id } : values);
   };
 
+  const handleValuesChange = (changedValues: any) => {
+    if ('name' in changedValues) {
+      setSearchTerm(changedValues.name);
+    }
+  };
+
   const columns = [
     {
       title: 'Name',
@@ -101,6 +119,16 @@ const CategoryManagement = () => {
         </Button>
       </div>
 
+      <Form form={form} layout="vertical" onValuesChange={handleValuesChange} style={{ marginBottom: 24 }}>
+        <Row gutter={16}>
+          <Col span={8}>
+            <Form.Item name="name" label="Filter by Name">
+              <Input placeholder="Enter category name" allowClear />
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
+
       <Table
         columns={columns}
         dataSource={categories}
@@ -115,7 +143,7 @@ const CategoryManagement = () => {
         footer={null}
         destroyOnClose
       >
-        <Form
+        <FinalForm
           onSubmit={onSubmit}
           initialValues={editingCategory || {}}
           render={({ handleSubmit }) => (

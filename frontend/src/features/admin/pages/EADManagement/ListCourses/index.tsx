@@ -1,29 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Modal, Input, Form as AntdForm, App, Card, Row, Col, Typography, Popconfirm, Tooltip, Select, Empty, Tag, Switch } from 'antd';
+import { Button, Modal, Input, Form as AntdForm, App, Card, Row, Col, Typography, Popconfirm, Tooltip, Select, Empty, Tag, Switch, Form } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, ReadOutlined } from '@ant-design/icons';
-import { Form, Field } from 'react-final-form';
+import { Form as FinalForm, Field } from 'react-final-form';
 import { Link } from 'react-router-dom';
 import * as EadService from '@/http/EadHttpService';
 import { Course, Category } from '@/@types/ead';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const { Title } = Typography;
 const { Meta } = Card;
+const { Option } = Select;
 
 const EADCourseListPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const queryClient = useQueryClient();
   const { message } = App.useApp();
+  const [form] = Form.useForm();
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const [filters, setFilters] = useState<{ search?: string; categoryId?: number }>({
+    search: undefined,
+    categoryId: undefined,
+  });
+
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, search: debouncedSearchTerm || undefined }));
+  }, [debouncedSearchTerm]);
 
   const { data: courses, isLoading } = useQuery<Course[], Error>({
-    queryKey: ['eadCourses'],
-    queryFn: EadService.getAllCourses,
+    queryKey: ['eadCourses', filters],
+    queryFn: () => EadService.getAllCourses(filters),
   });
 
   const { data: categories, isLoading: isLoadingCategories } = useQuery<Category[], Error>({
     queryKey: ['eadCategories'],
-    queryFn: EadService.getCategories,
+    queryFn: () => EadService.getCategories(), // Fetch all for dropdown
   });
 
   const { mutate: saveCourse, isPending: isSaving } = useMutation({
@@ -65,17 +79,21 @@ const EADCourseListPage = () => {
   };
 
   const onSubmit = (values: any) => {
-    // Remove timestamp fields that shouldn't be sent to the backend
     const { created_at, updated_at, ...cleanValues } = values;
-    
-    // Ensure status is explicitly boolean
     const payload = { 
       ...cleanValues, 
       category_id: cleanValues.category_id || null,
-      status: Boolean(cleanValues.status) // Explicitly convert to boolean
+      status: Boolean(cleanValues.status)
     };
-    
     saveCourse(editingCourse ? { ...payload, id: editingCourse.id } : payload);
+  };
+
+  const handleValuesChange = (changedValues: any) => {
+    if ('search' in changedValues) {
+      setSearchTerm(changedValues.search);
+    } else {
+      setFilters(prev => ({ ...prev, ...changedValues }));
+    }
   };
 
   return (
@@ -86,6 +104,25 @@ const EADCourseListPage = () => {
           New Course
         </Button>
       </div>
+
+      <Form form={form} layout="vertical" onValuesChange={handleValuesChange} style={{ marginBottom: 24 }}>
+        <Row gutter={16}>
+          <Col span={8}>
+            <Form.Item name="search" label="Filter by Name/Description">
+              <Input placeholder="Enter name or description" allowClear />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item name="categoryId" label="Filter by Category">
+              <Select placeholder="Select a category" loading={isLoadingCategories} allowClear>
+                {categories?.map(cat => (
+                  <Option key={cat.id} value={cat.id}>{cat.name}</Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+      </Form>
 
       {!isLoading && (!courses || courses.length === 0) ? (
         <Empty description="No courses found. Click 'New Course' to add one." />
@@ -132,22 +169,12 @@ const EADCourseListPage = () => {
         footer={null}
         destroyOnClose
       >
-        <Form
+        <FinalForm
           onSubmit={onSubmit}
-          initialValues={editingCourse ? (() => {
-            // Remove any potential timestamp fields that might come from the backend
-            const { created_at, updated_at, ...cleanCourse } = editingCourse as any;
-            // Ensure status is explicitly boolean
-            return { 
-              ...cleanCourse, 
-              status: Boolean(cleanCourse.status) 
-            };
-          })() : { status: true }}
+          initialValues={editingCourse ? { ...editingCourse, status: Boolean(editingCourse.status) } : { status: true }}
           render={({ handleSubmit }) => (
             <form onSubmit={handleSubmit}>
-              <Field name="name"
-                validate={value => (value ? undefined : 'Name is required')}
-              >
+              <Field name="name" validate={value => (value ? undefined : 'Name is required')}>
                 {({ input, meta }) => (
                   <AntdForm.Item label="Name" required validateStatus={meta.touched && meta.error ? 'error' : ''} help={meta.touched && meta.error}>
                     <Input {...input} />
@@ -171,12 +198,12 @@ const EADCourseListPage = () => {
               <Field name="cover_url">
                 {({ input }) => <AntdForm.Item label="Cover Image URL"><Input {...input} placeholder="https://example.com/image.png" /></AntdForm.Item>}
               </Field>
-              <Field name="status">
+              <Field name="status" fieldType="checkbox">
                 {({ input }) => (
                   <AntdForm.Item label="Status">
                     <Switch 
-                      checked={Boolean(input.value)} 
-                      onChange={(checked) => input.onChange(checked)}
+                      checked={input.checked} 
+                      onChange={input.onChange}
                       checkedChildren="Active" 
                       unCheckedChildren="Inactive" 
                     />

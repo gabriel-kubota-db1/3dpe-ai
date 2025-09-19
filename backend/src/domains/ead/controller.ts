@@ -19,7 +19,14 @@ export const createCategory = async (req: Request, res: Response) => {
 
 export const getAllCategories = async (req: Request, res: Response) => {
   try {
-    const categories = await Category.query().orderBy('name');
+    const { name } = req.query;
+    const query = Category.query().orderBy('name');
+
+    if (name) {
+      query.where('name', 'like', `%${String(name)}%`);
+    }
+
+    const categories = await query;
     res.json(categories);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching categories', error: error.message });
@@ -197,7 +204,22 @@ export const reorderLessons = async (req: Request, res: Response) => {
 
 export const getAllCourses = async (req: Request, res: Response) => {
   try {
-    const courses = await Course.query().withGraphFetched('category').orderBy('name');
+    const { search, categoryId } = req.query;
+    const query = Course.query().withGraphFetched('category').orderBy('name');
+
+    if (search) {
+      const searchTerm = String(search);
+      query.where(builder => {
+        builder.where('name', 'like', `%${searchTerm}%`)
+               .orWhere('description', 'like', `%${searchTerm}%`);
+      });
+    }
+
+    if (categoryId) {
+      query.where('category_id', Number(categoryId));
+    }
+
+    const courses = await query;
     res.json(courses);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching courses', error: error.message });
