@@ -8,9 +8,13 @@ import UserListPage from '../pages/UserManagement/ListUsers';
 import UserFormPage from '../pages/UserManagement/UseForm';
 import ListOrdersPage from '../pages/OrderManagement/ListOrders';
 import OrderDetailsPage from '../pages/OrderManagement/OrderDetails';
+import DashboardPage from '../pages/Dashboard';
+import ProductionReportPage from '../pages/ProductionReport';
 
 const adminRoutes = (
   <>
+    <Route path="/admin/dashboard" element={<DashboardPage />} />
+    <Route path="/admin/production-report" element={<ProductionReportPage />} />
     <Route path="/admin/users" element={<UserListPage />} />
     <Route path="/admin/users/new" element={<UserFormPage />} />
     <Route path="/admin/users/edit/:id" element={<UserFormPage />} />
