@@ -12,6 +12,8 @@ import {
   FileTextOutlined,
   ShoppingCartOutlined,
   BuildOutlined,
+  DashboardOutlined,
+  BarChartOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '@/context/AuthContext';
 
@@ -63,7 +65,7 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
             label: <Link to="/physiotherapist/prescriptions">Prescriptions</Link>,
           },
           {
-            key: '/physiotherapist/orders',
+            key: 'physio-orders-submenu', // FIX: Using a unique key for the submenu
             icon: <ShoppingCartOutlined />,
             label: 'Orders',
             children: [
@@ -108,6 +110,16 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
         icon: <SettingOutlined />,
         label: 'Management',
         children: [
+          {
+            key: '/admin/dashboard',
+            icon: <DashboardOutlined />,
+            label: <Link to="/admin/dashboard">Dashboard</Link>,
+          },
+          {
+            key: '/admin/production-report',
+            icon: <BarChartOutlined />,
+            label: <Link to="/admin/production-report">Production Report</Link>,
+          },
           {
             key: '/admin/users',
             icon: <UserOutlined />,
