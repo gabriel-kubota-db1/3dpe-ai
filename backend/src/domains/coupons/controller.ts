@@ -4,18 +4,7 @@ import dayjs from 'dayjs';
 
 export const getAllCoupons = async (req: Request, res: Response) => {
   try {
-    const { active, code } = req.query;
-    const query = Coupon.query();
-
-    if (active && typeof active === 'string' && active !== 'ALL') {
-      query.where('active', active === 'true');
-    }
-
-    if (code && typeof code === 'string') {
-      query.where('code', 'like', `%${code}%`);
-    }
-
-    const coupons = await query.orderBy('code');
+    const coupons = await Coupon.query();
     res.json(coupons);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching coupons', error: error.message });
@@ -33,7 +22,10 @@ export const createCoupon = async (req: Request, res: Response) => {
 
 export const updateCoupon = async (req: Request, res: Response) => {
   try {
-    const coupon = await Coupon.query().patchAndFetchById(req.params.id, req.body);
+    // Remove read-only fields that shouldn't be updated
+    const { id, created_at, updated_at, ...updateData } = req.body;
+    
+    const coupon = await Coupon.query().patchAndFetchById(req.params.id, updateData);
     if (coupon) {
       res.json(coupon);
     } else {

@@ -1,18 +1,18 @@
 import api from './axios';
 import { InsoleModel } from '@/@types/insoleModel';
 
-export const getInsoleModels = async (filters?: { model_type?: string; active?: string; description?: string }): Promise<InsoleModel[]> => {
-  const { data } = await api.get('/insole-models', { params: filters });
+export const getInsoleModels = async (): Promise<InsoleModel[]> => {
+  const { data } = await api.get('/insole-models');
   return data;
 };
 
-export const createInsoleModel = async (model: Omit<InsoleModel, 'id'>): Promise<InsoleModel> => {
-  const { data } = await api.post('/insole-models', model);
+export const createInsoleModel = async (insoleModelData: Omit<InsoleModel, 'id' | 'created_at' | 'updated_at'>): Promise<InsoleModel> => {
+  const { data } = await api.post('/insole-models', insoleModelData);
   return data;
 };
 
-export const updateInsoleModel = async (id: number, model: Partial<InsoleModel>): Promise<InsoleModel> => {
-  const { data } = await api.put(`/insole-models/${id}`, model);
+export const updateInsoleModel = async (id: number, insoleModelData: Partial<InsoleModel>): Promise<InsoleModel> => {
+  const { data } = await api.put(`/insole-models/${id}`, insoleModelData);
   return data;
 };
 

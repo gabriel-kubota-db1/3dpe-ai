@@ -1,8 +1,9 @@
 import api from './axios';
-import { Coating } from '@/@types/coating';
+import { Coating, CoatingType } from '@/@types/coating';
 
-export const getCoatings = async (filters?: { coating_type?: string; active?: string; description?: string }): Promise<Coating[]> => {
-  const response = await api.get('/coatings', { params: filters });
+export const getCoatings = async (coatingType?: CoatingType): Promise<Coating[]> => {
+  const params = coatingType ? { coating_type: coatingType } : {};
+  const response = await api.get('/coatings', { params });
   return response.data;
 };
 

@@ -1,21 +1,12 @@
-import api from './axios';
 import { Coupon } from '@/@types/coupon';
+import api from './axios';
 
-export const getCoupons = async (filters?: { active?: string; code?: string }): Promise<Coupon[]> => {
-  const { data } = await api.get('/coupons', { params: filters });
+export const validateCoupon = async (code: string): Promise<Coupon> => {
+  const { data } = await api.post('/coupons/validate', { code });
   return data;
 };
 
-export const createCoupon = async (coupon: Omit<Coupon, 'id'>): Promise<Coupon> => {
-  const { data } = await api.post('/coupons', coupon);
-  return data;
-};
-
-export const updateCoupon = async (id: number, coupon: Partial<Coupon>): Promise<Coupon> => {
-  const { data } = await api.put(`/coupons/${id}`, coupon);
-  return data;
-};
-
-export const deleteCoupon = async (id: number): Promise<void> => {
-  await api.delete(`/coupons/${id}`);
-};
+export const getCoupons = (): Promise<Coupon[]> => api.get('/coupons').then(res => res.data);
+export const createCoupon = (data: Omit<Coupon, 'id'>): Promise<Coupon> => api.post('/coupons', data).then(res => res.data);
+export const updateCoupon = (id: number, data: Partial<Coupon>): Promise<Coupon> => api.put(`/coupons/${id}`, data).then(res => res.data);
+export const deleteCoupon = (id: number): Promise<void> => api.delete(`/coupons/${id}`);

@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, Select, Tag, Row, Col } from 'antd';
+import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, Select, Tag } from 'antd';
 import { Form, Field } from 'react-final-form';
 import { Coating } from '@/@types/coating';
 import * as CoatingService from '@/http/CoatingHttpService';
-import { useDebounce } from '@/hooks/useDebounce';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -14,24 +13,10 @@ const CoatingManagementPage = () => {
   const [editingCoating, setEditingCoating] = useState<Coating | null>(null);
   const queryClient = useQueryClient();
   const { message } = App.useApp();
-  
-  const [antdFilterForm] = AntdForm.useForm();
-  const [description, setDescription] = useState('');
-  const debouncedDescription = useDebounce(description, 500);
-
-  const [filters, setFilters] = useState<{
-    coating_type?: string;
-    active?: string;
-    description?: string;
-  }>({});
-
-  useEffect(() => {
-    setFilters(prev => ({ ...prev, description: debouncedDescription || undefined }));
-  }, [debouncedDescription]);
 
   const { data: coatings, isLoading } = useQuery<Coating[], Error>({
-    queryKey: ['coatings', filters],
-    queryFn: () => CoatingService.getCoatings(filters),
+    queryKey: ['coatings'],
+    queryFn: () => CoatingService.getCoatings(),
   });
 
   const { mutate: createOrUpdateCoating, isPending: isSaving } = useMutation({
@@ -76,21 +61,6 @@ const CoatingManagementPage = () => {
     createOrUpdateCoating(editingCoating ? { ...values, id: editingCoating.id } : values);
   };
 
-  const handleValuesChange = (changedValues: any) => {
-    if ('description' in changedValues) {
-      setDescription(changedValues.description);
-    } else {
-      const newFilters = { ...filters, ...changedValues };
-      // antd select clear sends undefined
-      for (const key in newFilters) {
-        if (newFilters[key as keyof typeof newFilters] === undefined) {
-          delete newFilters[key as keyof typeof newFilters];
-        }
-      }
-      setFilters(newFilters);
-    }
-  };
-
   const columns = [
     { title: 'Description', dataIndex: 'description', key: 'description' },
     { title: 'Coating Type', dataIndex: 'coating_type', key: 'coating_type', render: (type: string) => <Tag color={type === 'EVA' ? 'blue' : 'green'}>{type}</Tag> },
@@ -125,40 +95,6 @@ const CoatingManagementPage = () => {
           Add Coating
         </Button>
       </div>
-
-      <AntdForm
-        form={antdFilterForm}
-        layout="vertical"
-        onValuesChange={handleValuesChange}
-        style={{ marginBottom: 24, padding: 24, backgroundColor: '#fbfbfb', border: '1px solid #d9d9d9', borderRadius: 6 }}
-      >
-        <Row gutter={16}>
-          <Col span={8}>
-            <AntdForm.Item name="coating_type" label="Filter by Type">
-              <Select placeholder="Select a type" allowClear>
-                <Option value="ALL">All Types</Option>
-                <Option value="EVA">EVA</Option>
-                <Option value="Fabric">Fabric</Option>
-              </Select>
-            </AntdForm.Item>
-          </Col>
-          <Col span={8}>
-            <AntdForm.Item name="active" label="Filter by Status">
-              <Select placeholder="Select a status" allowClear>
-                <Option value="ALL">All Statuses</Option>
-                <Option value="true">Active</Option>
-                <Option value="false">Inactive</Option>
-              </Select>
-            </AntdForm.Item>
-          </Col>
-          <Col span={8}>
-            <AntdForm.Item name="description" label="Search by Description">
-              <Input placeholder="Enter description" />
-            </AntdForm.Item>
-          </Col>
-        </Row>
-      </AntdForm>
-
       <Table dataSource={coatings} columns={columns} loading={isLoading} rowKey="id" />
 
       <Modal
