@@ -16,6 +16,7 @@ import ordersRoutes from './domains/orders/routes';
 import couponsRoutes from './domains/coupons/routes';
 import dashboardRoutes from './domains/dashboard/routes';
 import physiotherapistsRoutes from './domains/physiotherapists/routes';
+import eadRoutes from './domains/ead/routes';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -39,6 +40,7 @@ app.use('/api/orders', ordersRoutes);
 app.use('/api/coupons', couponsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/physiotherapists', physiotherapistsRoutes);
+app.use('/api/ead', eadRoutes);
 
 app.get('/', (req, res) => {
   res.send('3DPé Backend is running!');
