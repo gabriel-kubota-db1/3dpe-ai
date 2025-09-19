@@ -137,6 +137,11 @@ const CouponManagementPage = () => {
         style={{ marginBottom: 24, padding: 24, backgroundColor: '#fbfbfb', border: '1px solid #d9d9d9', borderRadius: 6 }}
       >
         <Row gutter={16}>
+          <Col span={16}>
+            <AntdForm.Item name="code" label="Search by Code">
+              <Input placeholder="Enter coupon code" allowClear />
+            </AntdForm.Item>
+          </Col>
           <Col span={8}>
             <AntdForm.Item name="active" label="Filter by Status">
               <Select placeholder="Select a status" allowClear>
@@ -144,11 +149,6 @@ const CouponManagementPage = () => {
                 <Option value="true">Active</Option>
                 <Option value="false">Inactive</Option>
               </Select>
-            </AntdForm.Item>
-          </Col>
-          <Col span={8}>
-            <AntdForm.Item name="code" label="Search by Code">
-              <Input placeholder="Enter coupon code" allowClear />
             </AntdForm.Item>
           </Col>
         </Row>

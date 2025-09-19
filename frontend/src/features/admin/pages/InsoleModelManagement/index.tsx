@@ -146,7 +146,12 @@ const InsoleModelManagementPage = () => {
         style={{ marginBottom: 24, padding: 24, backgroundColor: '#fbfbfb', border: '1px solid #d9d9d9', borderRadius: 6 }}
       >
         <Row gutter={16}>
-          <Col span={8}>
+          <Col span={16}>
+            <AntdForm.Item name="description" label="Search by Description">
+              <Input placeholder="Enter description" allowClear />
+            </AntdForm.Item>
+          </Col>
+          <Col span={4}>
             <AntdForm.Item name="coating_type" label="Filter by Coating Type">
               <Select placeholder="Select a coating type" allowClear>
                 <Option value="ALL">All Types</Option>
@@ -155,18 +160,13 @@ const InsoleModelManagementPage = () => {
               </Select>
             </AntdForm.Item>
           </Col>
-          <Col span={8}>
+          <Col span={4}>
             <AntdForm.Item name="active" label="Filter by Status">
               <Select placeholder="Select a status" allowClear>
                 <Option value="ALL">All Statuses</Option>
                 <Option value="true">Active</Option>
                 <Option value="false">Inactive</Option>
               </Select>
-            </AntdForm.Item>
-          </Col>
-          <Col span={8}>
-            <AntdForm.Item name="description" label="Search by Description">
-              <Input placeholder="Enter description" allowClear />
             </AntdForm.Item>
           </Col>
         </Row>
