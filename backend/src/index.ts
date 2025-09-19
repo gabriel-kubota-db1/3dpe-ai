@@ -1,40 +1,41 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { setupDatabase } from './config/database';
+import { knexInstance } from './config/database';
+import { Model } from 'objection';
 
 // Import domain routers
-import usersRoutes from './domains/users/routes';
-import patientsRoutes from './domains/patients/routes';
-import coatingsRoutes from './domains/coatings/routes';
-import insoleModelsRoutes from './domains/insole-models/routes';
-import prescriptionsRoutes from './domains/prescriptions/routes';
-import ordersRoutes from './domains/orders/routes';
-import couponsRoutes from './domains/coupons/routes';
-import dashboardRoutes from './domains/dashboard/routes';
-import physiotherapistsRoutes from './domains/physiotherapists/routes';
+import authRoutes from './domains/auth/routes';
+import userRoutes from './domains/users/routes';
+import patientRoutes from './domains/patients/routes';
+import coatingRoutes from './domains/coatings/routes';
+import insoleModelRoutes from './domains/insoleModels/routes';
+import prescriptionRoutes from './domains/prescriptions/routes';
+import orderRoutes from './domains/orders/routes';
+import couponRoutes from './domains/coupons/routes';
+import eadRoutes from './domains/ead/routes'; // Import EAD routes
+
+Model.knex(knexInstance);
 
 const app = express();
-const port = process.env.PORT || 3001;
-
-// Setup Database
-setupDatabase();
+const port = process.env.PORT || 3000;
 
 // Middlewares
 app.use(cors());
 app.use(helmet());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // API Routes
-app.use('/api/users', usersRoutes);
-app.use('/api/patients', patientsRoutes);
-app.use('/api/coatings', coatingsRoutes);
-app.use('/api/insole-models', insoleModelsRoutes);
-app.use('/api/prescriptions', prescriptionsRoutes);
-app.use('/api/orders', ordersRoutes);
-app.use('/api/coupons', couponsRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/physiotherapists', physiotherapistsRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/patients', patientRoutes);
+app.use('/api/coatings', coatingRoutes);
+app.use('/api/insole-models', insoleModelRoutes);
+app.use('/api/prescriptions', prescriptionRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/ead', eadRoutes); // Use EAD routes
 
 app.get('/', (req, res) => {
   res.send('3DPé Backend is running!');

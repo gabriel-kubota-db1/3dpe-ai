@@ -1,41 +1,38 @@
 import { Route } from 'react-router-dom';
-
-// Patient Management
+import DashboardPage from '../pages/Dashboard';
 import ListPatientsPage from '../pages/PatientManagement/ListPatients';
 import PatientFormPage from '../pages/PatientManagement/PatientForm';
-import PatientDetailsPage from '../pages/PatientManagement/PatientDetails';
-
-// Prescription Management
 import ListPrescriptionsPage from '../pages/PrescriptionManagement/ListPrescriptions';
-import CreatePrescriptionPage from '../pages/PrescriptionManagement/CreatePrescription';
+import PrescriptionFormPage from '../pages/PrescriptionManagement/PrescriptionForm';
 import PrescriptionDetailsPage from '../pages/PrescriptionManagement/PrescriptionDetails';
+import CheckoutPage from '../pages/Checkout';
+import MyOrdersPage from '../pages/MyOrders/ListOrders';
+import OrderDetailsPage from '../pages/MyOrders/OrderDetails';
+import ProfilePage from '../pages/Profile';
 
-// Order Management
-import ListOrdersPage from '../pages/OrderManagement/ListOrders';
-import CheckoutPage from '../pages/OrderManagement/Checkout';
-import OrderDetailsPage from '../pages/OrderManagement/OrderDetails';
-import SelectPrescriptionsPage from '../pages/OrderManagement/SelectPrescriptions';
+// EAD Pages
+import CourseListPage from '../pages/EAD/CourseList';
+import CourseDetailsPage from '../pages/EAD/CourseDetails';
 
 const physiotherapistRoutes = (
-  <Route path="physiotherapist">
-    {/* Patient Routes */}
-    <Route path="patients" element={<ListPatientsPage />} />
-    <Route path="patients/new" element={<PatientFormPage />} />
-    <Route path="patients/edit/:id" element={<PatientFormPage />} />
-    <Route path="patients/details/:id" element={<PatientDetailsPage />} />
+  <>
+    <Route path="/physiotherapist/dashboard" element={<DashboardPage />} />
+    <Route path="/physiotherapist/patients" element={<ListPatientsPage />} />
+    <Route path="/physiotherapist/patients/new" element={<PatientFormPage />} />
+    <Route path="/physiotherapist/patients/edit/:id" element={<PatientFormPage />} />
+    <Route path="/physiotherapist/prescriptions" element={<ListPrescriptionsPage />} />
+    <Route path="/physiotherapist/prescriptions/new" element={<PrescriptionFormPage />} />
+    <Route path="/physiotherapist/prescriptions/edit/:id" element={<PrescriptionFormPage />} />
+    <Route path="/physiotherapist/prescriptions/details/:id" element={<PrescriptionDetailsPage />} />
+    <Route path="/physiotherapist/checkout" element={<CheckoutPage />} />
+    <Route path="/physiotherapist/my-orders" element={<MyOrdersPage />} />
+    <Route path="/physiotherapist/my-orders/:id" element={<OrderDetailsPage />} />
+    <Route path="/physiotherapist/profile" element={<ProfilePage />} />
 
-    {/* Prescription Routes */}
-    <Route path="prescriptions" element={<ListPrescriptionsPage />} />
-    <Route path="prescriptions/new" element={<CreatePrescriptionPage />} />
-    <Route path="prescriptions/edit/:id" element={<CreatePrescriptionPage />} />
-    <Route path="prescriptions/details/:id" element={<PrescriptionDetailsPage />} />
-
-    {/* Order Routes */}
-    <Route path="orders" element={<ListOrdersPage />} />
-    <Route path="orders/new" element={<SelectPrescriptionsPage />} />
-    <Route path="orders/checkout" element={<CheckoutPage />} />
-    <Route path="orders/:id" element={<OrderDetailsPage />} />
-  </Route>
+    {/* EAD Routes */}
+    <Route path="/physiotherapist/ead/courses" element={<CourseListPage />} />
+    <Route path="/physiotherapist/ead/courses/:id" element={<CourseDetailsPage />} />
+  </>
 );
 
 export default physiotherapistRoutes;
