@@ -1,4 +1,4 @@
-import { api } from './api';
+import api from './axios';
 import { Course, Category, Module, Lesson } from '@/@types/ead';
 
 // --- Course Management ---

@@ -27,7 +27,7 @@ export interface Course {
   description?: string;
   cover_url?: string;
   category_id?: number;
-  status: 'active' | 'inactive';
+  status: boolean;
   category?: Category;
   modules?: Module[];
 }

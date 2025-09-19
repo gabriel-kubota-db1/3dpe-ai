@@ -28,11 +28,10 @@ const EADCourseListPage = () => {
 
   const { mutate: saveCourse, isPending: isSaving } = useMutation({
     mutationFn: (values: Course | Omit<Course, 'id'>) => {
-      const payload = { ...values, status: values.status ? 'active' : 'inactive' };
-      if ('id' in payload) {
-        return EadService.updateCourse(payload.id, payload);
+      if ('id' in values) {
+        return EadService.updateCourse(values.id, values);
       }
-      return EadService.createCourse(payload as Omit<Course, 'id'>);
+      return EadService.createCourse(values);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eadCourses'] });
@@ -66,7 +65,16 @@ const EADCourseListPage = () => {
   };
 
   const onSubmit = (values: any) => {
-    const payload = { ...values, category_id: values.category_id || null };
+    // Remove timestamp fields that shouldn't be sent to the backend
+    const { created_at, updated_at, ...cleanValues } = values;
+    
+    // Ensure status is explicitly boolean
+    const payload = { 
+      ...cleanValues, 
+      category_id: cleanValues.category_id || null,
+      status: Boolean(cleanValues.status) // Explicitly convert to boolean
+    };
+    
     saveCourse(editingCourse ? { ...payload, id: editingCourse.id } : payload);
   };
 
@@ -106,7 +114,7 @@ const EADCourseListPage = () => {
                   title={
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span>{course.name}</span>
-                      <Tag color={course.status === 'active' ? 'green' : 'red'}>{course.status.toUpperCase()}</Tag>
+                      <Tag color={course.status ? 'green' : 'red'}>{course.status ? 'ACTIVE' : 'INACTIVE'}</Tag>
                     </div>
                   }
                   description={course.category?.name || 'Uncategorized'}
@@ -126,7 +134,15 @@ const EADCourseListPage = () => {
       >
         <Form
           onSubmit={onSubmit}
-          initialValues={editingCourse ? { ...editingCourse, status: editingCourse.status === 'active' } : { status: true }}
+          initialValues={editingCourse ? (() => {
+            // Remove any potential timestamp fields that might come from the backend
+            const { created_at, updated_at, ...cleanCourse } = editingCourse as any;
+            // Ensure status is explicitly boolean
+            return { 
+              ...cleanCourse, 
+              status: Boolean(cleanCourse.status) 
+            };
+          })() : { status: true }}
           render={({ handleSubmit }) => (
             <form onSubmit={handleSubmit}>
               <Field name="name"
@@ -155,10 +171,15 @@ const EADCourseListPage = () => {
               <Field name="cover_url">
                 {({ input }) => <AntdForm.Item label="Cover Image URL"><Input {...input} placeholder="https://example.com/image.png" /></AntdForm.Item>}
               </Field>
-              <Field name="status" type="checkbox">
+              <Field name="status">
                 {({ input }) => (
                   <AntdForm.Item label="Status">
-                    <Switch {...input} checked={input.checked} checkedChildren="Active" unCheckedChildren="Inactive" />
+                    <Switch 
+                      checked={Boolean(input.value)} 
+                      onChange={(checked) => input.onChange(checked)}
+                      checkedChildren="Active" 
+                      unCheckedChildren="Inactive" 
+                    />
                   </AntdForm.Item>
                 )}
               </Field>
