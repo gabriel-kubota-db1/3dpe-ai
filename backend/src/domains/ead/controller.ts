@@ -28,7 +28,10 @@ export const getAllCategories = async (req: Request, res: Response) => {
 
 export const updateCategory = async (req: Request, res: Response) => {
   try {
-    const category = await Category.query().patchAndFetchById(req.params.id, req.body);
+    // Remove read-only fields that shouldn't be updated
+    const { id, created_at, updated_at, ...updateData } = req.body;
+    
+    const category = await Category.query().patchAndFetchById(req.params.id, updateData);
     if (!category) return res.status(404).json({ message: 'Category not found' });
     res.json(category);
   } catch (error: any) {
@@ -60,7 +63,10 @@ export const createCourse = async (req: Request, res: Response) => {
 
 export const updateCourse = async (req: Request, res: Response) => {
   try {
-    const course = await Course.query().patchAndFetchById(req.params.id, req.body);
+    // Remove read-only fields that shouldn't be updated
+    const { id, created_at, updated_at, ...updateData } = req.body;
+    
+    const course = await Course.query().patchAndFetchById(req.params.id, updateData);
     if (!course) return res.status(404).json({ message: 'Course not found' });
     res.json(course);
   } catch (error: any) {
@@ -91,7 +97,10 @@ export const createModule = async (req: Request, res: Response) => {
 
 export const updateModule = async (req: Request, res: Response) => {
   try {
-    const updatedModule = await Module.query().patchAndFetchById(req.params.id, req.body);
+    // Remove read-only fields that shouldn't be updated
+    const { id, created_at, updated_at, ...updateData } = req.body;
+    
+    const updatedModule = await Module.query().patchAndFetchById(req.params.id, updateData);
     if (!updatedModule) return res.status(404).json({ message: 'Module not found' });
     res.json(updatedModule);
   } catch (error: any) {
@@ -122,7 +131,10 @@ export const createLesson = async (req: Request, res: Response) => {
 
 export const updateLesson = async (req: Request, res: Response) => {
   try {
-    const updatedLesson = await Lesson.query().patchAndFetchById(req.params.id, req.body);
+    // Remove read-only fields that shouldn't be updated
+    const { id, created_at, updated_at, ...updateData } = req.body;
+    
+    const updatedLesson = await Lesson.query().patchAndFetchById(req.params.id, updateData);
     if (!updatedLesson) return res.status(404).json({ message: 'Lesson not found' });
     res.json(updatedLesson);
   } catch (error: any) {

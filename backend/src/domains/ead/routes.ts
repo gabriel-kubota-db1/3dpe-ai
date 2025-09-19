@@ -4,8 +4,8 @@ import { isAuthenticated } from '../../middlewares/isAuthenticated';
 import { checkRole } from '../../middlewares/checkRole';
 
 const router = Router();
-const isAdmin = checkRole(['ADMIN']);
-const isPhysio = checkRole(['PHYSIOTHERAPIST']);
+const isAdmin = checkRole(['admin']);
+const isPhysio = checkRole(['physiotherapist']);
 
 // --- Admin (Category Management) ---
 router.get('/categories', isAuthenticated, isAdmin, controller.getAllCategories);

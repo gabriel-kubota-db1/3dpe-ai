@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Modal, Input, Form as AntdForm, App, Card, Row, Col, Typography, Popconfirm, Tooltip, Select, Empty } from 'antd';
+import { Button, Modal, Input, Form as AntdForm, App, Typography, Popconfirm, Tooltip, Select, Empty, Table } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, ReadOutlined } from '@ant-design/icons';
 import { Form, Field } from 'react-final-form';
 import { Link } from 'react-router-dom';
@@ -8,7 +8,6 @@ import * as EadService from '@/http/EadHttpService';
 import { Course, Category } from '@/@types/ead';
 
 const { Title } = Typography;
-const { Meta } = Card;
 
 const EADCourseListPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,6 +68,52 @@ const EADCourseListPage = () => {
     saveCourse(editingCourse ? { ...payload, id: editingCourse.id } : payload);
   };
 
+  const columns = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'Category',
+      dataIndex: 'category',
+      key: 'category',
+      render: (category: Category) => category?.name || 'Uncategorized',
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+      render: (description: string) => description ? description.substring(0, 100) + (description.length > 100 ? '...' : '') : '-',
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 120,
+      render: (_: any, record: Course) => (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Tooltip title="Manage Content">
+            <Link to={`/admin/ead/courses/${record.id}`}>
+              <Button icon={<ReadOutlined />} size="small" />
+            </Link>
+          </Tooltip>
+          <Tooltip title="Edit Course">
+            <Button icon={<EditOutlined />} size="small" onClick={() => showModal(record)} />
+          </Tooltip>
+          <Popconfirm
+            title="Delete this course?"
+            description="This action is irreversible."
+            onConfirm={() => deleteCourse(record.id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button icon={<DeleteOutlined />} size="small" danger />
+          </Popconfirm>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
@@ -78,35 +123,20 @@ const EADCourseListPage = () => {
         </Button>
       </div>
 
-      {!isLoading && (!courses || courses.length === 0) ? (
-        <Empty description="No courses found. Click 'New Course' to add one." />
-      ) : (
-        <Row gutter={[16, 16]}>
-          {courses?.map(course => (
-            <Col xs={24} sm={12} md={8} lg={6} key={course.id}>
-              <Card
-                hoverable
-                cover={<img alt={course.name} src={course.cover_url || 'https://via.placeholder.com/300x200?text=No+Image'} style={{ height: 200, objectFit: 'cover' }} />}
-                actions={[
-                  <Tooltip title="Manage Content"><Link to={`/admin/ead/courses/${course.id}`}><ReadOutlined key="manage" /></Link></Tooltip>,
-                  <Tooltip title="Edit Course"><EditOutlined key="edit" onClick={() => showModal(course)} /></Tooltip>,
-                  <Popconfirm
-                    title="Delete this course?"
-                    description="This action is irreversible."
-                    onConfirm={() => deleteCourse(course.id)}
-                    okText="Yes"
-                    cancelText="No"
-                  >
-                    <DeleteOutlined key="delete" />
-                  </Popconfirm>,
-                ]}
-              >
-                <Meta title={course.name} description={course.category?.name || 'Uncategorized'} />
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      )}
+      <Table
+        columns={columns}
+        dataSource={courses}
+        loading={isLoading}
+        rowKey="id"
+        locale={{
+          emptyText: (
+            <Empty 
+              description="No courses found. Click 'New Course' to add one." 
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          )
+        }}
+      />
 
       <Modal
         title={editingCourse ? 'Edit Course' : 'New Course'}

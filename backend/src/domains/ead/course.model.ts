@@ -1,6 +1,7 @@
 import { Model } from 'objection';
 import { Module } from './module.model';
 import { Category } from './category.model';
+import { toMySQLDateTime } from '../../utils/datetime';
 import path from 'path';
 
 export class Course extends Model {
@@ -11,6 +12,8 @@ export class Course extends Model {
   description?: string;
   cover_url?: string;
   category_id?: number;
+  created_at?: string;
+  updated_at?: string;
 
   modules?: Module[];
   category?: Category;
@@ -25,8 +28,20 @@ export class Course extends Model {
       description: { type: 'string' },
       cover_url: { type: 'string', format: 'uri' },
       category_id: { type: ['integer', 'null'] },
+      created_at: { type: 'string' },
+      updated_at: { type: 'string' },
     },
   };
+
+  $beforeInsert() {
+    const now = toMySQLDateTime();
+    this.created_at = now;
+    this.updated_at = now;
+  }
+
+  $beforeUpdate() {
+    this.updated_at = toMySQLDateTime();
+  }
 
   static relationMappings = () => ({
     modules: {

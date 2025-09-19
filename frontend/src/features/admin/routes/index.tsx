@@ -15,6 +15,7 @@ import ListAdminPrescriptionsPage from '../pages/PrescriptionManagement/ListPres
 // Import EAD Management pages
 import EADCourseListPage from '../pages/EADManagement/ListCourses';
 import EADCourseDetailsPage from '../pages/EADManagement/CourseDetails';
+import CategoryManagement from '../pages/EADManagement/CategoryManagement';
 
 const adminRoutes = (
   <>
@@ -31,8 +32,9 @@ const adminRoutes = (
     <Route path="/admin/prescriptions" element={<ListAdminPrescriptionsPage />} />
 
     {/* EAD Routes */}
-    <Route path="/admin/courses" element={<EADCourseListPage />} />
-    <Route path="/admin/courses/:id" element={<EADCourseDetailsPage />} />
+    <Route path="/admin/ead/courses" element={<EADCourseListPage />} />
+    <Route path="/admin/ead/courses/:id" element={<EADCourseDetailsPage />} />
+    <Route path="/admin/ead/categories" element={<CategoryManagement />} />
   </>
 );
 

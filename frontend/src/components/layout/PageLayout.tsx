@@ -169,9 +169,14 @@ const PageLayout = ({ children }: { children: React.ReactNode }) => {
         label: 'Education',
         children: [
           {
-            key: '/admin/courses',
+            key: '/admin/ead/courses',
             icon: <PlayCircleOutlined />,
-            label: <Link to="/admin/courses">Course Management</Link>,
+            label: <Link to="/admin/ead/courses">Courses</Link>,
+          },
+          {
+            key: '/admin/ead/categories',
+            icon: <TagOutlined />,
+            label: <Link to="/admin/ead/categories">Categories</Link>,
           },
         ],
       }

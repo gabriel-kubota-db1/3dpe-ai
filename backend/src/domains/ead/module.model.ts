@@ -1,5 +1,6 @@
 import { Model } from 'objection';
 import { Lesson } from './lesson.model';
+import { toMySQLDateTime } from '../../utils/datetime';
 
 export class Module extends Model {
   static tableName = 'ead_modules';
@@ -12,6 +13,16 @@ export class Module extends Model {
   updated_at!: string;
 
   lessons?: Lesson[];
+
+  $beforeInsert() {
+    const now = toMySQLDateTime();
+    this.created_at = now;
+    this.updated_at = now;
+  }
+
+  $beforeUpdate() {
+    this.updated_at = toMySQLDateTime();
+  }
 
   static relationMappings = {
     lessons: {
