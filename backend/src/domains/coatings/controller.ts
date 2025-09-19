@@ -4,11 +4,19 @@ import { coatingSchema, coatingUpdateSchema } from './validators';
 
 export const getAllCoatings = async (req: Request, res: Response) => {
   try {
-    const { coating_type } = req.query;
+    const { coating_type, active, description } = req.query;
     const query = Coating.query();
 
-    if (coating_type && typeof coating_type === 'string') {
+    if (coating_type && typeof coating_type === 'string' && coating_type !== 'ALL') {
       query.where('coating_type', coating_type);
+    }
+
+    if (active && typeof active === 'string' && active !== 'ALL') {
+      query.where('active', active === 'true');
+    }
+
+    if (description && typeof description === 'string') {
+      query.where('description', 'like', `%${description}%`);
     }
 
     const coatings = await query.orderBy('description');
