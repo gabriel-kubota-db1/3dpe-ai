@@ -4,7 +4,22 @@ import { insoleModelSchema, insoleModelUpdateSchema } from './validators';
 
 export const getAllInsoleModels = async (req: Request, res: Response) => {
   try {
-    const models = await InsoleModel.query().withGraphFetched('coating').orderBy('description');
+    const { coating_type, active, description } = req.query;
+    const query = InsoleModel.query().withGraphFetched('coating');
+
+    if (coating_type && typeof coating_type === 'string' && coating_type !== 'ALL') {
+      query.joinRelated('coating').where('coating.coating_type', coating_type);
+    }
+
+    if (active && typeof active === 'string' && active !== 'ALL') {
+      query.where('insole_models.active', active === 'true');
+    }
+
+    if (description && typeof description === 'string' && description.trim() !== '') {
+      query.where('insole_models.description', 'like', `%${description}%`);
+    }
+
+    const models = await query.orderBy('insole_models.description');
     res.json(models);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching insole models', error: error.message });

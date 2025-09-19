@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, InputNumber, DatePicker, Tag } from 'antd';
+import { Table, Button, Modal, Switch, Input, Popconfirm, Space, App, Form as AntdForm, Typography, InputNumber, DatePicker, Tag, Row, Col, Select } from 'antd';
 import { Form, Field } from 'react-final-form';
 import { Coupon } from '@/@types/coupon';
 import * as CouponService from '@/http/CouponHttpService';
 import dayjs from 'dayjs';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
+const { Option } = Select;
 
 const CouponManagementPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -15,9 +17,21 @@ const CouponManagementPage = () => {
   const queryClient = useQueryClient();
   const { message } = App.useApp();
 
+  const [codeFilter, setCodeFilter] = useState('');
+  const debouncedCode = useDebounce(codeFilter, 500);
+
+  const [filters, setFilters] = useState<{
+    active?: string;
+    code?: string;
+  }>({ code: '' });
+
+  useEffect(() => {
+    setFilters((prevFilters) => ({ ...prevFilters, code: debouncedCode }));
+  }, [debouncedCode]);
+
   const { data: coupons, isLoading } = useQuery<Coupon[], Error>({
-    queryKey: ['coupons'],
-    queryFn: CouponService.getCoupons,
+    queryKey: ['coupons', filters],
+    queryFn: () => CouponService.getCoupons(filters),
   });
 
   const { mutate: createOrUpdateCoupon, isPending: isSaving } = useMutation({
@@ -60,19 +74,20 @@ const CouponManagementPage = () => {
 
   const onSubmit = (values: any) => {
     const { date_range, ...rest } = values;
-    
-    // For RangePicker, ensure we get the correct date in local timezone
-    // Format as YYYY-MM-DD to preserve the selected date regardless of timezone
-    const startDate = dayjs(date_range[0]).format('YYYY-MM-DD');
-    const endDate = dayjs(date_range[1]).format('YYYY-MM-DD');
-    
     const payload = {
       ...rest,
-      start_date: startDate,
-      finish_date: endDate,
+      start_date: dayjs(date_range[0]).format('YYYY-MM-DD'),
+      finish_date: dayjs(date_range[1]).format('YYYY-MM-DD'),
     };
-    
     createOrUpdateCoupon(editingCoupon ? { ...payload, id: editingCoupon.id } : payload);
+  };
+
+  const handleFilterChange = (changedValues: any, allValues: any) => {
+    if ('code' in changedValues) {
+      setCodeFilter(changedValues.code);
+    } else {
+      setFilters(allValues);
+    }
   };
 
   const columns = [
@@ -115,6 +130,30 @@ const CouponManagementPage = () => {
           Add Coupon
         </Button>
       </div>
+
+      <AntdForm
+        layout="vertical"
+        onValuesChange={handleFilterChange}
+        style={{ marginBottom: 24, padding: 24, backgroundColor: '#fbfbfb', border: '1px solid #d9d9d9', borderRadius: 6 }}
+      >
+        <Row gutter={16}>
+          <Col span={8}>
+            <AntdForm.Item name="active" label="Filter by Status">
+              <Select placeholder="Select a status" allowClear>
+                <Option value="ALL">All Statuses</Option>
+                <Option value="true">Active</Option>
+                <Option value="false">Inactive</Option>
+              </Select>
+            </AntdForm.Item>
+          </Col>
+          <Col span={8}>
+            <AntdForm.Item name="code" label="Search by Code">
+              <Input placeholder="Enter coupon code" allowClear />
+            </AntdForm.Item>
+          </Col>
+        </Row>
+      </AntdForm>
+
       <Table dataSource={coupons} columns={columns} loading={isLoading} rowKey="id" />
 
       <Modal
@@ -138,7 +177,7 @@ const CouponManagementPage = () => {
                 {({ input }) => <AntdForm.Item label="Value (%)" required><InputNumber {...input} min={0} max={100} addonAfter="%" style={{ width: '100%' }} /></AntdForm.Item>}
               </Field>
               <Field name="date_range">
-                {({ input }) => <AntdForm.Item label="Validity Period" required><RangePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" showTime={false} /></AntdForm.Item>}
+                {({ input }) => <AntdForm.Item label="Validity Period" required><RangePicker {...input} style={{ width: '100%' }} format="DD/MM/YYYY" /></AntdForm.Item>}
               </Field>
               <Field name="active" type="checkbox">
                 {({ input }) => <AntdForm.Item label="Active"><Switch {...input} checked={input.checked} /></AntdForm.Item>}

@@ -6,6 +6,7 @@ import { InsoleModel } from '@/@types/insoleModel';
 import { Coating, CoatingType } from '@/@types/coating';
 import * as InsoleModelService from '@/http/InsoleModelHttpService';
 import * as CoatingService from '@/http/CoatingHttpService';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -17,14 +18,27 @@ const InsoleModelManagementPage = () => {
   const queryClient = useQueryClient();
   const { message } = App.useApp();
 
+  const [descriptionFilter, setDescriptionFilter] = useState('');
+  const debouncedDescription = useDebounce(descriptionFilter, 500);
+
+  const [filters, setFilters] = useState<{
+    coating_type?: string;
+    active?: string;
+    description?: string;
+  }>({ description: '' });
+
+  useEffect(() => {
+    setFilters((prevFilters) => ({ ...prevFilters, description: debouncedDescription }));
+  }, [debouncedDescription]);
+
   const { data: insoleModels, isLoading } = useQuery<InsoleModel[], Error>({
-    queryKey: ['insoleModels'],
-    queryFn: InsoleModelService.getInsoleModels,
+    queryKey: ['insoleModels', filters],
+    queryFn: () => InsoleModelService.getInsoleModels(filters),
   });
 
   const { data: coatings, isLoading: isLoadingCoatings } = useQuery<Coating[], Error>({
     queryKey: ['coatings', selectedCoatingType],
-    queryFn: () => CoatingService.getCoatings(selectedCoatingType!),
+    queryFn: () => CoatingService.getCoatings({ coating_type: selectedCoatingType! }),
     enabled: !!selectedCoatingType,
   });
 
@@ -78,6 +92,14 @@ const InsoleModelManagementPage = () => {
     createOrUpdateModel(editingModel ? { ...values, id: editingModel.id } : values);
   };
 
+  const handleFilterChange = (changedValues: any, allValues: any) => {
+    if ('description' in changedValues) {
+      setDescriptionFilter(changedValues.description);
+    } else {
+      setFilters(allValues);
+    }
+  };
+
   const columns = [
     { title: 'Description', dataIndex: 'description', key: 'description' },
     { title: 'Type', dataIndex: 'type', key: 'type' },
@@ -117,6 +139,39 @@ const InsoleModelManagementPage = () => {
           Add Insole Model
         </Button>
       </div>
+
+      <AntdForm
+        layout="vertical"
+        onValuesChange={handleFilterChange}
+        style={{ marginBottom: 24, padding: 24, backgroundColor: '#fbfbfb', border: '1px solid #d9d9d9', borderRadius: 6 }}
+      >
+        <Row gutter={16}>
+          <Col span={8}>
+            <AntdForm.Item name="coating_type" label="Filter by Coating Type">
+              <Select placeholder="Select a coating type" allowClear>
+                <Option value="ALL">All Types</Option>
+                <Option value="EVA">EVA</Option>
+                <Option value="Fabric">Fabric</Option>
+              </Select>
+            </AntdForm.Item>
+          </Col>
+          <Col span={8}>
+            <AntdForm.Item name="active" label="Filter by Status">
+              <Select placeholder="Select a status" allowClear>
+                <Option value="ALL">All Statuses</Option>
+                <Option value="true">Active</Option>
+                <Option value="false">Inactive</Option>
+              </Select>
+            </AntdForm.Item>
+          </Col>
+          <Col span={8}>
+            <AntdForm.Item name="description" label="Search by Description">
+              <Input placeholder="Enter description" allowClear />
+            </AntdForm.Item>
+          </Col>
+        </Row>
+      </AntdForm>
+
       <Table dataSource={insoleModels} columns={columns} loading={isLoading} rowKey="id" />
 
       <Modal
@@ -129,7 +184,7 @@ const InsoleModelManagementPage = () => {
       >
         <Form
           onSubmit={onSubmit}
-          initialValues={editingModel || undefined}
+          initialValues={editingModel || { active: true }}
           render={({ handleSubmit, form }) => (
             <form onSubmit={handleSubmit}>
               <Row gutter={16}>

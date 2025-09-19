@@ -1,8 +1,8 @@
 import api from './axios';
 import { InsoleModel } from '@/@types/insoleModel';
 
-export const getInsoleModels = async (): Promise<InsoleModel[]> => {
-  const { data } = await api.get('/insole-models');
+export const getInsoleModels = async (filters?: { coating_type?: string; active?: string; description?: string }): Promise<InsoleModel[]> => {
+  const { data } = await api.get('/insole-models', { params: filters });
   return data;
 };
 

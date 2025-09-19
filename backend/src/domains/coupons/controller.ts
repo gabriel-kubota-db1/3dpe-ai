@@ -4,7 +4,18 @@ import dayjs from 'dayjs';
 
 export const getAllCoupons = async (req: Request, res: Response) => {
   try {
-    const coupons = await Coupon.query();
+    const { active, code } = req.query;
+    const query = Coupon.query();
+
+    if (active && typeof active === 'string' && active !== 'ALL') {
+      query.where('active', active === 'true');
+    }
+
+    if (code && typeof code === 'string' && code.trim() !== '') {
+      query.where('code', 'like', `%${code}%`);
+    }
+
+    const coupons = await query.orderBy('code');
     res.json(coupons);
   } catch (error: any) {
     res.status(500).json({ message: 'Error fetching coupons', error: error.message });
