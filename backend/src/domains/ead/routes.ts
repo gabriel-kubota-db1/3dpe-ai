@@ -35,7 +35,7 @@ router.get('/courses/:id', isAuthenticated, controller.getCourseDetails);
 
 // --- Physiotherapist (Student) ---
 router.get('/my-courses', isAuthenticated, isPhysio, controller.getMyCourses);
-router.put('/my-courses/:courseId/progress', isAuthenticated, isPhysio, controller.updateProgress);
+router.post('/my-courses/:courseId/progress', isAuthenticated, isPhysio, controller.updateProgress);
 router.post('/my-courses/:courseId/evaluate', isAuthenticated, isPhysio, controller.evaluateCourse);
 
 export default router;
